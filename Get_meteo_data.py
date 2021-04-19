@@ -5,8 +5,10 @@ from typing import List
 
 class GetMeteoData():
     def dict_regions(self) -> dict:
+
         " Returns a dictionary having as key the regions divided by Terna\
         and having as values all the capoluoghi of that region.           "
+
         nord = ['Aosta','Genova','Torino','Milano','Trento','Venezia','Bologna','Trieste']
         centro_nord = ['Perugia','Firenze','Ancona']
         centro_sud = ['Aquila','Roma','Aquila','Roma','Campobasso']
@@ -18,12 +20,16 @@ class GetMeteoData():
                     sud=sud, sicilia=sicilia,sardegna=sardegna, calabria=calabria)
 
     def organize_date(self) -> str:
+
         "since AWS works with different timezone (-2 hours) it returns the data\
         already as string with the same format as Terna Data"
+
         return (datetime.datetime.now()+datetime.timedelta(hours=2)).strftime("%d/%m/%Y %H:%M:%S %p")
 
     def fetching_current_meteo_json(self)-> List[dict]:
+
         "fetch all the meteo data from the regions, return a list of dict aka json"
+
         res = []
         regions = self.dict_regions()
         for regione in regions:
@@ -46,6 +52,10 @@ class GetMeteoData():
 
 class JsonManagerMeteo():
     def load(self)->List[dict]:
+
+        " try except to handle the first run. \
+        the function load all the JSON file "
+
         try:
             with open("storico_meteo.json", "r") as file:
                 storico = json.load(file)
@@ -72,10 +82,10 @@ class JsonManagerMeteo():
 
 
 if __name__ == "__main__":
+    manager = JsonManagerMeteo()
     while True:
         if str(datetime.datetime.now().time().minute).endswith('0')\
             or str(datetime.datetime.now().time().minute).endswith('5'):
-                manager = JsonManagerMeteo()
                 manager.update()
                 time.sleep(290)
 
