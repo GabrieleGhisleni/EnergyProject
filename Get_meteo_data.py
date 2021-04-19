@@ -32,10 +32,11 @@ class GetMeteoData():
 
         res = []
         regions = self.dict_regions()
+        current_time = self.organize_date()
         for regione in regions:
             for capoluogo in regions[regione]:
                 try:
-                    url = " https://api.openweathermap.org/data/2.5/weather?appid=a054032d5e094190a9eba85b70421ff3&units=metric&q={}".format(capoluogo)
+                    url = " https://api.openweathermap.org/data/2.5/weather?appid=a054032d5e094190a9eba85b70421ff3&units=metric&q={},it".format(capoluogo)
                     response = requests.request("GET", url)
                     if not response.ok:
                         print ("Something wrong with the respunsus ok API" + str(response) + "at " + capoluogo)
@@ -43,7 +44,7 @@ class GetMeteoData():
                     else:
                         tmp = response.json()
                         tmp["region"] = regione
-                        tmp["organized_data"] = self.organize_date()
+                        tmp["organized_data"] = current_time
                         res.append(tmp)
                 except Exception: #done so the program won't crash if something go wrong.
                     print(" --> Fatal error with the requests connection <-- ")
