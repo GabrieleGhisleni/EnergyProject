@@ -28,7 +28,10 @@ class GetMeteoData():
 
     def fetching_current_meteo_json(self)-> List[dict]:
 
-        "fetch all the meteo data from the regions, return a list of dict aka json"
+        "fetch all the meteo data from the regions, return a list of dict aka json\
+        it collect the data from the API as dictionary and insert them all into a list\
+        so the function return a list of dictionary, each dictionary is a registration\
+        for a particular capoluogo                                                   "
 
         res = []
         regions = self.dict_regions()
@@ -51,44 +54,11 @@ class GetMeteoData():
         return res
 
 
-class JsonManagerMeteo():
-    def load(self)->List[dict]:
-
-        " try except to handle the first run. \
-        the function load all the JSON file "
-
-        try:
-            with open("storico_meteo.json", "r") as file:
-                storico = json.load(file)
-                file.close()
-            return storico
-        except Exception:
-            with open("storico_meteo.json", "w") as file:
-                print("File not found, created 'storico_meteo.json'.")
-                self.first_load()
-                return self.load()
-
-    def first_load(self):
-        print("First Load.")
-        obs = (GetMeteoData().fetching_current_meteo_json())
-        with open("storico_meteo.json", "w") as file:
-            json.dump(obs, file, indent=4)
-
-    def update(self)->None:
-        storico = self.load()
-        new_obs = (GetMeteoData().fetching_current_meteo_json())
-        update = storico + new_obs # must optimize this process
-        with open("storico_meteo.json", "w") as file:
-            json.dump(update, file, indent=4)
-
 
 if __name__ == "__main__":
-    manager = JsonManagerMeteo()
-    while True:
-        if str(datetime.datetime.now().time().minute).endswith('0')\
-            or str(datetime.datetime.now().time().minute).endswith('5'):
-                manager.update()
-                time.sleep(290)
+    print("i'm fine")
+
+
 
 
 
