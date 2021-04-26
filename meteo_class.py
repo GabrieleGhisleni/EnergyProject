@@ -4,12 +4,13 @@ from tqdm import tqdm
 import typing, json, time
 
 class MeteoData():
-    def __init__(self, date, name, region, clouds, text_description,
+    def __init__(self, date, name, cross_join, region, clouds, text_description,
                  pressure, humidity, temp, wind_deg, wind_speed,
                  sunrise, sunset, rain_1h=0, snow_1h=0):
         ## General info
         self.date = date
         self.name = name
+        self.cross_join = cross_join
         self.region = region
         ## Meteo general description
         self.clouds = clouds
@@ -50,6 +51,7 @@ class MeteoData():
         return({
             'name':self.name,
             'date': self.date,
+            'cross_join': self.cross_join,
             'region': self.region,
             'clouds': self.clouds,
             'text_description': self.text_description,
@@ -77,6 +79,7 @@ class MeteoData():
             date = original_dt,
             region = obj["region"],
             clouds = obj["clouds"]["all"],
+            cross_join=obj["cross_join"],
             text_description = obj["weather"][0]["description"],
             pressure= obj["main"]["pressure"],
             humidity= obj["main"]["humidity"],
@@ -89,20 +92,67 @@ class MeteoData():
             sunrise= sunrise
         )
 
+class MeteoRadiationData():
+    def __init__(self, name, date, cross_join, GlobalHorizontalIrradiance, DirectNormalIrradiance, DiffuseHorizontalIrradiance,
+                 GlobalHorizontalIrradiance_2, DirectNormalIrradiance_2, DiffuseHorizontalIrradiance_2):
+        ## General
+        self.name = name
+        self.date = date
+        self.cross_join = cross_join
+        ## Cloud Sky
+        self.GlobalHorizontalIrradiance = GlobalHorizontalIrradiance
+        self.DirectNormalIrradiance = DirectNormalIrradiance
+        self.DiffuseHorizontalIrradiance = DiffuseHorizontalIrradiance
+        ## Clear Sky
+        self.GlobalHorizontalIrradiance_2 = GlobalHorizontalIrradiance_2
+        self.DirectNormalIrradiance_2 = DirectNormalIrradiance_2
+        self.DiffuseHorizontalIrradiance_2 = DiffuseHorizontalIrradiance_2
 
-def check_all_the_features(file=List[dict]):
-    """ print out all the possible features found the API."""
-    res = {}
-    for station in file:
-        for key in station:
-            if key not in res:
-                res[key] = station[key]
-            else:
-                pass
-            if type(station[key]) == dict:
-                for detail in station[key]:
-                    if detail not in res[key]:
-                        res[key][detail] = station[key][detail]
-    pprint(res)
+    def __str__(self):
+        return str(self.name + " " + str(self.date))
 
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        if other is not MeteoRadiationData:
+            raise TypeError("You are not comparing two MeteoRadiationData object!")
+        else:
+            return self.__str__() == other.__str__()
+
+    def print_all(self):
+        return str(self.from_class_to_dict())
+
+    def __iter__(self):
+        for key,value in self.from_class_to_dict().items():
+            yield key,value
+
+    def from_class_to_dict(self):
+        return({
+            'name':self.name,
+            'date': self.date,
+            'cross_join': self.cross_join,
+            'GlobalHorizontalIrradiance': self.GlobalHorizontalIrradiance,
+            'DirectNormalIrradiance': self.DirectNormalIrradiance,
+            'DiffuseHorizontalIrradiance': self.DiffuseHorizontalIrradiance,
+            'GlobalHorizontalIrradiance_2': self.GlobalHorizontalIrradiance_2,
+            'DirectNormalIrradiance_2': self.DirectNormalIrradiance_2,
+            'DiffuseHorizontalIrradiance_2':self.DiffuseHorizontalIrradiance_2,
+        })
+
+
+    @staticmethod
+    def from_dict_to_class(obj:dict):
+        original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(obj["list"][0]["dt"]))
+        return MeteoRadiationData(
+            name=obj["name"],
+            date= obj["organized_data"],
+            cross_join=obj["cross_join"],
+            GlobalHorizontalIrradiance= obj["list"][0]["radiation"]["ghi"],
+            DirectNormalIrradiance= obj["list"][0]["radiation"]["dni"],
+            DiffuseHorizontalIrradiance= obj["list"][0]["radiation"]["dhi"],
+            GlobalHorizontalIrradiance_2= obj["list"][0]["radiation"]["ghi_cs"],
+            DirectNormalIrradiance_2=obj["list"][0]["radiation"]["dni_cs"],
+            DiffuseHorizontalIrradiance_2= obj["list"][0]["radiation"]["dhi_cs"]
+        )
 

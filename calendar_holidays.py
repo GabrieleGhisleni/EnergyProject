@@ -27,10 +27,10 @@ def create_calendar():
     df = pd.DataFrame()
     tmp = pd.date_range('2021-01-01', '2050-01-01', freq='D').to_series()
     df["day"] = tmp.dt.day_name()
+    df["Month"] = tmp.dt.month_name()
     df.reset_index(inplace=True)
     df["holiday"] = np.where(df["day"] == "Sunday", "yes", "no")
     df["holiday"].loc[df["day"] == "Saturday"] = "half"
-    it = {"01-01", "06-01", "25-04", "01-05", "02-06", "15-08", "01-10", "08-12", "25-12", "26-12"}
     ## Easter:
     tmp_easter = []
     for year in range(2021,2051):
@@ -43,6 +43,7 @@ def create_calendar():
     for pasqua in tmp_easter:
         df["holiday"].loc[df["index"] == pasqua] = "yes"
     # Other holidays
+    it = {"01-01", "06-01", "25-04", "01-05", "02-06", "15-08", "01-10", "08-12", "25-12", "26-12"}
     tmp = []
     for row in df["index"].dt.strftime('%m-%d'):
         if row in it:
@@ -51,7 +52,9 @@ def create_calendar():
             tmp.append("No")
     tmp = pd.Series(tmp)
     df["holiday"].loc[tmp == "Yes"] = "yes"
-    df.columns = ["Date", "DayName", "Holiday"]
+
+    df.columns = ["Date", "DayName","Month", "Holiday"]
+
     return df
 
 if __name__ == "__main__":
