@@ -1,35 +1,35 @@
 import requests, time, datetime, json, copy
 from pprint import pprint
 from typing import List
-
+from tqdm import tqdm
 
 class GetMeteoData():
     def __init__(self):
-        self.coordinates= {'Bari': {'lat': 41.1177, 'lon': 16.8512},
-                     'Bologna': {'lat': 44.4667, 'lon': 11.4333},
-                     'Catanzaro': {'lat': 38.8908, 'lon': 16.5987},
-                     'Florence': {'lat': 43.7667, 'lon': 11.25},
-                     "L'Aquila": {'lat': 42.365, 'lon': 13.3935},
-                     'Milan': {'lat': 45.4643, 'lon': 9.1895},
-                     'Naples': {'lat': 40.8333, 'lon': 14.25},
-                     'Potenza': {'lat': 40.6443, 'lon': 15.8086},
-                     'Province of Palermo': {'lat': 37.8167, 'lon': 13.5833},
-                     'Province of Turin': {'lat': 45.1333, 'lon': 7.3667},
-                     'Provincia di Ancona': {'lat': 43.55, 'lon': 13.1667},
-                     'Provincia di Campobasso': {'lat': 41.6333, 'lon': 14.5833},
-                     'Provincia di Genova': {'lat': 44.5, 'lon': 9.0667},
-                     'Provincia di Perugia': {'lat': 43.05, 'lon': 12.55},
-                     'Rome': {'lat': 41.8947, 'lon': 12.4839},
-                     'Sardinia': {'lat': 40, 'lon': 9},
-                     'Trento': {'lat': 46.0679, 'lon': 11.1211},
-                     'Trieste': {'lat': 45.6486, 'lon': 13.78},
-                     "Valle d'Aosta": {'lat': 45.7667, 'lon': 7.4167},
-                     'Venice': {'lat': 45.4386, 'lon': 12.3267}}
+        self.coordinates= {'Bari': {'lat': 41.1177, 'lon': 16.8512, 'region':'sud'},
+                     'Bologna': {'lat': 44.4667, 'lon': 11.4333,'region':'nord'},
+                     'Catanzaro': {'lat': 38.8908, 'lon': 16.5987,'region':'calabria'},
+                     'Florence': {'lat': 43.7667, 'lon': 11.25,'region':'centro_nord'},
+                     "L'Aquila": {'lat': 42.365, 'lon': 13.3935,'region':'centro_sud'},
+                     'Milan': {'lat': 45.4643, 'lon': 9.1895,'region':'nord'},
+                     'Naples': {'lat': 40.8333, 'lon': 14.25,'region':'sud'},
+                     'Potenza': {'lat': 40.6443, 'lon': 15.8086,'region':'sud'},
+                     'Province of Palermo': {'lat': 37.8167, 'lon': 13.5833,'region':'sicilia'},
+                     'Province of Turin': {'lat': 45.1333, 'lon': 7.3667,'region':'nord'},
+                     'Provincia di Ancona': {'lat': 43.55, 'lon': 13.1667,'region':'centro_nord'},
+                     'Provincia di Campobasso': {'lat': 41.6333, 'lon': 14.5833,'region':'centro_sud'},
+                     'Provincia di Genova': {'lat': 44.5, 'lon': 9.0667,'region':'nord'},
+                     'Provincia di Perugia': {'lat': 43.05, 'lon': 12.55,'region':'centro_nord'},
+                     'Rome': {'lat': 41.8947, 'lon': 12.4839,'region':'centro_sud'},
+                     'Sardinia': {'lat': 40, 'lon': 9,'region':'sardegna'},
+                     'Trento': {'lat': 46.0679, 'lon': 11.1211,'region':'nord'},
+                     'Trieste': {'lat': 45.6486, 'lon': 13.78,'region':'nord'},
+                     "Valle d'Aosta": {'lat': 45.7667, 'lon': 7.4167,'region':'nord'},
+                     'Venice': {'lat': 45.4386, 'lon': 12.3267,'region':'nord'}}
 
 
         nord = ['Aosta','Genova','Torino','Milano','Trento','Venezia','Bologna','Trieste']
         centro_nord = ['Perugia','Firenze','Ancona']
-        centro_sud = ['Aquila','Roma','Aquila','Roma','Campobasso']
+        centro_sud = ['Aquila','Roma','Campobasso']
         sud = ['Napoli','Bari','Potenza']
         sicilia = ['Palermo']
         sardegna = ['Sardegna']
@@ -66,8 +66,9 @@ class GetMeteoData():
                         tmp["organized_data"] = current_time
                         tmp["cross_join"] = cross_join_detail
                         res.append(tmp)
-                except Exception: #done so the program won't crash if something go wrong.
-                    print(" --> Fatal error with the requests connection <-- ")
+                except Exception as e:  # done so the program won't crash if something go wrong.
+                    print("\n --> Fatal error with the requests connection <--")
+                    print(str(e))
         return res
 
     def find_coordinate(self):
@@ -96,34 +97,35 @@ class GetMeteoData():
                     tmp["organized_data"] = current_time
                     tmp["name"] = citta
                     res.append(tmp)
-            except Exception:  # done so the program won't crash if something go wrong.
-                print(" --> Fatal error with the requests connection <-- ")
+            except Exception as e:  # done so the program won't crash if something go wrong.
+                print("\n --> Fatal error with the requests connection <--")
+                print(str(e))
         return res
 
     def fetching_forecast_meteo(self):
         coordinates = self.coordinates
-        cross_join_detail = datetime.datetime.now().strftime("%d/%m/%Y %H:%M %p")
         res = []
-        for citta in coordinates:
+        for citta in tqdm(coordinates):
             try:
-                url = "https://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&units=metric&exclude=minutely,current,daily,alerts&appid=a054032d5e094190a9eba85b70421ff3".format(coordinates[citta]["lat"],coordinates[citta]["lon"])
+                url = "https://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&exclude=minutely,current,daily,alerts&appid=a054032d5e094190a9eba85b70421ff3".format(coordinates[citta]["lat"],coordinates[citta]["lon"])
                 response = requests.request("GET", url)
                 if not response.ok:
                     print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
                     pass
                 else:
                     tmp = response.json()
-                    tmp["cross_join"] = cross_join_detail
+                    tmp["region"] = coordinates[citta]["region"]
+                    tmp["name"] = citta
                     for hour in tmp["hourly"]:
                         hour["orario"] = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(hour["dt"]))
                     res.append(tmp)
-            except Exception:  # done so the program won't crash if something go wrong.
-                print(" --> Fatal error with the requests connection <-- ")
+            except Exception as e:  # done so the program won't crash if something go wrong.
+                print("\n --> Fatal error with the requests connection <--")
+                print(str(e))
         return res
 
 if __name__ == "__main__":
     print(datetime.datetime.now())
-    pprint(GetMeteoData().fetching_current_meteo_json()[0])
-    pprint(GetMeteoData().fetching_current_meteo_json()[0])
+    print(GetMeteoData().fetching_forecast_meteo()[0])
     print(datetime.datetime.now())
 

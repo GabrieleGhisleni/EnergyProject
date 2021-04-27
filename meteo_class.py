@@ -3,7 +3,9 @@ from typing import List
 from tqdm import tqdm
 import typing, json, time
 
-class MeteoData():
+
+
+class MeteoCurrentData():
     def __init__(self, date, name, cross_join, region, clouds, text_description,
                  pressure, humidity, temp, wind_deg, wind_speed,
                  sunrise, sunset, rain_1h=0, snow_1h=0):
@@ -29,14 +31,14 @@ class MeteoData():
         self.sunset = sunset
 
     def __str__(self):
-        return str(self.name + " " + str(self.date))
+        return str(self.name + " " + str(self.date) + " class= "+str(type(self)))
 
     def __repr__(self):
         return self.__str__()
 
     def __eq__(self, other):
-        if other is not MeteoData:
-            raise TypeError("You are not comparing two MeteoData object!")
+        if other is not MeteoCurrentData:
+            raise TypeError("You are not comparing two MeteoCurrentData object!")
         else:
             return self.__str__() == other.__str__()
 
@@ -74,7 +76,7 @@ class MeteoData():
         sunrise =  time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(obj["sys"]["sunrise"]))
         sunset =  time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(obj["sys"]["sunset"]))
         original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(obj["dt"]))
-        return MeteoData(
+        return MeteoCurrentData(
             name = obj["name"],
             date = original_dt,
             region = obj["region"],
@@ -92,31 +94,31 @@ class MeteoData():
             sunrise= sunrise
         )
 
-class MeteoRadiationData():
-    def __init__(self, name, date, cross_join, GlobalHorizontalIrradiance, DirectNormalIrradiance, DiffuseHorizontalIrradiance,
-                 GlobalHorizontalIrradiance_2, DirectNormalIrradiance_2, DiffuseHorizontalIrradiance_2):
+class MeteoCurrentRadiationData():
+    def __init__(self, name, date, cross_join, globalhorizontalirradiance, directnormalirradiance, diffusehorizontalirradiance,
+                 globalhorizontalirradiance_2, directnormalirradiance_2, diffusehorizontalirradiance_2):
         ## General
         self.name = name
         self.date = date
         self.cross_join = cross_join
         ## Cloud Sky
-        self.GlobalHorizontalIrradiance = GlobalHorizontalIrradiance
-        self.DirectNormalIrradiance = DirectNormalIrradiance
-        self.DiffuseHorizontalIrradiance = DiffuseHorizontalIrradiance
+        self.globalhorizontalirradiance = globalhorizontalirradiance
+        self.directnormalirradiance = directnormalirradiance
+        self.diffusehorizontalirradiance = diffusehorizontalirradiance
         ## Clear Sky
-        self.GlobalHorizontalIrradiance_2 = GlobalHorizontalIrradiance_2
-        self.DirectNormalIrradiance_2 = DirectNormalIrradiance_2
-        self.DiffuseHorizontalIrradiance_2 = DiffuseHorizontalIrradiance_2
+        self.globalhorizontalirradiance_2 = globalhorizontalirradiance_2
+        self.directnormalirradiance_2 = directnormalirradiance_2
+        self.diffusehorizontalirradiance_2 = diffusehorizontalirradiance_2
 
     def __str__(self):
-        return str(self.name + " " + str(self.date))
+        return str(self.name + " " + str(self.date)+ " class= "+str(type(self)))
 
     def __repr__(self):
         return self.__str__()
 
     def __eq__(self, other):
-        if other is not MeteoRadiationData:
-            raise TypeError("You are not comparing two MeteoRadiationData object!")
+        if other is not MeteoCurrentRadiationData:
+            raise TypeError("You are not comparing two MeteoCurrentRadiationData object!")
         else:
             return self.__str__() == other.__str__()
 
@@ -132,27 +134,85 @@ class MeteoRadiationData():
             'name':self.name,
             'date': self.date,
             'cross_join': self.cross_join,
-            'GlobalHorizontalIrradiance': self.GlobalHorizontalIrradiance,
-            'DirectNormalIrradiance': self.DirectNormalIrradiance,
-            'DiffuseHorizontalIrradiance': self.DiffuseHorizontalIrradiance,
-            'GlobalHorizontalIrradiance_2': self.GlobalHorizontalIrradiance_2,
-            'DirectNormalIrradiance_2': self.DirectNormalIrradiance_2,
-            'DiffuseHorizontalIrradiance_2':self.DiffuseHorizontalIrradiance_2,
+            'globalhorizontalirradiance': self.globalhorizontalirradiance,
+            'directnormalirradiance': self.directnormalirradiance,
+            'diffusehorizontalirradiance': self.diffusehorizontalirradiance,
+            'globalhorizontalirradiance_2': self.globalhorizontalirradiance_2,
+            'directnormalirradiance_2': self.directnormalirradiance_2,
+            'diffusehorizontalirradiance_2':self.diffusehorizontalirradiance_2,
         })
 
 
     @staticmethod
     def from_dict_to_class(obj:dict):
         original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(obj["list"][0]["dt"]))
-        return MeteoRadiationData(
+        return MeteoCurrentRadiationData(
             name=obj["name"],
             date= obj["organized_data"],
             cross_join=obj["cross_join"],
-            GlobalHorizontalIrradiance= obj["list"][0]["radiation"]["ghi"],
-            DirectNormalIrradiance= obj["list"][0]["radiation"]["dni"],
-            DiffuseHorizontalIrradiance= obj["list"][0]["radiation"]["dhi"],
-            GlobalHorizontalIrradiance_2= obj["list"][0]["radiation"]["ghi_cs"],
-            DirectNormalIrradiance_2=obj["list"][0]["radiation"]["dni_cs"],
-            DiffuseHorizontalIrradiance_2= obj["list"][0]["radiation"]["dhi_cs"]
+            globalhorizontalirradiance= obj["list"][0]["radiation"]["ghi"],
+            directnormalirradiance= obj["list"][0]["radiation"]["dni"],
+            diffusehorizontalirradiance= obj["list"][0]["radiation"]["dhi"],
+            globalhorizontalirradiance_2= obj["list"][0]["radiation"]["ghi_cs"],
+            directnormalirradiance_2=obj["list"][0]["radiation"]["dni_cs"],
+            diffusehorizontalirradiance_2= obj["list"][0]["radiation"]["dhi_cs"]
         )
+
+
+class MeteoForecastData():
+    def __init__(self, date, name, region, clouds, text_description,
+                 pressure, humidity, temp, wind_deg, wind_speed, rain_1h=0, snow_1h=0):
+        ## General info
+        self.date = date
+        self.name = name
+        self.region = region
+        ## Meteo general description
+        self.clouds = clouds
+        self.text_description = text_description
+        ## Meteo main
+        self.pressure = pressure
+        self.humidity = humidity
+        self.temp = temp
+        ## Meteo rain-snow-wind
+        self.rain_1h = rain_1h
+        self.snow_1h = snow_1h
+        self.wind_deg = wind_deg
+        self.wind_speed = wind_speed
+
+    def __str__(self):
+        return str(self.name + " " + str(self.date) + " class= "+str(type(self)))
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __eq__(self, other):
+        if other is not MeteoForecastData:
+            raise TypeError("You are not comparing two MeteoCurrentData object!")
+        else:
+            return self.__str__() == other.__str__()
+
+    @staticmethod
+    def from_dict_to_class(obj: dict, rain=0, snow=0):
+        res = []
+        hours_48 = obj["hourly"]
+        for hour in hours_48:
+            if 'rain' in hour: rain = hour['rain']["1h"]
+            if 'snow' in hour: snow = hour["snow"]["1h"]
+            original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(hour["dt"]))
+            res.append(MeteoForecastData(
+                name=obj["name"],
+                date=original_dt,
+                region=obj["region"],
+                clouds=hour["clouds"],
+                text_description=hour["weather"][0]["description"],
+                pressure=hour["pressure"],
+                humidity=hour["humidity"],
+                temp=hour["temp"],
+                rain_1h=rain,
+                snow_1h=snow,
+                wind_deg=hour["wind_deg"],
+                wind_speed=hour["wind_speed"],
+            ))
+        return res
+
 

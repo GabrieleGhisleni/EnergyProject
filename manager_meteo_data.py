@@ -2,7 +2,7 @@ import json, time, datetime,os
 from typing import List
 from get_meteo_data import *
 
-class JsonManagerMeteo():
+class JsonManagerCurrentMeteo():
     def load(self)->List[dict]:
         if os.path.exists('storico_meteo.json'):
             with open("storico_meteo.json", "r") as file:
@@ -26,7 +26,7 @@ class JsonManagerMeteo():
         with open("storico_meteo.json", "w") as file:
             json.dump(update, file, indent=4)
 
-class JsonManagerMeteo_Radiation():
+class JsonManagerCurrentRadiation():
     def load(self)->List[dict]:
         if os.path.exists('storico_radiation.json'):
             with open("storico_radiation.json", "r") as file:
@@ -51,8 +51,8 @@ class JsonManagerMeteo_Radiation():
             json.dump(update, file, indent=4)
 
 def into_the_loop():
-    manager = JsonManagerMeteo()
-    manager_2 = JsonManagerMeteo_Radiation()
+    manager = JsonManagerCurrentMeteo()
+    manager_2 = JsonManagerCurrentRadiation()
     while True:
         if str(datetime.datetime.now().time().minute).endswith('00')\
             or str(datetime.datetime.now().time().minute).endswith('15')\
@@ -60,7 +60,7 @@ def into_the_loop():
                 or str(datetime.datetime.now().time().minute).endswith('45'):
                     manager.update()
                     manager_2.update()
-                    time.sleep(1)
+                    time.sleep(890)
                     print("done")
 
 if __name__ == "__main__":
