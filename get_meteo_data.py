@@ -1,6 +1,6 @@
-import requests, time, datetime, json, copy
+import requests, time, datetime, json, copy, typing
 from pprint import pprint
-from typing import List
+from typing import List, Dict
 from tqdm import tqdm
 
 class GetMeteoData():
@@ -26,25 +26,21 @@ class GetMeteoData():
                      "Valle d'Aosta": {'lat': 45.7667, 'lon': 7.4167,'region':'nord'},
                      'Venice': {'lat': 45.4386, 'lon': 12.3267,'region':'nord'}}
 
+        self.dictionary = {'nord': {'Aosta','Genova','Torino','Milano','Trento','Venezia','Bologna','Trieste'},
+                  'centro_nord':{'Perugia','Firenze','Ancona'},
+                  'centro_sud':{'Aquila','Roma','Campobasso'},
+                  'sud':{'Napoli','Bari','Potenza'},
+                  'sicilia':{'Palermo'},
+                  'sardegna':{'Sardegna'},
+                  'calabria':{'Catanzaro'}}
 
-        nord = ['Aosta','Genova','Torino','Milano','Trento','Venezia','Bologna','Trieste']
-        centro_nord = ['Perugia','Firenze','Ancona']
-        centro_sud = ['Aquila','Roma','Campobasso']
-        sud = ['Napoli','Bari','Potenza']
-        sicilia = ['Palermo']
-        sardegna = ['Sardegna']
-        calabria = ['Catanzaro']
-        tmp = dict(nord=nord, centro_nord=centro_nord, centro_sud=centro_sud,
-                    sud=sud, sicilia=sicilia,sardegna=sardegna, calabria=calabria)
-
-        self.dictionary= tmp
-
-    def fetching_current_meteo_json(self)-> List[dict]:
-
-        "fetch all the meteo data from the regions, return a list of dict aka json\
+    def fetching_current_meteo_json(self)-> List[Dict]:
+        """
+        fetch all the current meteo data from the regions, return a list of dict aka json\
         it collect the data from the API as dictionary and insert them all into a list\
         so the function return a list of dictionary, each dictionary is a registration\
-        for a particular capoluogo                                                   "
+        for a particular capoluogo
+        """
 
         res = []
         regions = self.dictionary
@@ -71,13 +67,22 @@ class GetMeteoData():
                     print(str(e))
         return res
 
-    def find_coordinate(self):
+    def find_coordinate(self)->Dict:
+        """
+        temporary functioned used to find all the coordinates of the cities.
+        """
         tmp = {}
         for row in (GetMeteoData().fetching_current_meteo_json()):
             tmp[row["name"]] = dict(lat=row["coord"]["lat"], lon=row["coord"]["lon"])
         return tmp
 
-    def fetching_solar_radiation(self):
+    def fetching_current_solar_radiation(self)->List[Dict]:
+        """
+        fetch all the current solar radiation data from the regions, return a list of dict aka json\
+        it collect the data from the API as dictionary and insert them all into a list        \
+        so the function return a list of dictionary, each dictionary is a registration        \
+        for a particular capoluogo
+        """
         coordinates = self.coordinates
         current_time = False
         cross_join_detail = datetime.datetime.now().strftime("%d/%m/%Y %H:%M %p")
@@ -96,13 +101,20 @@ class GetMeteoData():
                         current_time= time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(tmp["list"][0]["dt"]))
                     tmp["organized_data"] = current_time
                     tmp["name"] = citta
+                    tmp["region"] = coordinates[citta]["region"]
                     res.append(tmp)
             except Exception as e:  # done so the program won't crash if something go wrong.
                 print("\n --> Fatal error with the requests connection <--")
                 print(str(e))
         return res
 
-    def fetching_forecast_meteo(self):
+    def fetching_forecast_meteo(self)->List[Dict]:
+        """
+        fetch all the forecast solar radiation data from the regions, return a list of  dict \
+        it collect the data from the API as dictionary and insert them all into a list        \
+        so the function return a list of dictionary, each dictionary is a registration        \
+        for a particular capoluogo.
+        """
         coordinates = self.coordinates
         res = []
         for citta in tqdm(coordinates):
@@ -124,8 +136,33 @@ class GetMeteoData():
                 print(str(e))
         return res
 
-if __name__ == "__main__":
-    print(datetime.datetime.now())
-    print(GetMeteoData().fetching_forecast_meteo()[0])
-    print(datetime.datetime.now())
+    def fetching_forecast_solar_radiation(self)->List[Dict]:
+        """
+        fetch all the forecast solar radiation data from the regions, return a list of dict aka json\
+        it collect the data from the API as dictionary and insert them all into a list        \
+        so the function return a list of dictionary, each dictionary is a registration        \
+        for a particular capoluogo
+        """
+        coordinates = self.coordinates
+        res = []
+        for citta in tqdm(coordinates):
+            try:
+                url = "http://api.openweathermap.org/data/2.5/solar_radiation/forecast?lat={}&lon={}&appid=a054032d5e094190a9eba85b70421ff3".format(coordinates[citta]["lat"],coordinates[citta]["lon"])
+                response = requests.request("GET", url)
+                if not response.ok:
+                    print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
+                    pass
+                else:
+                    tmp = response.json()
+                    tmp["name"] = citta
+                    tmp["region"] = coordinates[citta]["region"]
+                    for dict in tmp["list"]:
+                        dict["date"] = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(dict["dt"]))
+                    res.append(tmp)
+            except Exception as e:  # done so the program won't crash if something go wrong.
+                print("\n --> Fatal error with the requests connection <--")
+                print(str(e))
+        return res
 
+if __name__ == "__main__":
+    print("i'm fine")
