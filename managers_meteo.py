@@ -1,7 +1,7 @@
 import json, time, datetime,os
 from typing import List
-from get_meteo_data import *
-from meteo_class import *
+from fetching_meteo import *
+from meteo_classes import *
 import pandas as pd
 
 class JsonManagerCurrentMeteo():
@@ -97,16 +97,14 @@ def into_the_loop():
     manager = JsonManagerCurrentMeteo()
     manager_2 = JsonManagerCurrentRadiation()
     while True:
-        if str(datetime.datetime.now().time().minute).endswith('00')\
-            or str(datetime.datetime.now().time().minute).endswith('15')\
-                or str(datetime.datetime.now().time().minute).endswith('30')\
-                or str(datetime.datetime.now().time().minute).endswith('45'):
+        now = datetime.datetime.now()
+        if now.strftime("%M").endswith("00") or now.strftime("%M").endswith("15") \
+                or now.strftime("%M").endswith("30") or now.strftime("%M").endswith("45"):
+                    print("inside")
                     manager.update()
                     manager_2.update()
                     time.sleep(890)
                     print("done")
 
-
-
 if __name__ == "__main__":
-    print("i'm fine")
+    into_the_loop()

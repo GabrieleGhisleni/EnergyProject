@@ -171,8 +171,8 @@ class MeteoData():
         This function has to be applied on a single call from the current data.
         So for each city one call and it will return an object MeteoCurrentData.
         """
-        if 'rain' in obj: rain = obj['rain']
-        if 'snow' in obj: snow=obj["snow"]
+        if 'rain' in obj: rain = obj['rain']["1h"]
+        if 'snow' in obj: snow=obj["snow"]['1h']
         original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(obj["dt"]))
         return MeteoData(
             name = obj["name"],

@@ -1,6 +1,6 @@
-from get_meteo_data import *
-from manager_meteo_data import *
-from meteo_class import  *
+from fetching_meteo import *
+from managers_meteo import *
+from meteo_classes import  *
 from pprint import pprint
 
 def HOW_TO_CALL_THE_FUNCTION():
@@ -38,5 +38,23 @@ def HOW_TO_CALL_THE_FUNCTION():
     print(datetime.datetime.now())
     ######################################################################################################
 
+def create_tmp_csv():
+    meteo=JsonManagerCurrentMeteo().load()
+    tmp = []
+    for obs in meteo:
+        tmp.append(MeteoData.current_from_dict_to_class(obs).from_class_to_dict())
+    df = pd.DataFrame(tmp)
+    df.to_csv("meteo.csv", index=False)
+
+    radiation=JsonManagerCurrentRadiation().load()
+    tmp = []
+    for obs in radiation:
+        tmp.append(MeteoRadiationData.current_from_dict_to_class(obs).current_from_class_to_dict())
+    df = pd.DataFrame(tmp)
+    df.to_csv("radiation.csv", index=False)
+
+
+
 if __name__ == "__main__":
-    print("im fine!")
+    HOW_TO_CALL_THE_FUNCTION()
+    print("im fine ")
