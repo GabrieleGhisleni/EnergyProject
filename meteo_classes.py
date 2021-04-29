@@ -105,7 +105,7 @@ class MeteoRadiationData():
 
 class MeteoData():
     """
-    class created to handle the meteo data.
+    class created to handle the meteo data!
     """
     def __init__(self, date, name, region, clouds, text_description,
                  pressure, humidity, temp, wind_deg, wind_speed,

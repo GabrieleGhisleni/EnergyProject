@@ -2,6 +2,7 @@ from fetching_meteo import *
 from managers_meteo import *
 from meteo_classes import  *
 from pprint import pprint
+import argparse, sys, textwrap
 
 def HOW_TO_CALL_THE_FUNCTION():
     """
@@ -55,6 +56,19 @@ def create_tmp_csv():
 
 
 
-if __name__ == "__main__":
-    HOW_TO_CALL_THE_FUNCTION()
-    print("im fine ")
+def main():
+    title = """------------------------>  Deal all the steps of the pipeline from here! <---------------------------"""
+    parser = argparse.ArgumentParser(description=title, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    ### must add argument, one for each distributed process.
+    parser.add_argument('-m', "--start_manager", action='store_true',
+                        help="Start colleting current meteo and radiation and updating the storico")
+
+    parser.add_argument('-f', "--force_start", default='force',choices=['force','production'])
+    args = parser.parse_args()
+    if args.start_manager:
+        if args.force_start == "Force":
+            print(args.start_manager)
+
+
+if __name__=="__main__":
+    main()
