@@ -1,0 +1,961 @@
+name,date,cross_join,region,clouds,text_description,pressure,humidity,temp,rain_1h,snow_1h,wind_deg,wind_speed
+Valle d'Aosta,01/05/2021 00:00:00 AM,,nord,94,overcast clouds,1009,85,278.73,0.0,0.0,106,0.41
+Province of Palermo,01/05/2021 00:00:00 AM,,sicilia,99,overcast clouds,997,49,292.54,0.0,0.0,191,2.99
+Venice,01/05/2021 00:00:00 AM,,nord,58,broken clouds,1010,86,288.92,0.31,0.0,54,3.83
+Sardinia,01/05/2021 00:00:00 AM,,sardegna,100,overcast clouds,1009,82,289.01,0.0,0.0,82,1.56
+Milan,01/05/2021 00:00:00 AM,,nord,74,light rain,1010,84,288.26,0.15,0.0,255,1.58
+Provincia di Ancona,01/05/2021 00:00:00 AM,,centro_nord,89,overcast clouds,1011,75,289.35,0.0,0.0,198,2.15
+Naples,01/05/2021 00:00:00 AM,,sud,50,scattered clouds,1010,57,292.51,0.0,0.0,55,0.9
+Potenza,01/05/2021 00:00:00 AM,,sud,100,overcast clouds,1011,47,289.82,0.0,0.0,189,2.33
+Florence,01/05/2021 00:00:00 AM,,centro_nord,76,broken clouds,1011,92,288.52,0.0,0.0,24,0.21
+Catanzaro,01/05/2021 00:00:00 AM,,calabria,96,overcast clouds,1012,55,293.24,0.0,0.0,105,0.4
+L'Aquila,01/05/2021 00:00:00 AM,,centro_sud,100,overcast clouds,1014,82,287.69,0.0,0.0,203,1.11
+Trieste,01/05/2021 00:00:00 AM,,nord,72,broken clouds,1011,91,288.34,0.24,0.0,84,1.56
+Provincia di Genova,01/05/2021 00:00:00 AM,,nord,94,overcast clouds,1011,92,284.11,0.11,0.0,97,0.93
+Rome,01/05/2021 00:00:00 AM,,centro_sud,57,broken clouds,1010,70,290.64,0.0,0.0,66,0.77
+Province of Turin,01/05/2021 00:00:00 AM,,nord,98,overcast clouds,1010,93,283.28,0.0,0.0,317,0.99
+Bari,01/05/2021 00:00:00 AM,,sud,56,broken clouds,1011,61,292.6,0.0,0.0,181,4.16
+Provincia di Campobasso,01/05/2021 00:00:00 AM,,centro_sud,91,overcast clouds,1010,65,289.35,0.0,0.0,228,2.45
+Trento,01/05/2021 00:00:00 AM,,nord,95,overcast clouds,1011,91,283.41,0.12,0.0,61,0.34
+Bologna,01/05/2021 00:00:00 AM,,nord,60,broken clouds,1009,72,288.05,0.0,0.0,234,2.62
+Provincia di Perugia,01/05/2021 00:00:00 AM,,centro_nord,59,broken clouds,1010,75,290.03,0.0,0.0,120,1.12
+Trieste,01/05/2021 01:00:00 AM,,nord,82,broken clouds,1012,92,287.7,0.24,0.0,116,1.54
+Bologna,01/05/2021 01:00:00 AM,,nord,80,broken clouds,1010,79,287.08,0.0,0.0,246,2.52
+Potenza,01/05/2021 01:00:00 AM,,sud,100,overcast clouds,1012,41,289.32,0.0,0.0,192,2.68
+Trento,01/05/2021 01:00:00 AM,,nord,96,overcast clouds,1012,91,284.7,0.12,0.0,106,0.31
+Provincia di Perugia,01/05/2021 01:00:00 AM,,centro_nord,70,broken clouds,1011,80,288.66,0.0,0.0,123,0.73
+Province of Palermo,01/05/2021 01:00:00 AM,,sicilia,99,overcast clouds,1004,42,293.38,0.0,0.0,158,3.16
+Sardinia,01/05/2021 01:00:00 AM,,sardegna,100,overcast clouds,1010,81,288.37,0.0,0.0,200,1.11
+Valle d'Aosta,01/05/2021 01:00:00 AM,,nord,95,overcast clouds,1010,90,277.32,0.0,0.0,356,0.88
+L'Aquila,01/05/2021 01:00:00 AM,,centro_sud,100,overcast clouds,1013,80,287.0,0.0,0.0,208,1.34
+Catanzaro,01/05/2021 01:00:00 AM,,calabria,98,overcast clouds,1012,52,293.34,0.0,0.0,283,0.6
+Rome,01/05/2021 01:00:00 AM,,centro_sud,77,broken clouds,1011,74,289.75,0.0,0.0,84,0.83
+Provincia di Genova,01/05/2021 01:00:00 AM,,nord,94,overcast clouds,1011,93,282.8,0.11,0.0,62,1.67
+Province of Turin,01/05/2021 01:00:00 AM,,nord,98,overcast clouds,1010,91,282.55,0.0,0.0,310,1.07
+Provincia di Campobasso,01/05/2021 01:00:00 AM,,centro_sud,92,overcast clouds,1010,63,288.59,0.0,0.0,233,2.44
+Venice,01/05/2021 01:00:00 AM,,nord,75,broken clouds,1011,91,288.11,0.31,0.0,49,3.01
+Milan,01/05/2021 01:00:00 AM,,nord,81,broken clouds,1011,89,287.08,0.15,0.0,249,1.29
+Florence,01/05/2021 01:00:00 AM,,centro_nord,88,overcast clouds,1011,92,287.69,0.0,0.0,79,1.04
+Naples,01/05/2021 01:00:00 AM,,sud,70,broken clouds,1011,58,292.38,0.0,0.0,75,0.88
+Provincia di Ancona,01/05/2021 01:00:00 AM,,centro_nord,94,overcast clouds,1011,79,288.54,0.0,0.0,220,1.61
+Bari,01/05/2021 01:00:00 AM,,sud,76,broken clouds,1010,66,292.12,0.0,0.0,182,3.51
+Milan,01/05/2021 02:00:00 AM,,nord,92,light rain,1011,92,286.45,0.14,0.0,242,1.22
+Province of Palermo,01/05/2021 02:00:00 AM,,sicilia,99,overcast clouds,1012,39,293.04,0.0,0.0,189,3.1
+Naples,01/05/2021 02:00:00 AM,,sud,88,overcast clouds,1010,59,291.95,0.0,0.0,105,0.68
+Rome,01/05/2021 02:00:00 AM,,centro_sud,97,overcast clouds,1011,75,289.2,0.0,0.0,38,0.63
+L'Aquila,01/05/2021 02:00:00 AM,,centro_sud,100,overcast clouds,1012,76,286.76,0.0,0.0,210,1.46
+Potenza,01/05/2021 02:00:00 AM,,sud,100,overcast clouds,1012,38,288.41,0.0,0.0,196,2.68
+Provincia di Genova,01/05/2021 02:00:00 AM,,nord,93,overcast clouds,1011,94,281.37,0.11,0.0,51,1.32
+Provincia di Perugia,01/05/2021 02:00:00 AM,,centro_nord,81,broken clouds,1011,85,287.46,0.0,0.0,150,1.28
+Venice,01/05/2021 02:00:00 AM,,nord,95,overcast clouds,1010,95,287.28,0.31,0.0,31,3.5
+Bologna,01/05/2021 02:00:00 AM,,nord,100,overcast clouds,1011,83,286.28,0.0,0.0,253,2.15
+Catanzaro,01/05/2021 02:00:00 AM,,calabria,99,overcast clouds,1012,51,292.99,0.0,0.0,338,0.35
+Trieste,01/05/2021 02:00:00 AM,,nord,94,overcast clouds,1011,92,286.64,0.24,0.0,105,1.95
+Province of Turin,01/05/2021 02:00:00 AM,,nord,97,overcast clouds,1011,89,281.54,0.0,0.0,300,0.96
+Provincia di Ancona,01/05/2021 02:00:00 AM,,centro_nord,99,overcast clouds,1010,84,287.83,0.0,0.0,253,1.04
+Trento,01/05/2021 02:00:00 AM,,nord,91,overcast clouds,1012,92,285.42,0.12,0.0,86,0.61
+Sardinia,01/05/2021 02:00:00 AM,,sardegna,100,overcast clouds,1010,82,287.08,0.0,0.0,110,1.5
+Provincia di Campobasso,01/05/2021 02:00:00 AM,,centro_sud,95,overcast clouds,1011,62,287.79,0.0,0.0,235,2.51
+Valle d'Aosta,01/05/2021 02:00:00 AM,,nord,96,overcast clouds,1012,88,276.22,0.0,0.0,313,0.57
+Florence,01/05/2021 02:00:00 AM,,centro_nord,100,overcast clouds,1011,92,286.44,0.0,0.0,84,1.24
+Bari,01/05/2021 02:00:00 AM,,sud,96,overcast clouds,1010,69,291.63,0.0,0.0,181,3.71
+Naples,01/05/2021 03:00:00 AM,,sud,100,overcast clouds,1010,59,291.82,0.0,0.0,101,0.46
+Potenza,01/05/2021 03:00:00 AM,,sud,100,overcast clouds,1011,38,289.01,0.0,0.0,185,2.94
+Venice,01/05/2021 03:00:00 AM,,nord,99,overcast clouds,1010,95,287.13,0.31,0.0,27,3.5
+Provincia di Ancona,01/05/2021 03:00:00 AM,,centro_nord,75,broken clouds,1010,84,287.26,0.0,0.0,272,1.16
+L'Aquila,01/05/2021 03:00:00 AM,,centro_sud,100,overcast clouds,1011,74,286.54,0.0,0.0,222,1.45
+Province of Palermo,01/05/2021 03:00:00 AM,,sicilia,100,overcast clouds,1012,38,293.24,0.0,0.0,181,2.65
+Provincia di Perugia,01/05/2021 03:00:00 AM,,centro_nord,100,overcast clouds,1011,86,287.12,0.0,0.0,122,0.56
+Rome,01/05/2021 03:00:00 AM,,centro_sud,100,overcast clouds,1010,76,288.85,0.0,0.0,71,1.0
+Sardinia,01/05/2021 03:00:00 AM,,sardegna,100,overcast clouds,1009,75,287.77,0.0,0.0,79,2.37
+Florence,01/05/2021 03:00:00 AM,,centro_nord,100,overcast clouds,1011,90,286.36,0.0,0.0,87,1.13
+Valle d'Aosta,01/05/2021 03:00:00 AM,,nord,100,overcast clouds,1012,90,275.95,0.0,0.0,8,0.46
+Provincia di Campobasso,01/05/2021 03:00:00 AM,,centro_sud,100,overcast clouds,1011,60,287.81,0.0,0.0,232,2.7
+Trento,01/05/2021 03:00:00 AM,,nord,59,broken clouds,1012,92,284.84,0.12,0.0,62,0.39
+Province of Turin,01/05/2021 03:00:00 AM,,nord,100,overcast clouds,1011,88,281.04,0.0,0.0,299,1.11
+Provincia di Genova,01/05/2021 03:00:00 AM,,nord,100,overcast clouds,1011,93,281.26,0.11,0.0,57,1.37
+Trieste,01/05/2021 03:00:00 AM,,nord,100,overcast clouds,1011,91,286.51,0.24,0.0,99,1.83
+Catanzaro,01/05/2021 03:00:00 AM,,calabria,100,overcast clouds,1013,46,294.34,0.0,0.0,248,3.34
+Bologna,01/05/2021 03:00:00 AM,,nord,100,overcast clouds,1011,82,285.99,0.0,0.0,269,1.69
+Bari,01/05/2021 03:00:00 AM,,sud,100,overcast clouds,1010,70,291.57,0.0,0.0,163,3.13
+Milan,01/05/2021 03:00:00 AM,,nord,100,overcast clouds,1010,92,286.42,0.14,0.0,257,1.08
+Provincia di Campobasso,01/05/2021 04:00:00 AM,,centro_sud,100,overcast clouds,1011,59,287.78,0.0,0.0,236,2.6
+Province of Turin,01/05/2021 04:00:00 AM,,nord,100,overcast clouds,1011,88,280.91,0.0,0.0,319,1.3
+Naples,01/05/2021 04:00:00 AM,,sud,100,overcast clouds,1010,59,291.88,0.0,0.0,106,1.09
+L'Aquila,01/05/2021 04:00:00 AM,,centro_sud,99,overcast clouds,1011,72,286.41,0.0,0.0,213,0.97
+Provincia di Genova,01/05/2021 04:00:00 AM,,nord,100,overcast clouds,1011,92,281.29,0.11,0.0,60,1.68
+Trento,01/05/2021 04:00:00 AM,,nord,43,scattered clouds,1012,93,284.49,0.12,0.0,58,0.53
+Rome,01/05/2021 04:00:00 AM,,centro_sud,100,overcast clouds,1010,77,288.6,0.0,0.0,61,1.14
+Catanzaro,01/05/2021 04:00:00 AM,,calabria,100,overcast clouds,1013,56,293.01,0.0,0.0,296,2.3
+Bari,01/05/2021 04:00:00 AM,,sud,100,overcast clouds,1009,71,291.34,0.0,0.0,159,2.54
+Potenza,01/05/2021 04:00:00 AM,,sud,100,overcast clouds,1011,42,288.85,0.0,0.0,191,3.21
+Florence,01/05/2021 04:00:00 AM,,centro_nord,100,overcast clouds,1010,89,286.06,0.0,0.0,67,1.32
+Provincia di Ancona,01/05/2021 04:00:00 AM,,centro_nord,88,overcast clouds,1010,86,287.04,0.0,0.0,258,1.2
+Sardinia,01/05/2021 04:00:00 AM,,sardegna,100,overcast clouds,1008,69,288.27,0.0,0.0,64,2.06
+Valle d'Aosta,01/05/2021 04:00:00 AM,,nord,100,overcast clouds,1012,89,275.9,0.0,0.0,8,0.47
+Provincia di Perugia,01/05/2021 04:00:00 AM,,centro_nord,100,overcast clouds,1010,86,286.93,0.0,0.0,85,1.48
+Province of Palermo,01/05/2021 04:00:00 AM,,sicilia,100,overcast clouds,1012,40,292.73,0.0,0.0,169,1.87
+Bologna,01/05/2021 04:00:00 AM,,nord,100,overcast clouds,1010,82,286.0,0.0,0.0,271,1.63
+Venice,01/05/2021 04:00:00 AM,,nord,99,overcast clouds,1010,95,286.95,0.31,0.0,27,3.72
+Trieste,01/05/2021 04:00:00 AM,,nord,100,overcast clouds,1011,91,286.46,0.24,0.0,92,2.17
+Milan,01/05/2021 04:00:00 AM,,nord,99,overcast clouds,1010,93,286.21,0.14,0.0,244,1.39
+Trento,01/05/2021 05:00:00 AM,,nord,54,broken clouds,1012,93,284.08,0.12,0.0,81,0.4
+Sardinia,01/05/2021 05:00:00 AM,,sardegna,100,overcast clouds,1008,67,288.26,0.0,0.0,139,1.57
+Bari,01/05/2021 05:00:00 AM,,sud,100,overcast clouds,1009,75,290.88,0.0,0.0,165,1.89
+Bologna,01/05/2021 05:00:00 AM,,nord,100,overcast clouds,1011,82,285.87,0.0,0.0,279,1.98
+Naples,01/05/2021 05:00:00 AM,,sud,100,overcast clouds,1010,59,291.8,0.0,0.0,164,1.97
+Provincia di Perugia,01/05/2021 05:00:00 AM,,centro_nord,100,overcast clouds,1010,86,286.71,0.0,0.0,193,0.15
+Province of Turin,01/05/2021 05:00:00 AM,,nord,100,overcast clouds,1011,88,280.67,0.0,0.0,300,1.12
+Valle d'Aosta,01/05/2021 05:00:00 AM,,nord,100,overcast clouds,1011,90,275.91,0.0,0.0,75,0.95
+Provincia di Campobasso,01/05/2021 05:00:00 AM,,centro_sud,100,overcast clouds,1010,58,287.6,0.0,0.0,226,2.81
+Florence,01/05/2021 05:00:00 AM,,centro_nord,100,overcast clouds,1011,89,285.87,0.0,0.0,94,0.37
+Trieste,01/05/2021 05:00:00 AM,,nord,100,overcast clouds,1010,92,286.36,0.24,0.0,90,2.11
+Venice,01/05/2021 05:00:00 AM,,nord,100,overcast clouds,1010,94,286.8,0.31,0.0,14,3.58
+Provincia di Genova,01/05/2021 05:00:00 AM,,nord,100,overcast clouds,1011,91,281.21,0.11,0.0,58,1.01
+Rome,01/05/2021 05:00:00 AM,,centro_sud,100,overcast clouds,1010,77,288.62,0.0,0.0,108,0.4
+Provincia di Ancona,01/05/2021 05:00:00 AM,,centro_nord,92,overcast clouds,1009,86,286.94,0.0,0.0,290,1.14
+Milan,01/05/2021 05:00:00 AM,,nord,99,overcast clouds,1010,93,286.08,0.14,0.0,264,1.13
+Catanzaro,01/05/2021 05:00:00 AM,,calabria,92,overcast clouds,1013,55,293.52,0.0,0.0,321,2.56
+Potenza,01/05/2021 05:00:00 AM,,sud,100,overcast clouds,1011,47,288.74,0.0,0.0,191,3.21
+Province of Palermo,01/05/2021 05:00:00 AM,,sicilia,97,overcast clouds,1011,43,291.62,0.0,0.0,158,1.38
+L'Aquila,01/05/2021 05:00:00 AM,,centro_sud,99,overcast clouds,1011,68,286.57,0.0,0.0,224,1.1
+Provincia di Campobasso,01/05/2021 06:00:00 AM,,centro_sud,100,overcast clouds,1010,58,287.24,0.0,0.0,227,2.72
+Valle d'Aosta,01/05/2021 06:00:00 AM,,nord,99,overcast clouds,1011,91,275.81,0.0,0.0,92,1.04
+L'Aquila,01/05/2021 06:00:00 AM,,centro_sud,100,overcast clouds,1011,65,286.89,0.0,0.0,219,1.8
+Florence,01/05/2021 06:00:00 AM,,centro_nord,100,overcast clouds,1010,88,286.21,0.0,0.0,90,1.11
+Trento,01/05/2021 06:00:00 AM,,nord,64,broken clouds,1012,94,283.87,0.12,0.0,45,0.56
+Provincia di Ancona,01/05/2021 06:00:00 AM,,centro_nord,86,overcast clouds,1010,86,286.39,0.0,0.0,288,1.22
+Province of Turin,01/05/2021 06:00:00 AM,,nord,97,overcast clouds,1010,87,280.65,0.0,0.0,313,1.5
+Venice,01/05/2021 06:00:00 AM,,nord,100,overcast clouds,1010,94,286.7,0.31,0.0,13,3.76
+Provincia di Genova,01/05/2021 06:00:00 AM,,nord,100,overcast clouds,1010,92,281.03,0.11,0.0,52,1.06
+Trieste,01/05/2021 06:00:00 AM,,nord,100,overcast clouds,1010,92,286.24,0.24,0.0,81,2.01
+Naples,01/05/2021 06:00:00 AM,,sud,100,overcast clouds,1010,62,291.54,0.0,0.0,144,3.19
+Milan,01/05/2021 06:00:00 AM,,nord,99,overcast clouds,1010,94,285.77,0.14,0.0,252,0.62
+Province of Palermo,01/05/2021 06:00:00 AM,,sicilia,98,overcast clouds,1012,42,292.11,0.0,0.0,241,0.84
+Catanzaro,01/05/2021 06:00:00 AM,,calabria,94,overcast clouds,1012,53,294.12,0.0,0.0,302,1.27
+Potenza,01/05/2021 06:00:00 AM,,sud,100,overcast clouds,1012,52,288.53,0.0,0.0,202,3.86
+Bologna,01/05/2021 06:00:00 AM,,nord,100,overcast clouds,1010,83,285.42,0.0,0.0,280,1.49
+Sardinia,01/05/2021 06:00:00 AM,,sardegna,100,light rain,1008,72,288.06,0.13,0.0,140,1.58
+Provincia di Perugia,01/05/2021 06:00:00 AM,,centro_nord,100,overcast clouds,1010,87,286.62,0.0,0.0,290,0.28
+Bari,01/05/2021 06:00:00 AM,,sud,100,overcast clouds,1010,75,290.75,0.0,0.0,192,2.18
+Rome,01/05/2021 06:00:00 AM,,centro_sud,100,overcast clouds,1010,75,288.77,0.0,0.0,74,1.45
+Valle d'Aosta,01/05/2021 07:00:00 AM,,nord,100,overcast clouds,1010,90,275.94,0.0,0.0,100,1.02
+Venice,01/05/2021 07:00:00 AM,,nord,100,overcast clouds,1010,93,286.93,0.31,0.0,30,3.8
+Rome,01/05/2021 07:00:00 AM,,centro_sud,100,overcast clouds,1010,74,289.31,0.0,0.0,72,1.08
+Provincia di Ancona,01/05/2021 07:00:00 AM,,centro_nord,89,overcast clouds,1010,86,287.49,0.0,0.0,310,1.03
+Province of Turin,01/05/2021 07:00:00 AM,,nord,98,overcast clouds,1010,86,281.31,0.0,0.0,301,0.94
+Milan,01/05/2021 07:00:00 AM,,nord,96,overcast clouds,1010,94,285.79,0.14,0.0,193,1.32
+Naples,01/05/2021 07:00:00 AM,,sud,99,overcast clouds,1011,60,291.8,0.0,0.0,147,2.43
+Potenza,01/05/2021 07:00:00 AM,,sud,100,overcast clouds,1012,63,288.42,0.0,0.0,200,4.5
+Florence,01/05/2021 07:00:00 AM,,centro_nord,100,overcast clouds,1010,87,286.35,0.0,0.0,80,0.35
+Trento,01/05/2021 07:00:00 AM,,nord,63,broken clouds,1011,93,284.67,0.12,0.0,43,1.26
+L'Aquila,01/05/2021 07:00:00 AM,,centro_sud,100,overcast clouds,1011,69,287.19,0.0,0.0,206,1.17
+Provincia di Campobasso,01/05/2021 07:00:00 AM,,centro_sud,100,overcast clouds,1011,65,287.87,0.0,0.0,225,2.84
+Trieste,01/05/2021 07:00:00 AM,,nord,100,overcast clouds,1011,90,287.0,0.24,0.0,94,1.63
+Sardinia,01/05/2021 07:00:00 AM,,sardegna,100,overcast clouds,1009,76,287.62,0.13,0.0,120,2.03
+Bologna,01/05/2021 07:00:00 AM,,nord,100,overcast clouds,1010,83,286.26,0.0,0.0,308,0.57
+Province of Palermo,01/05/2021 07:00:00 AM,,sicilia,98,overcast clouds,1012,46,293.29,0.0,0.0,223,1.12
+Provincia di Perugia,01/05/2021 07:00:00 AM,,centro_nord,100,overcast clouds,1010,86,287.48,0.0,0.0,135,0.55
+Bari,01/05/2021 07:00:00 AM,,sud,100,overcast clouds,1010,72,291.23,0.0,0.0,189,2.79
+Catanzaro,01/05/2021 07:00:00 AM,,calabria,92,overcast clouds,1013,58,294.28,0.0,0.0,294,1.06
+Provincia di Genova,01/05/2021 07:00:00 AM,,nord,80,broken clouds,1010,91,281.37,0.11,0.0,41,1.1
+Provincia di Ancona,01/05/2021 08:00:00 AM,,centro_nord,91,overcast clouds,1010,82,288.85,0.0,0.0,195,0.29
+Trento,01/05/2021 08:00:00 AM,,nord,61,broken clouds,1011,88,286.83,0.12,0.0,356,0.37
+Province of Turin,01/05/2021 08:00:00 AM,,nord,97,overcast clouds,1010,85,281.92,0.0,0.0,36,0.63
+Catanzaro,01/05/2021 08:00:00 AM,,calabria,90,overcast clouds,1013,55,297.1,0.0,0.0,262,0.57
+L'Aquila,01/05/2021 08:00:00 AM,,centro_sud,100,overcast clouds,1012,69,287.89,0.0,0.0,199,1.87
+Milan,01/05/2021 08:00:00 AM,,nord,96,overcast clouds,1010,92,286.5,0.14,0.0,216,0.52
+Province of Palermo,01/05/2021 08:00:00 AM,,sicilia,99,overcast clouds,1013,49,294.65,0.0,0.0,276,1.83
+Provincia di Perugia,01/05/2021 08:00:00 AM,,centro_nord,100,overcast clouds,1010,84,288.52,0.0,0.0,141,1.42
+Valle d'Aosta,01/05/2021 08:00:00 AM,,nord,99,overcast clouds,1010,86,276.76,0.0,0.0,83,1.17
+Rome,01/05/2021 08:00:00 AM,,centro_sud,100,overcast clouds,1011,72,289.97,0.0,0.0,67,1.1
+Bologna,01/05/2021 08:00:00 AM,,nord,100,overcast clouds,1010,80,287.57,0.0,0.0,306,1.09
+Venice,01/05/2021 08:00:00 AM,,nord,92,overcast clouds,1010,89,288.06,0.31,0.0,37,4.48
+Trieste,01/05/2021 08:00:00 AM,,nord,100,overcast clouds,1010,89,288.07,0.24,0.0,78,1.7
+Provincia di Genova,01/05/2021 08:00:00 AM,,nord,82,broken clouds,1010,86,284.07,0.11,0.0,33,0.63
+Sardinia,01/05/2021 08:00:00 AM,,sardegna,100,light rain,1010,81,287.55,0.13,0.0,135,2.8
+Provincia di Campobasso,01/05/2021 08:00:00 AM,,centro_sud,98,overcast clouds,1012,68,290.46,0.0,0.0,224,3.2
+Bari,01/05/2021 08:00:00 AM,,sud,100,overcast clouds,1010,63,292.83,0.0,0.0,212,3.69
+Naples,01/05/2021 08:00:00 AM,,sud,99,overcast clouds,1012,58,292.76,0.0,0.0,139,3.87
+Florence,01/05/2021 08:00:00 AM,,centro_nord,100,overcast clouds,1010,84,287.62,0.0,0.0,113,0.99
+Potenza,01/05/2021 08:00:00 AM,,sud,100,overcast clouds,1013,65,290.91,0.0,0.0,215,5.22
+Bologna,01/05/2021 09:00:00 AM,,nord,100,overcast clouds,1010,79,288.71,0.0,0.0,11,0.69
+L'Aquila,01/05/2021 09:00:00 AM,,centro_sud,100,overcast clouds,1011,64,289.84,0.0,0.0,187,1.47
+Provincia di Genova,01/05/2021 09:00:00 AM,,nord,100,overcast clouds,1010,78,285.95,0.11,0.0,144,0.26
+Provincia di Ancona,01/05/2021 09:00:00 AM,,centro_nord,100,overcast clouds,1010,80,289.39,0.0,0.0,355,1.06
+Potenza,01/05/2021 09:00:00 AM,,sud,100,overcast clouds,1013,60,291.97,0.0,0.0,229,5.76
+Catanzaro,01/05/2021 09:00:00 AM,,calabria,95,overcast clouds,1014,49,298.27,0.0,0.0,198,0.53
+Valle d'Aosta,01/05/2021 09:00:00 AM,,nord,84,broken clouds,1009,81,277.99,0.0,0.0,113,1.37
+Milan,01/05/2021 09:00:00 AM,,nord,83,broken clouds,1010,86,287.77,0.14,0.0,154,0.8
+Provincia di Perugia,01/05/2021 09:00:00 AM,,centro_nord,100,overcast clouds,1010,82,289.34,0.0,0.0,132,0.47
+Bari,01/05/2021 09:00:00 AM,,sud,100,overcast clouds,1011,55,295.11,0.0,0.0,243,2.71
+Trieste,01/05/2021 09:00:00 AM,,nord,100,overcast clouds,1010,82,290.23,0.24,0.0,101,1.67
+Provincia di Campobasso,01/05/2021 09:00:00 AM,,centro_sud,76,broken clouds,1011,57,293.06,0.0,0.0,223,3.86
+Trento,01/05/2021 09:00:00 AM,,nord,29,scattered clouds,1011,82,288.75,0.12,0.0,22,0.59
+Florence,01/05/2021 09:00:00 AM,,centro_nord,100,overcast clouds,1010,77,289.26,0.0,0.0,125,0.53
+Province of Turin,01/05/2021 09:00:00 AM,,nord,97,overcast clouds,1011,87,282.29,0.0,0.0,145,0.22
+Naples,01/05/2021 09:00:00 AM,,sud,100,light rain,1013,65,292.16,0.27,0.0,130,4.21
+Rome,01/05/2021 09:00:00 AM,,centro_sud,100,overcast clouds,1011,67,291.01,0.0,0.0,124,1.53
+Sardinia,01/05/2021 09:00:00 AM,,sardegna,100,overcast clouds,1010,80,288.79,0.13,0.0,184,2.11
+Province of Palermo,01/05/2021 09:00:00 AM,,sicilia,100,overcast clouds,1013,53,293.86,0.0,0.0,319,1.66
+Venice,01/05/2021 09:00:00 AM,,nord,100,overcast clouds,1010,86,289.03,0.31,0.0,48,3.94
+Provincia di Ancona,01/05/2021 10:00:00 AM,,centro_nord,100,overcast clouds,1010,78,289.89,0.0,0.0,334,0.47
+Florence,01/05/2021 10:00:00 AM,,centro_nord,100,overcast clouds,1011,72,290.71,0.0,0.0,211,0.51
+Trieste,01/05/2021 10:00:00 AM,,nord,100,overcast clouds,1011,75,291.79,0.24,0.0,171,0.96
+L'Aquila,01/05/2021 10:00:00 AM,,centro_sud,100,overcast clouds,1012,69,289.5,0.0,0.0,196,2.69
+Valle d'Aosta,01/05/2021 10:00:00 AM,,nord,91,light rain,1010,88,277.72,0.47,0.0,111,1.85
+Province of Palermo,01/05/2021 10:00:00 AM,,sicilia,100,overcast clouds,1011,55,294.1,0.0,0.0,68,2.34
+Provincia di Campobasso,01/05/2021 10:00:00 AM,,centro_sud,88,light rain,1012,65,292.21,0.19,0.0,230,5.33
+Bari,01/05/2021 10:00:00 AM,,sud,100,overcast clouds,1011,61,293.5,0.0,0.0,306,1.7
+Provincia di Genova,01/05/2021 10:00:00 AM,,nord,57,broken clouds,1010,68,287.67,0.11,0.0,181,1.72
+Bologna,01/05/2021 10:00:00 AM,,nord,100,overcast clouds,1011,76,290.23,0.0,0.0,89,0.93
+Potenza,01/05/2021 10:00:00 AM,,sud,100,overcast clouds,1012,63,292.31,0.0,0.0,246,4.45
+Catanzaro,01/05/2021 10:00:00 AM,,calabria,97,overcast clouds,1014,48,298.88,0.0,0.0,219,1.05
+Milan,01/05/2021 10:00:00 AM,,nord,88,light rain,1010,80,288.98,0.42,0.0,172,1.4
+Venice,01/05/2021 10:00:00 AM,,nord,100,overcast clouds,1010,84,289.83,0.31,0.0,67,3.97
+Trento,01/05/2021 10:00:00 AM,,nord,65,broken clouds,1010,76,290.42,0.12,0.0,74,0.38
+Province of Turin,01/05/2021 10:00:00 AM,,nord,98,overcast clouds,1011,86,282.79,0.0,0.0,29,0.6
+Naples,01/05/2021 10:00:00 AM,,sud,100,light rain,1013,74,291.47,0.48,0.0,85,2.28
+Rome,01/05/2021 10:00:00 AM,,centro_sud,100,overcast clouds,1013,70,291.07,0.0,0.0,180,3.99
+Provincia di Perugia,01/05/2021 10:00:00 AM,,centro_nord,100,overcast clouds,1011,79,290.11,0.0,0.0,201,1.13
+Sardinia,01/05/2021 10:00:00 AM,,sardegna,100,overcast clouds,1010,80,289.59,0.13,0.0,185,2.09
+Provincia di Perugia,01/05/2021 11:00:00 AM,,centro_nord,100,overcast clouds,1011,74,291.09,0.0,0.0,196,2.39
+Province of Palermo,01/05/2021 11:00:00 AM,,sicilia,100,overcast clouds,1011,46,296.71,0.0,0.0,36,2.61
+Bari,01/05/2021 11:00:00 AM,,sud,100,overcast clouds,1012,64,292.84,0.0,0.0,170,2.19
+Venice,01/05/2021 11:00:00 AM,,nord,100,overcast clouds,1011,82,290.38,0.31,0.0,94,3.32
+Province of Turin,01/05/2021 11:00:00 AM,,nord,99,overcast clouds,1010,83,283.67,0.0,0.0,107,1.51
+Rome,01/05/2021 11:00:00 AM,,centro_sud,100,light rain,1012,82,289.34,0.38,0.0,138,5.92
+Trieste,01/05/2021 11:00:00 AM,,nord,100,light rain,1011,72,292.35,0.14,0.0,207,1.68
+Milan,01/05/2021 11:00:00 AM,,nord,92,light rain,1010,75,290.12,0.33,0.0,135,1.46
+Provincia di Ancona,01/05/2021 11:00:00 AM,,centro_nord,100,overcast clouds,1010,77,290.4,0.0,0.0,332,1.21
+Valle d'Aosta,01/05/2021 11:00:00 AM,,nord,94,light rain,1010,92,277.2,0.48,0.0,101,2.05
+Trento,01/05/2021 11:00:00 AM,,nord,50,light rain,1010,66,292.23,0.12,0.0,202,1.46
+L'Aquila,01/05/2021 11:00:00 AM,,centro_sud,100,overcast clouds,1013,69,289.53,0.0,0.0,220,2.83
+Catanzaro,01/05/2021 11:00:00 AM,,calabria,98,overcast clouds,1014,45,299.88,0.0,0.0,205,0.47
+Provincia di Campobasso,01/05/2021 11:00:00 AM,,centro_sud,92,light rain,1012,75,291.19,0.34,0.0,233,4.19
+Potenza,01/05/2021 11:00:00 AM,,sud,100,overcast clouds,1013,60,294.08,0.0,0.0,233,6.5
+Provincia di Genova,01/05/2021 11:00:00 AM,,nord,72,broken clouds,1010,60,288.63,0.11,0.0,181,2.41
+Florence,01/05/2021 11:00:00 AM,,centro_nord,100,overcast clouds,1010,67,291.77,0.0,0.0,171,1.07
+Bologna,01/05/2021 11:00:00 AM,,nord,100,overcast clouds,1010,72,291.69,0.0,0.0,46,1.56
+Naples,01/05/2021 11:00:00 AM,,sud,100,moderate rain,1014,83,290.5,1.29,0.0,45,1.03
+Sardinia,01/05/2021 11:00:00 AM,,sardegna,100,light rain,1010,92,288.29,0.31,0.0,150,1.62
+Florence,01/05/2021 12:00:00 PM,,centro_nord,100,overcast clouds,1011,72,291.31,0.0,0.0,188,1.42
+Catanzaro,01/05/2021 12:00:00 PM,,calabria,99,overcast clouds,1014,52,298.66,0.0,0.0,144,0.93
+Milan,01/05/2021 12:00:00 PM,,nord,94,light rain,1010,71,291.03,0.36,0.0,129,2.12
+Trento,01/05/2021 12:00:00 PM,,nord,60,light rain,1009,57,293.71,0.15,0.0,192,1.59
+Provincia di Ancona,01/05/2021 12:00:00 PM,,centro_nord,100,overcast clouds,1011,75,291.07,0.0,0.0,339,1.9
+Valle d'Aosta,01/05/2021 12:00:00 PM,,nord,95,light rain,1010,94,277.38,0.12,0.0,101,2.4
+Province of Palermo,01/05/2021 12:00:00 PM,,sicilia,100,overcast clouds,1011,43,297.71,0.0,0.0,1,2.39
+Bari,01/05/2021 12:00:00 PM,,sud,100,overcast clouds,1013,67,292.68,0.0,0.0,161,4.64
+Rome,01/05/2021 12:00:00 PM,,centro_sud,100,overcast clouds,1012,74,291.14,0.38,0.0,135,4.16
+Province of Turin,01/05/2021 12:00:00 PM,,nord,99,light rain,1010,85,283.82,0.17,0.0,92,1.79
+Venice,01/05/2021 12:00:00 PM,,nord,97,overcast clouds,1011,84,289.85,0.31,0.0,100,3.57
+Potenza,01/05/2021 12:00:00 PM,,sud,100,overcast clouds,1013,59,294.47,0.0,0.0,231,6.28
+Provincia di Campobasso,01/05/2021 12:00:00 PM,,centro_sud,94,light rain,1013,81,290.91,0.47,0.0,219,4.16
+Naples,01/05/2021 12:00:00 PM,,sud,100,light rain,1014,87,290.18,0.9,0.0,89,2.3
+Provincia di Genova,01/05/2021 12:00:00 PM,,nord,75,broken clouds,1010,59,288.86,0.11,0.0,182,2.69
+Bologna,01/05/2021 12:00:00 PM,,nord,100,overcast clouds,1010,68,292.6,0.0,0.0,72,1.85
+Provincia di Perugia,01/05/2021 12:00:00 PM,,centro_nord,100,overcast clouds,1011,68,291.97,0.0,0.0,217,4.45
+Trieste,01/05/2021 12:00:00 PM,,nord,100,light rain,1011,68,293.03,0.24,0.0,218,1.61
+Sardinia,01/05/2021 12:00:00 PM,,sardegna,100,overcast clouds,1009,87,289.57,0.31,0.0,132,1.48
+L'Aquila,01/05/2021 12:00:00 PM,,centro_sud,100,light rain,1012,79,288.23,0.28,0.0,170,1.86
+Rome,01/05/2021 13:00:00 PM,,centro_sud,100,overcast clouds,1011,75,291.22,0.38,0.0,148,4.25
+Province of Turin,01/05/2021 13:00:00 PM,,nord,99,light rain,1009,85,284.17,0.3,0.0,83,1.77
+Naples,01/05/2021 13:00:00 PM,,sud,100,light rain,1014,88,290.36,0.81,0.0,69,1.99
+Venice,01/05/2021 13:00:00 PM,,nord,97,overcast clouds,1010,85,289.62,0.31,0.0,93,3.43
+Bologna,01/05/2021 13:00:00 PM,,nord,100,overcast clouds,1009,67,292.99,0.0,0.0,92,2.32
+Trieste,01/05/2021 13:00:00 PM,,nord,100,light rain,1011,75,291.95,0.8,0.0,215,1.63
+Florence,01/05/2021 13:00:00 PM,,centro_nord,100,overcast clouds,1010,73,291.36,0.0,0.0,168,1.2
+Province of Palermo,01/05/2021 13:00:00 PM,,sicilia,100,overcast clouds,1012,43,298.06,0.0,0.0,327,2.33
+Potenza,01/05/2021 13:00:00 PM,,sud,100,overcast clouds,1013,70,292.32,0.0,0.0,274,2.31
+Provincia di Campobasso,01/05/2021 13:00:00 PM,,centro_sud,95,light rain,1012,84,291.11,0.37,0.0,209,4.26
+Valle d'Aosta,01/05/2021 13:00:00 PM,,nord,96,light rain,1009,89,278.2,0.13,0.0,105,2.04
+Sardinia,01/05/2021 13:00:00 PM,,sardegna,100,light rain,1009,67,294.02,0.19,0.0,201,3.26
+Provincia di Ancona,01/05/2021 13:00:00 PM,,centro_nord,100,overcast clouds,1010,69,292.63,0.0,0.0,356,0.91
+Catanzaro,01/05/2021 13:00:00 PM,,calabria,99,overcast clouds,1014,57,297.8,0.0,0.0,142,2.8
+Provincia di Genova,01/05/2021 13:00:00 PM,,nord,80,broken clouds,1009,57,289.36,0.11,0.0,167,3.06
+Milan,01/05/2021 13:00:00 PM,,nord,95,light rain,1009,66,291.94,0.54,0.0,120,2.46
+Provincia di Perugia,01/05/2021 13:00:00 PM,,centro_nord,100,overcast clouds,1011,65,292.86,0.0,0.0,206,4.17
+L'Aquila,01/05/2021 13:00:00 PM,,centro_sud,100,overcast clouds,1011,76,289.39,0.28,0.0,193,1.96
+Trento,01/05/2021 13:00:00 PM,,nord,54,light rain,1008,55,294.13,0.23,0.0,184,2.52
+Bari,01/05/2021 13:00:00 PM,,sud,100,overcast clouds,1013,65,293.35,0.0,0.0,145,3.16
+Provincia di Ancona,01/05/2021 14:00:00 PM,,centro_nord,100,overcast clouds,1010,67,292.96,0.0,0.0,141,0.17
+Province of Palermo,01/05/2021 14:00:00 PM,,sicilia,100,overcast clouds,1012,43,297.93,0.0,0.0,12,2.23
+Milan,01/05/2021 14:00:00 PM,,nord,96,light rain,1008,66,292.19,0.89,0.0,119,2.49
+Florence,01/05/2021 14:00:00 PM,,centro_nord,100,light rain,1009,62,293.59,0.18,0.0,191,3.76
+Catanzaro,01/05/2021 14:00:00 PM,,calabria,99,overcast clouds,1012,57,296.4,0.0,0.0,99,2.26
+Provincia di Genova,01/05/2021 14:00:00 PM,,nord,83,broken clouds,1009,61,288.69,0.11,0.0,180,2.62
+Potenza,01/05/2021 14:00:00 PM,,sud,100,overcast clouds,1014,64,293.53,0.0,0.0,255,2.36
+Bologna,01/05/2021 14:00:00 PM,,nord,100,overcast clouds,1009,74,291.89,0.0,0.0,104,2.84
+L'Aquila,01/05/2021 14:00:00 PM,,centro_sud,100,overcast clouds,1011,79,289.16,0.28,0.0,174,2.1
+Naples,01/05/2021 14:00:00 PM,,sud,100,light rain,1013,87,290.74,0.54,0.0,70,2.71
+Province of Turin,01/05/2021 14:00:00 PM,,nord,99,light rain,1009,82,284.59,0.31,0.0,77,1.64
+Trento,01/05/2021 14:00:00 PM,,nord,59,light rain,1008,59,293.64,0.4,0.0,179,3.42
+Valle d'Aosta,01/05/2021 14:00:00 PM,,nord,96,light rain,1008,81,279.64,0.28,0.0,115,2.43
+Rome,01/05/2021 14:00:00 PM,,centro_sud,100,light rain,1010,83,290.38,0.17,0.0,127,3.35
+Trieste,01/05/2021 14:00:00 PM,,nord,100,light rain,1010,79,291.28,0.69,0.0,195,1.49
+Sardinia,01/05/2021 14:00:00 PM,,sardegna,88,light rain,1009,72,293.86,0.69,0.0,199,5.12
+Venice,01/05/2021 14:00:00 PM,,nord,98,overcast clouds,1010,79,290.75,0.31,0.0,117,4.23
+Provincia di Campobasso,01/05/2021 14:00:00 PM,,centro_sud,96,light rain,1012,83,291.72,0.89,0.0,220,5.37
+Bari,01/05/2021 14:00:00 PM,,sud,100,light rain,1013,69,292.92,0.27,0.0,105,3.71
+Provincia di Perugia,01/05/2021 14:00:00 PM,,centro_nord,100,overcast clouds,1010,67,292.71,0.0,0.0,196,3.31
+Potenza,01/05/2021 15:00:00 PM,,sud,100,overcast clouds,1013,69,292.53,0.0,0.0,221,1.06
+Naples,01/05/2021 15:00:00 PM,,sud,100,light rain,1013,87,291.13,0.92,0.0,70,1.72
+Province of Turin,01/05/2021 15:00:00 PM,,nord,99,light rain,1008,79,285.3,0.48,0.0,104,0.94
+Province of Palermo,01/05/2021 15:00:00 PM,,sicilia,100,overcast clouds,1012,47,297.4,0.0,0.0,12,2.65
+Sardinia,01/05/2021 15:00:00 PM,,sardegna,85,light rain,1008,80,292.99,0.88,0.0,216,5.25
+Provincia di Perugia,01/05/2021 15:00:00 PM,,centro_nord,100,light rain,1010,83,289.98,0.31,0.0,182,2.0
+Provincia di Ancona,01/05/2021 15:00:00 PM,,centro_nord,100,overcast clouds,1009,71,292.27,0.0,0.0,105,1.41
+Catanzaro,01/05/2021 15:00:00 PM,,calabria,100,overcast clouds,1012,46,297.76,0.0,0.0,137,1.8
+L'Aquila,01/05/2021 15:00:00 PM,,centro_sud,100,light rain,1011,87,288.26,0.24,0.0,170,2.46
+Milan,01/05/2021 15:00:00 PM,,nord,100,light rain,1008,78,290.61,0.93,0.0,99,2.15
+Trento,01/05/2021 15:00:00 PM,,nord,99,light rain,1007,62,293.28,0.43,0.0,171,2.95
+Provincia di Genova,01/05/2021 15:00:00 PM,,nord,99,overcast clouds,1008,69,287.31,0.11,0.0,180,2.99
+Rome,01/05/2021 15:00:00 PM,,centro_sud,100,light rain,1010,80,291.69,0.12,0.0,141,5.32
+Florence,01/05/2021 15:00:00 PM,,centro_nord,100,light rain,1009,68,293.2,0.44,0.0,191,3.43
+Trieste,01/05/2021 15:00:00 PM,,nord,100,light rain,1010,81,291.09,0.42,0.0,187,2.01
+Venice,01/05/2021 15:00:00 PM,,nord,100,overcast clouds,1009,84,289.68,0.31,0.0,126,4.04
+Bari,01/05/2021 15:00:00 PM,,sud,100,light rain,1013,72,292.45,0.39,0.0,94,2.94
+Bologna,01/05/2021 15:00:00 PM,,nord,100,overcast clouds,1009,75,291.77,0.0,0.0,123,2.73
+Valle d'Aosta,01/05/2021 15:00:00 PM,,nord,100,light rain,1007,74,280.43,0.21,0.0,119,2.61
+Provincia di Campobasso,01/05/2021 15:00:00 PM,,centro_sud,100,moderate rain,1011,92,289.7,1.84,0.0,214,4.66
+Provincia di Ancona,01/05/2021 16:00:00 PM,,centro_nord,100,light rain,1009,79,291.17,0.25,0.0,140,2.1
+Catanzaro,01/05/2021 16:00:00 PM,,calabria,100,overcast clouds,1012,47,297.13,0.0,0.0,98,1.77
+Bari,01/05/2021 16:00:00 PM,,sud,100,overcast clouds,1012,68,293.22,0.39,0.0,120,4.1
+Florence,01/05/2021 16:00:00 PM,,centro_nord,100,light rain,1008,68,293.43,0.38,0.0,196,3.32
+Valle d'Aosta,01/05/2021 16:00:00 PM,,nord,100,light rain,1006,76,280.31,0.33,0.0,110,2.7
+Venice,01/05/2021 16:00:00 PM,,nord,100,overcast clouds,1009,85,289.56,0.31,0.0,116,3.5
+L'Aquila,01/05/2021 16:00:00 PM,,centro_sud,100,light rain,1010,92,287.75,0.18,0.0,181,2.54
+Provincia di Campobasso,01/05/2021 16:00:00 PM,,centro_sud,100,moderate rain,1011,87,291.01,1.08,0.0,216,6.12
+Potenza,01/05/2021 16:00:00 PM,,sud,100,light rain,1013,75,292.0,0.25,0.0,252,1.0
+Trieste,01/05/2021 16:00:00 PM,,nord,100,light rain,1009,78,291.54,0.32,0.0,160,2.01
+Milan,01/05/2021 16:00:00 PM,,nord,100,light rain,1007,84,289.77,0.95,0.0,89,2.08
+Trento,01/05/2021 16:00:00 PM,,nord,97,light rain,1007,66,292.8,0.57,0.0,179,3.21
+Rome,01/05/2021 16:00:00 PM,,centro_sud,100,light rain,1010,82,291.53,0.14,0.0,145,5.68
+Provincia di Genova,01/05/2021 16:00:00 PM,,nord,96,overcast clouds,1008,73,286.75,0.11,0.0,158,2.34
+Province of Turin,01/05/2021 16:00:00 PM,,nord,100,moderate rain,1007,87,283.75,1.16,0.0,275,0.25
+Province of Palermo,01/05/2021 16:00:00 PM,,sicilia,100,overcast clouds,1012,50,296.59,0.0,0.0,25,2.53
+Bologna,01/05/2021 16:00:00 PM,,nord,100,overcast clouds,1007,71,292.53,0.0,0.0,113,1.19
+Naples,01/05/2021 16:00:00 PM,,sud,100,moderate rain,1012,90,290.95,1.71,0.0,82,3.87
+Sardinia,01/05/2021 16:00:00 PM,,sardegna,92,moderate rain,1009,91,290.47,1.06,0.0,249,4.97
+Provincia di Perugia,01/05/2021 16:00:00 PM,,centro_nord,100,moderate rain,1010,94,288.33,1.48,0.0,199,1.54
+Trento,01/05/2021 17:00:00 PM,,nord,98,light rain,1007,76,291.38,0.67,0.0,185,2.58
+Florence,01/05/2021 17:00:00 PM,,centro_nord,100,light rain,1008,82,291.58,0.93,0.0,194,3.88
+Potenza,01/05/2021 17:00:00 PM,,sud,100,light rain,1013,86,290.19,0.16,0.0,128,0.5
+Bologna,01/05/2021 17:00:00 PM,,nord,84,broken clouds,1007,61,294.28,0.0,0.0,173,2.35
+Valle d'Aosta,01/05/2021 17:00:00 PM,,nord,100,light rain,1006,89,278.77,0.86,0.0,105,2.13
+Provincia di Ancona,01/05/2021 17:00:00 PM,,centro_nord,100,moderate rain,1009,91,288.94,1.4,0.0,134,1.95
+L'Aquila,01/05/2021 17:00:00 PM,,centro_sud,100,overcast clouds,1010,92,288.11,0.18,0.0,205,2.74
+Province of Palermo,01/05/2021 17:00:00 PM,,sicilia,100,overcast clouds,1011,52,295.97,0.0,0.0,47,2.14
+Naples,01/05/2021 17:00:00 PM,,sud,100,light rain,1012,88,291.51,0.19,0.0,40,2.43
+Provincia di Perugia,01/05/2021 17:00:00 PM,,centro_nord,100,moderate rain,1010,96,287.83,1.31,0.0,175,1.14
+Province of Turin,01/05/2021 17:00:00 PM,,nord,100,moderate rain,1007,93,282.57,2.01,0.0,310,1.4
+Provincia di Genova,01/05/2021 17:00:00 PM,,nord,97,overcast clouds,1007,70,287.17,0.11,0.0,160,2.61
+Trieste,01/05/2021 17:00:00 PM,,nord,100,overcast clouds,1009,79,291.71,0.32,0.0,124,1.1
+Rome,01/05/2021 17:00:00 PM,,centro_sud,100,light rain,1010,81,292.25,0.29,0.0,156,6.32
+Sardinia,01/05/2021 17:00:00 PM,,sardegna,95,light rain,1010,94,289.3,0.88,0.0,246,4.79
+Venice,01/05/2021 17:00:00 PM,,nord,100,overcast clouds,1008,83,290.04,0.31,0.0,102,3.22
+Catanzaro,01/05/2021 17:00:00 PM,,calabria,100,overcast clouds,1011,52,296.65,0.0,0.0,71,0.89
+Bari,01/05/2021 17:00:00 PM,,sud,100,light rain,1014,80,291.89,0.6,0.0,135,1.96
+Milan,01/05/2021 17:00:00 PM,,nord,100,light rain,1006,85,289.82,0.88,0.0,85,2.21
+Provincia di Campobasso,01/05/2021 17:00:00 PM,,centro_sud,98,light rain,1010,86,291.15,0.32,0.0,219,6.04
+Valle d'Aosta,01/05/2021 18:00:00 PM,,nord,100,moderate rain,1006,94,277.92,1.23,0.0,119,1.33
+Provincia di Genova,01/05/2021 18:00:00 PM,,nord,98,overcast clouds,1006,78,286.48,0.11,0.0,160,2.5
+Bologna,01/05/2021 18:00:00 PM,,nord,76,light rain,1006,69,293.55,0.41,0.0,162,3.88
+Provincia di Campobasso,01/05/2021 18:00:00 PM,,centro_sud,96,light rain,1010,89,290.46,0.5,0.0,212,5.74
+Catanzaro,01/05/2021 18:00:00 PM,,calabria,100,overcast clouds,1011,58,295.8,0.0,0.0,11,0.74
+Province of Palermo,01/05/2021 18:00:00 PM,,sicilia,100,overcast clouds,1011,63,294.47,0.0,0.0,54,1.71
+Potenza,01/05/2021 18:00:00 PM,,sud,100,light rain,1013,86,290.85,0.11,0.0,154,2.82
+Naples,01/05/2021 18:00:00 PM,,sud,100,light rain,1011,91,291.19,0.31,0.0,26,2.14
+Province of Turin,01/05/2021 18:00:00 PM,,nord,100,moderate rain,1007,95,281.81,3.4,0.0,322,1.94
+Trieste,01/05/2021 18:00:00 PM,,nord,100,light rain,1008,79,291.71,0.19,0.0,152,2.77
+Rome,01/05/2021 18:00:00 PM,,centro_sud,100,light rain,1010,90,290.98,0.31,0.0,153,5.33
+Milan,01/05/2021 18:00:00 PM,,nord,99,light rain,1006,86,289.49,0.97,0.0,93,2.71
+Sardinia,01/05/2021 18:00:00 PM,,sardegna,96,light rain,1011,93,288.52,0.44,0.0,234,3.74
+Venice,01/05/2021 18:00:00 PM,,nord,100,overcast clouds,1008,85,289.86,0.31,0.0,112,3.66
+Provincia di Ancona,01/05/2021 18:00:00 PM,,centro_nord,100,light rain,1009,93,288.55,0.87,0.0,149,1.56
+L'Aquila,01/05/2021 18:00:00 PM,,centro_sud,99,light rain,1009,89,288.47,0.15,0.0,214,2.95
+Provincia di Perugia,01/05/2021 18:00:00 PM,,centro_nord,100,moderate rain,1009,97,287.85,1.06,0.0,171,1.14
+Bari,01/05/2021 18:00:00 PM,,sud,100,light rain,1012,82,291.57,0.18,0.0,109,5.3
+Florence,01/05/2021 18:00:00 PM,,centro_nord,100,moderate rain,1007,87,290.83,1.23,0.0,199,1.97
+Trento,01/05/2021 18:00:00 PM,,nord,98,light rain,1007,86,290.03,0.57,0.0,178,1.88
+Valle d'Aosta,01/05/2021 19:00:00 PM,,nord,100,moderate rain,1006,98,276.61,2.9,0.0,134,1.57
+Bologna,01/05/2021 19:00:00 PM,,nord,78,light rain,1006,81,291.06,0.41,0.0,137,4.71
+Bari,01/05/2021 19:00:00 PM,,sud,100,overcast clouds,1012,83,290.99,0.18,0.0,127,7.01
+Provincia di Perugia,01/05/2021 19:00:00 PM,,centro_nord,100,moderate rain,1009,97,287.69,1.11,0.0,159,1.39
+Province of Palermo,01/05/2021 19:00:00 PM,,sicilia,100,overcast clouds,1012,67,293.12,0.0,0.0,40,0.82
+Florence,01/05/2021 19:00:00 PM,,centro_nord,100,light rain,1007,90,290.13,0.94,0.0,191,2.59
+Provincia di Genova,01/05/2021 19:00:00 PM,,nord,98,light rain,1006,94,285.06,0.63,0.0,165,3.42
+Catanzaro,01/05/2021 19:00:00 PM,,calabria,100,overcast clouds,1011,57,294.92,0.0,0.0,354,2.02
+Naples,01/05/2021 19:00:00 PM,,sud,100,light rain,1011,90,291.17,0.23,0.0,25,2.4
+Trieste,01/05/2021 19:00:00 PM,,nord,100,light rain,1008,88,289.96,0.49,0.0,154,3.06
+Rome,01/05/2021 19:00:00 PM,,centro_sud,100,light rain,1010,92,290.6,0.38,0.0,160,5.1
+Provincia di Campobasso,01/05/2021 19:00:00 PM,,centro_sud,97,light rain,1010,88,290.19,0.8,0.0,214,5.77
+Trento,01/05/2021 19:00:00 PM,,nord,95,light rain,1006,89,289.92,0.53,0.0,170,1.72
+Potenza,01/05/2021 19:00:00 PM,,sud,100,overcast clouds,1011,85,290.62,0.11,0.0,152,3.25
+Province of Turin,01/05/2021 19:00:00 PM,,nord,100,moderate rain,1006,93,281.66,1.65,0.0,310,1.9
+Milan,01/05/2021 19:00:00 PM,,nord,99,moderate rain,1005,88,289.7,1.06,0.0,98,2.91
+Venice,01/05/2021 19:00:00 PM,,nord,99,overcast clouds,1008,88,289.32,0.31,0.0,107,3.41
+L'Aquila,01/05/2021 19:00:00 PM,,centro_sud,99,light rain,1009,95,287.53,0.24,0.0,217,2.63
+Sardinia,01/05/2021 19:00:00 PM,,sardegna,97,light rain,1011,93,287.87,0.19,0.0,231,2.6
+Provincia di Ancona,01/05/2021 19:00:00 PM,,centro_nord,100,light rain,1008,93,288.1,0.37,0.0,126,1.0
+Rome,01/05/2021 20:00:00 PM,,centro_sud,100,light rain,1010,95,290.11,0.45,0.0,162,5.24
+Provincia di Genova,01/05/2021 20:00:00 PM,,nord,99,moderate rain,1005,99,284.53,1.32,0.0,145,2.52
+Provincia di Perugia,01/05/2021 20:00:00 PM,,centro_nord,100,light rain,1009,96,287.76,0.46,0.0,155,1.19
+Provincia di Campobasso,01/05/2021 20:00:00 PM,,centro_sud,97,light rain,1010,90,289.73,0.17,0.0,209,4.39
+Province of Palermo,01/05/2021 20:00:00 PM,,sicilia,100,overcast clouds,1013,65,292.36,0.0,0.0,292,2.23
+Valle d'Aosta,01/05/2021 20:00:00 PM,,nord,100,moderate rain,1007,98,275.65,2.92,0.0,134,0.98
+Provincia di Ancona,01/05/2021 20:00:00 PM,,centro_nord,100,light rain,1009,93,288.03,0.29,0.0,153,0.82
+Province of Turin,01/05/2021 20:00:00 PM,,nord,100,moderate rain,1006,95,281.13,4.0,0.0,304,2.18
+Trieste,01/05/2021 20:00:00 PM,,nord,97,light rain,1009,92,289.13,0.43,0.0,156,2.81
+Venice,01/05/2021 20:00:00 PM,,nord,98,light rain,1008,92,288.82,0.25,0.0,140,4.29
+Catanzaro,01/05/2021 20:00:00 PM,,calabria,100,overcast clouds,1012,54,293.97,0.0,0.0,331,1.93
+L'Aquila,01/05/2021 20:00:00 PM,,centro_sud,99,light rain,1010,97,287.27,0.4,0.0,212,2.56
+Milan,01/05/2021 20:00:00 PM,,nord,99,moderate rain,1004,93,288.45,1.9,0.0,114,2.22
+Bari,01/05/2021 20:00:00 PM,,sud,100,overcast clouds,1011,79,291.12,0.18,0.0,127,6.66
+Bologna,01/05/2021 20:00:00 PM,,nord,81,light rain,1006,89,289.2,0.13,0.0,131,4.76
+Trento,01/05/2021 20:00:00 PM,,nord,94,light rain,1006,93,288.4,0.58,0.0,163,1.68
+Sardinia,01/05/2021 20:00:00 PM,,sardegna,97,overcast clouds,1011,95,286.96,0.19,0.0,225,3.2
+Florence,01/05/2021 20:00:00 PM,,centro_nord,100,light rain,1008,93,289.43,0.91,0.0,191,2.43
+Potenza,01/05/2021 20:00:00 PM,,sud,100,overcast clouds,1011,88,288.85,0.11,0.0,170,2.76
+Naples,01/05/2021 20:00:00 PM,,sud,100,light rain,1011,89,291.17,0.17,0.0,58,3.12
+Rome,01/05/2021 21:00:00 PM,,centro_sud,100,light rain,1011,94,290.23,0.57,0.0,163,4.29
+Bologna,01/05/2021 21:00:00 PM,,nord,100,overcast clouds,1006,91,288.64,0.13,0.0,142,4.19
+Trento,01/05/2021 21:00:00 PM,,nord,100,moderate rain,1007,96,287.99,1.14,0.0,151,1.62
+Catanzaro,01/05/2021 21:00:00 PM,,calabria,100,overcast clouds,1012,56,293.52,0.0,0.0,342,1.47
+Provincia di Perugia,01/05/2021 21:00:00 PM,,centro_nord,100,light rain,1009,97,287.86,0.77,0.0,185,2.07
+Naples,01/05/2021 21:00:00 PM,,sud,100,overcast clouds,1011,89,291.0,0.17,0.0,57,2.96
+Valle d'Aosta,01/05/2021 21:00:00 PM,,nord,100,snow,1008,99,274.63,2.92,3.93,293,0.57
+Province of Palermo,01/05/2021 21:00:00 PM,,sicilia,100,overcast clouds,1014,68,291.84,0.0,0.0,304,1.05
+Venice,01/05/2021 21:00:00 PM,,nord,100,overcast clouds,1008,93,288.72,0.25,0.0,156,4.39
+Florence,01/05/2021 21:00:00 PM,,centro_nord,100,moderate rain,1007,96,288.94,1.08,0.0,172,1.98
+Provincia di Campobasso,01/05/2021 21:00:00 PM,,centro_sud,100,overcast clouds,1011,93,289.14,0.17,0.0,213,3.69
+L'Aquila,01/05/2021 21:00:00 PM,,centro_sud,100,light rain,1011,97,287.25,0.51,0.0,217,2.8
+Milan,01/05/2021 21:00:00 PM,,nord,100,heavy intensity rain,1005,96,287.78,6.42,0.0,96,1.78
+Bari,01/05/2021 21:00:00 PM,,sud,100,overcast clouds,1011,77,291.16,0.18,0.0,138,5.78
+Sardinia,01/05/2021 21:00:00 PM,,sardegna,100,light rain,1012,97,285.86,0.13,0.0,222,2.9
+Provincia di Genova,01/05/2021 21:00:00 PM,,nord,100,moderate rain,1005,99,284.63,3.65,0.0,166,3.71
+Trieste,01/05/2021 21:00:00 PM,,nord,100,light rain,1009,94,288.64,0.31,0.0,143,2.23
+Provincia di Ancona,01/05/2021 21:00:00 PM,,centro_nord,100,light rain,1009,92,287.95,0.25,0.0,143,0.82
+Province of Turin,01/05/2021 21:00:00 PM,,nord,100,moderate rain,1006,94,281.11,3.09,0.0,310,2.25
+Potenza,01/05/2021 21:00:00 PM,,sud,100,overcast clouds,1013,87,289.12,0.11,0.0,194,3.01
+Sardinia,01/05/2021 22:00:00 PM,,sardegna,83,light rain,1013,98,285.36,0.19,0.0,222,3.61
+Provincia di Perugia,01/05/2021 22:00:00 PM,,centro_nord,100,light rain,1009,98,288.16,0.7,0.0,185,2.58
+Florence,01/05/2021 22:00:00 PM,,centro_nord,100,moderate rain,1007,97,288.94,1.75,0.0,142,1.65
+Rome,01/05/2021 22:00:00 PM,,centro_sud,100,light rain,1011,95,289.98,0.53,0.0,166,3.31
+Catanzaro,01/05/2021 22:00:00 PM,,calabria,100,overcast clouds,1013,56,293.05,0.0,0.0,334,1.59
+Venice,01/05/2021 22:00:00 PM,,nord,100,light rain,1008,95,288.45,0.55,0.0,153,4.41
+Milan,01/05/2021 22:00:00 PM,,nord,100,moderate rain,1005,97,287.62,2.79,0.0,118,1.86
+Trieste,01/05/2021 22:00:00 PM,,nord,100,light rain,1009,94,288.5,0.54,0.0,123,1.94
+Provincia di Genova,01/05/2021 22:00:00 PM,,nord,100,heavy intensity rain,1005,99,284.23,4.84,0.0,170,3.14
+L'Aquila,01/05/2021 22:00:00 PM,,centro_sud,100,light rain,1011,98,287.19,0.82,0.0,219,3.05
+Provincia di Ancona,01/05/2021 22:00:00 PM,,centro_nord,100,light rain,1009,93,287.87,0.31,0.0,165,1.51
+Naples,01/05/2021 22:00:00 PM,,sud,100,overcast clouds,1012,88,291.0,0.17,0.0,30,1.76
+Province of Turin,01/05/2021 22:00:00 PM,,nord,100,moderate rain,1006,93,281.42,1.08,0.0,304,1.86
+Provincia di Campobasso,01/05/2021 22:00:00 PM,,centro_sud,100,overcast clouds,1011,92,289.18,0.17,0.0,214,3.12
+Province of Palermo,01/05/2021 22:00:00 PM,,sicilia,100,overcast clouds,1014,70,291.4,0.0,0.0,242,2.34
+Valle d'Aosta,01/05/2021 22:00:00 PM,,nord,100,snow,1009,99,274.03,2.92,4.0,333,1.17
+Potenza,01/05/2021 22:00:00 PM,,sud,100,overcast clouds,1012,83,289.06,0.11,0.0,194,4.35
+Bologna,01/05/2021 22:00:00 PM,,nord,100,light rain,1006,92,288.51,0.37,0.0,141,3.66
+Trento,01/05/2021 22:00:00 PM,,nord,100,light rain,1007,96,287.86,0.72,0.0,140,1.81
+Bari,01/05/2021 22:00:00 PM,,sud,100,overcast clouds,1012,73,291.52,0.18,0.0,158,4.14
+Milan,01/05/2021 23:00:00 PM,,nord,100,moderate rain,1004,96,287.51,2.87,0.0,166,1.31
+Venice,01/05/2021 23:00:00 PM,,nord,100,light rain,1007,95,288.59,0.69,0.0,141,4.99
+Naples,01/05/2021 23:00:00 PM,,sud,100,overcast clouds,1011,87,291.1,0.17,0.0,7,1.51
+Provincia di Perugia,01/05/2021 23:00:00 PM,,centro_nord,100,light rain,1009,98,288.62,0.88,0.0,185,3.19
+Bologna,01/05/2021 23:00:00 PM,,nord,100,moderate rain,1005,95,288.15,1.05,0.0,140,3.31
+Trento,01/05/2021 23:00:00 PM,,nord,100,light rain,1006,96,287.77,0.66,0.0,150,1.68
+Catanzaro,01/05/2021 23:00:00 PM,,calabria,100,overcast clouds,1012,51,293.68,0.0,0.0,312,2.09
+Bari,01/05/2021 23:00:00 PM,,sud,100,overcast clouds,1011,73,291.28,0.18,0.0,154,4.3
+Sardinia,01/05/2021 23:00:00 PM,,sardegna,87,light rain,1013,99,285.49,0.19,0.0,224,3.82
+Provincia di Ancona,01/05/2021 23:00:00 PM,,centro_nord,100,overcast clouds,1008,92,287.88,0.31,0.0,145,1.38
+Trieste,01/05/2021 23:00:00 PM,,nord,100,light rain,1008,96,288.17,0.63,0.0,138,1.62
+Province of Palermo,01/05/2021 23:00:00 PM,,sicilia,100,overcast clouds,1014,74,290.7,0.0,0.0,268,1.75
+Valle d'Aosta,01/05/2021 23:00:00 PM,,nord,100,snow,1008,99,274.16,2.92,2.3,277,1.45
+Province of Turin,01/05/2021 23:00:00 PM,,nord,100,light rain,1005,91,281.58,0.54,0.0,302,2.16
+L'Aquila,01/05/2021 23:00:00 PM,,centro_sud,100,light rain,1010,97,287.35,0.87,0.0,221,3.36
+Potenza,01/05/2021 23:00:00 PM,,sud,100,overcast clouds,1012,79,288.97,0.11,0.0,213,5.29
+Provincia di Campobasso,01/05/2021 23:00:00 PM,,centro_sud,99,overcast clouds,1011,96,288.54,0.17,0.0,213,3.01
+Rome,01/05/2021 23:00:00 PM,,centro_sud,100,light rain,1011,95,289.92,0.43,0.0,157,3.4
+Provincia di Genova,01/05/2021 23:00:00 PM,,nord,100,heavy intensity rain,1004,99,284.1,4.63,0.0,164,3.09
+Florence,01/05/2021 23:00:00 PM,,centro_nord,100,light rain,1007,95,289.16,0.38,0.0,160,3.32
+Provincia di Ancona,02/05/2021 00:00:00 AM,,centro_nord,100,overcast clouds,1007,92,287.88,0.31,0.0,138,2.22
+Bari,02/05/2021 00:00:00 AM,,sud,100,overcast clouds,1011,70,291.61,0.18,0.0,163,4.16
+Province of Palermo,02/05/2021 00:00:00 AM,,sicilia,100,overcast clouds,1015,78,290.09,0.0,0.0,266,1.89
+Provincia di Genova,02/05/2021 00:00:00 AM,,nord,100,moderate rain,1004,99,284.28,1.78,0.0,167,2.82
+Provincia di Campobasso,02/05/2021 00:00:00 AM,,centro_sud,99,overcast clouds,1010,94,288.64,0.17,0.0,214,3.6
+Milan,02/05/2021 00:00:00 AM,,nord,100,heavy intensity rain,1003,98,286.98,8.67,0.0,328,0.45
+L'Aquila,02/05/2021 00:00:00 AM,,centro_sud,100,light rain,1010,95,287.37,0.67,0.0,217,3.91
+Naples,02/05/2021 00:00:00 AM,,sud,100,overcast clouds,1011,86,291.23,0.17,0.0,135,1.38
+Provincia di Perugia,02/05/2021 00:00:00 AM,,centro_nord,100,light rain,1008,97,288.96,0.87,0.0,192,4.24
+Trento,02/05/2021 00:00:00 AM,,nord,100,moderate rain,1004,97,287.47,1.64,0.0,155,1.33
+Rome,02/05/2021 00:00:00 AM,,centro_sud,100,light rain,1010,94,289.83,0.3,0.0,173,4.28
+Catanzaro,02/05/2021 00:00:00 AM,,calabria,100,overcast clouds,1013,53,293.75,0.0,0.0,305,1.78
+Venice,02/05/2021 00:00:00 AM,,nord,100,light rain,1006,95,288.52,0.5,0.0,146,6.93
+Sardinia,02/05/2021 00:00:00 AM,,sardegna,91,light rain,1014,97,285.26,0.25,0.0,238,5.2
+Valle d'Aosta,02/05/2021 00:00:00 AM,,nord,100,snow,1008,97,274.49,2.92,1.44,278,2.65
+Province of Turin,02/05/2021 00:00:00 AM,,nord,100,overcast clouds,1004,89,281.66,0.54,0.0,305,1.5
+Trieste,02/05/2021 00:00:00 AM,,nord,100,light rain,1007,96,288.19,0.95,0.0,126,1.72
+Potenza,02/05/2021 00:00:00 AM,,sud,100,overcast clouds,1012,80,288.28,0.11,0.0,214,4.23
+Bologna,02/05/2021 00:00:00 AM,,nord,100,light rain,1004,95,288.18,0.45,0.0,120,3.17
+Florence,02/05/2021 00:00:00 AM,,centro_nord,100,moderate rain,1007,95,288.94,1.63,0.0,194,4.66
+Venice,02/05/2021 01:00:00 AM,,nord,100,light rain,1005,95,288.36,1.0,0.0,136,7.14
+Trento,02/05/2021 01:00:00 AM,,nord,100,heavy intensity rain,1004,98,287.35,6.48,0.0,124,0.69
+Trieste,02/05/2021 01:00:00 AM,,nord,100,light rain,1007,96,288.23,0.75,0.0,112,1.96
+Florence,02/05/2021 01:00:00 AM,,centro_nord,100,moderate rain,1007,94,288.42,1.86,0.0,218,5.64
+Valle d'Aosta,02/05/2021 01:00:00 AM,,nord,100,light rain,1008,95,274.62,0.44,1.44,279,3.05
+Catanzaro,02/05/2021 01:00:00 AM,,calabria,99,overcast clouds,1013,59,292.98,0.0,0.0,289,2.16
+Provincia di Ancona,02/05/2021 01:00:00 AM,,centro_nord,100,overcast clouds,1007,91,288.08,0.31,0.0,148,2.7
+Provincia di Campobasso,02/05/2021 01:00:00 AM,,centro_sud,99,overcast clouds,1010,90,289.44,0.17,0.0,220,4.76
+Milan,02/05/2021 01:00:00 AM,,nord,100,moderate rain,1003,97,286.51,3.25,0.0,17,1.69
+Naples,02/05/2021 01:00:00 AM,,sud,100,overcast clouds,1012,89,290.7,0.17,0.0,159,2.73
+Province of Turin,02/05/2021 01:00:00 AM,,nord,100,overcast clouds,1005,89,280.73,0.54,0.0,277,1.49
+L'Aquila,02/05/2021 01:00:00 AM,,centro_sud,100,light rain,1010,94,287.36,0.65,0.0,218,4.32
+Provincia di Perugia,02/05/2021 01:00:00 AM,,centro_nord,100,moderate rain,1008,94,288.78,1.67,0.0,212,6.04
+Potenza,02/05/2021 01:00:00 AM,,sud,100,overcast clouds,1012,83,287.69,0.11,0.0,225,3.9
+Bologna,02/05/2021 01:00:00 AM,,nord,100,moderate rain,1004,95,288.23,1.79,0.0,172,3.07
+Rome,02/05/2021 01:00:00 AM,,centro_sud,100,light rain,1011,95,289.58,0.43,0.0,189,4.45
+Provincia di Genova,02/05/2021 01:00:00 AM,,nord,100,light rain,1004,99,284.07,0.83,0.0,193,3.07
+Province of Palermo,02/05/2021 01:00:00 AM,,sicilia,100,overcast clouds,1016,80,289.57,0.0,0.0,283,1.69
+Bari,02/05/2021 01:00:00 AM,,sud,100,overcast clouds,1011,70,291.46,0.18,0.0,176,4.01
+Sardinia,02/05/2021 01:00:00 AM,,sardegna,92,overcast clouds,1014,95,284.62,0.25,0.0,249,4.04
+Bari,02/05/2021 02:00:00 AM,,sud,100,overcast clouds,1010,68,291.71,0.18,0.0,181,4.19
+Valle d'Aosta,02/05/2021 02:00:00 AM,,nord,100,light snow,1008,93,274.38,0.44,0.15,275,3.23
+Rome,02/05/2021 02:00:00 AM,,centro_sud,100,light rain,1011,96,289.4,0.54,0.0,189,4.71
+Province of Palermo,02/05/2021 02:00:00 AM,,sicilia,100,overcast clouds,1015,84,288.66,0.0,0.0,298,1.52
+Potenza,02/05/2021 02:00:00 AM,,sud,100,overcast clouds,1011,86,287.14,0.11,0.0,218,3.71
+Venice,02/05/2021 02:00:00 AM,,nord,100,light rain,1004,95,288.19,0.58,0.0,146,7.17
+Provincia di Campobasso,02/05/2021 02:00:00 AM,,centro_sud,99,overcast clouds,1009,89,289.32,0.17,0.0,226,5.6
+Naples,02/05/2021 02:00:00 AM,,sud,100,overcast clouds,1011,90,290.32,0.17,0.0,189,3.6
+Provincia di Perugia,02/05/2021 02:00:00 AM,,centro_nord,100,moderate rain,1009,93,288.6,1.65,0.0,215,6.24
+Province of Turin,02/05/2021 02:00:00 AM,,nord,99,overcast clouds,1006,88,279.68,0.54,0.0,293,2.73
+Trieste,02/05/2021 02:00:00 AM,,nord,100,light rain,1006,96,288.26,0.44,0.0,145,1.39
+L'Aquila,02/05/2021 02:00:00 AM,,centro_sud,100,light rain,1009,90,287.03,0.32,0.0,224,4.66
+Sardinia,02/05/2021 02:00:00 AM,,sardegna,94,light rain,1015,98,284.98,0.19,0.0,266,4.19
+Provincia di Ancona,02/05/2021 02:00:00 AM,,centro_nord,100,light rain,1006,90,288.25,0.26,0.0,187,3.02
+Milan,02/05/2021 02:00:00 AM,,nord,100,heavy intensity rain,1002,96,285.94,4.91,0.0,340,3.3
+Bologna,02/05/2021 02:00:00 AM,,nord,100,moderate rain,1004,90,288.44,1.56,0.0,193,3.55
+Provincia di Genova,02/05/2021 02:00:00 AM,,nord,100,moderate rain,1005,99,283.12,1.04,0.0,185,3.73
+Trento,02/05/2021 02:00:00 AM,,nord,100,heavy intensity rain,1003,98,287.23,6.28,0.0,259,0.83
+Catanzaro,02/05/2021 02:00:00 AM,,calabria,99,overcast clouds,1013,66,292.29,0.0,0.0,282,2.81
+Florence,02/05/2021 02:00:00 AM,,centro_nord,100,moderate rain,1007,94,287.41,2.03,0.0,220,4.6
+Naples,02/05/2021 03:00:00 AM,,sud,3,clear sky,1012,92,289.98,0.17,0.0,207,3.37
+Provincia di Perugia,02/05/2021 03:00:00 AM,,centro_nord,55,light rain,1009,92,287.6,0.3,0.0,211,6.83
+Provincia di Ancona,02/05/2021 03:00:00 AM,,centro_nord,100,light rain,1006,88,288.44,0.18,0.0,207,3.13
+Provincia di Campobasso,02/05/2021 03:00:00 AM,,centro_sud,23,few clouds,1008,92,288.5,0.17,0.0,222,5.21
+L'Aquila,02/05/2021 03:00:00 AM,,centro_sud,100,light rain,1009,92,286.66,0.22,0.0,233,4.04
+Province of Palermo,02/05/2021 03:00:00 AM,,sicilia,100,overcast clouds,1016,85,287.88,0.0,0.0,296,1.71
+Trento,02/05/2021 03:00:00 AM,,nord,100,heavy intensity rain,1003,97,286.7,7.8,0.0,301,0.97
+Catanzaro,02/05/2021 03:00:00 AM,,calabria,97,overcast clouds,1013,69,292.18,0.0,0.0,281,4.09
+Potenza,02/05/2021 03:00:00 AM,,sud,100,overcast clouds,1011,86,287.3,0.11,0.0,214,4.01
+Valle d'Aosta,02/05/2021 03:00:00 AM,,nord,100,overcast clouds,1009,91,273.05,0.44,0.15,278,3.41
+Trieste,02/05/2021 03:00:00 AM,,nord,100,light rain,1005,96,288.33,0.38,0.0,126,2.13
+Florence,02/05/2021 03:00:00 AM,,centro_nord,100,overcast clouds,1007,94,287.05,2.03,0.0,219,5.2
+Rome,02/05/2021 03:00:00 AM,,centro_sud,80,light rain,1011,97,288.81,0.44,0.0,196,3.05
+Milan,02/05/2021 03:00:00 AM,,nord,98,moderate rain,1003,94,284.26,2.76,0.0,322,3.92
+Sardinia,02/05/2021 03:00:00 AM,,sardegna,100,light rain,1015,95,284.07,0.13,0.0,282,4.39
+Provincia di Genova,02/05/2021 03:00:00 AM,,nord,99,light rain,1006,98,282.16,0.24,0.0,168,3.06
+Venice,02/05/2021 03:00:00 AM,,nord,100,heavy intensity rain,1003,95,288.12,4.37,0.0,150,7.68
+Bologna,02/05/2021 03:00:00 AM,,nord,11,few clouds,1004,86,287.06,1.56,0.0,219,4.18
+Province of Turin,02/05/2021 03:00:00 AM,,nord,26,scattered clouds,1006,85,278.79,0.54,0.0,298,3.51
+Bari,02/05/2021 03:00:00 AM,,sud,100,overcast clouds,1010,67,291.97,0.18,0.0,197,3.83
+Valle d'Aosta,02/05/2021 04:00:00 AM,,nord,76,broken clouds,1011,90,271.5,0.44,0.15,284,3.23
+Bologna,02/05/2021 04:00:00 AM,,nord,11,few clouds,1004,84,286.46,1.56,0.0,213,4.08
+Bari,02/05/2021 04:00:00 AM,,sud,100,overcast clouds,1010,67,291.82,0.18,0.0,198,4.19
+Trento,02/05/2021 04:00:00 AM,,nord,100,moderate rain,1003,96,286.37,1.32,0.0,358,0.69
+Provincia di Genova,02/05/2021 04:00:00 AM,,nord,96,light rain,1006,98,282.17,0.27,0.0,179,3.72
+Provincia di Perugia,02/05/2021 04:00:00 AM,,centro_nord,66,broken clouds,1009,90,287.04,0.3,0.0,210,7.83
+Trieste,02/05/2021 04:00:00 AM,,nord,100,light rain,1004,96,288.6,0.89,0.0,162,4.13
+Naples,02/05/2021 04:00:00 AM,,sud,4,clear sky,1012,91,289.91,0.17,0.0,230,3.9
+Province of Turin,02/05/2021 04:00:00 AM,,nord,25,scattered clouds,1007,82,278.11,0.54,0.0,293,3.87
+Rome,02/05/2021 04:00:00 AM,,centro_sud,85,light rain,1011,97,287.86,0.42,0.0,209,2.38
+Potenza,02/05/2021 04:00:00 AM,,sud,100,overcast clouds,1011,85,287.8,0.11,0.0,212,4.13
+L'Aquila,02/05/2021 04:00:00 AM,,centro_sud,100,light rain,1009,93,286.35,0.15,0.0,232,4.06
+Provincia di Campobasso,02/05/2021 04:00:00 AM,,centro_sud,36,scattered clouds,1008,92,288.5,0.17,0.0,225,5.07
+Catanzaro,02/05/2021 04:00:00 AM,,calabria,98,overcast clouds,1013,70,292.16,0.0,0.0,281,4.32
+Florence,02/05/2021 04:00:00 AM,,centro_nord,100,overcast clouds,1007,94,286.86,2.03,0.0,226,5.35
+Provincia di Ancona,02/05/2021 04:00:00 AM,,centro_nord,78,broken clouds,1007,87,287.88,0.18,0.0,233,3.39
+Milan,02/05/2021 04:00:00 AM,,nord,99,light rain,1004,91,284.33,0.39,0.0,307,2.58
+Venice,02/05/2021 04:00:00 AM,,nord,100,moderate rain,1003,90,288.87,2.22,0.0,183,7.9
+Province of Palermo,02/05/2021 04:00:00 AM,,sicilia,50,scattered clouds,1016,87,286.97,0.0,0.0,294,1.86
+Sardinia,02/05/2021 04:00:00 AM,,sardegna,100,overcast clouds,1016,94,283.6,0.13,0.0,281,3.97
+Province of Turin,02/05/2021 05:00:00 AM,,nord,17,few clouds,1007,81,277.41,0.54,0.0,295,4.06
+Trento,02/05/2021 05:00:00 AM,,nord,100,moderate rain,1002,96,286.06,1.13,0.0,287,0.89
+Naples,02/05/2021 05:00:00 AM,,sud,4,clear sky,1012,90,289.58,0.17,0.0,235,4.57
+Bologna,02/05/2021 05:00:00 AM,,nord,9,clear sky,1004,84,286.02,1.56,0.0,232,3.83
+L'Aquila,02/05/2021 05:00:00 AM,,centro_sud,99,overcast clouds,1009,92,285.85,0.15,0.0,234,4.23
+Trieste,02/05/2021 05:00:00 AM,,nord,100,moderate rain,1004,93,288.84,3.66,0.0,188,5.64
+Provincia di Genova,02/05/2021 05:00:00 AM,,nord,98,light rain,1006,98,282.04,0.22,0.0,177,2.94
+Sardinia,02/05/2021 05:00:00 AM,,sardegna,100,overcast clouds,1016,94,283.27,0.13,0.0,284,2.59
+Provincia di Ancona,02/05/2021 05:00:00 AM,,centro_nord,64,broken clouds,1007,85,287.2,0.18,0.0,225,4.17
+Milan,02/05/2021 05:00:00 AM,,nord,99,overcast clouds,1004,91,284.37,0.39,0.0,268,2.43
+Florence,02/05/2021 05:00:00 AM,,centro_nord,93,overcast clouds,1007,95,286.19,2.03,0.0,231,5.27
+Rome,02/05/2021 05:00:00 AM,,centro_sud,73,broken clouds,1011,96,287.24,0.42,0.0,199,1.75
+Potenza,02/05/2021 05:00:00 AM,,sud,100,overcast clouds,1011,87,287.72,0.11,0.0,205,4.2
+Valle d'Aosta,02/05/2021 05:00:00 AM,,nord,59,broken clouds,1011,90,270.63,0.44,0.15,285,3.23
+Bari,02/05/2021 05:00:00 AM,,sud,100,overcast clouds,1010,68,291.67,0.18,0.0,193,4.61
+Province of Palermo,02/05/2021 05:00:00 AM,,sicilia,43,scattered clouds,1016,87,286.46,0.0,0.0,297,1.23
+Venice,02/05/2021 05:00:00 AM,,nord,80,light rain,1003,87,288.18,0.14,0.0,203,6.88
+Provincia di Perugia,02/05/2021 05:00:00 AM,,centro_nord,76,broken clouds,1009,87,287.03,0.3,0.0,208,8.51
+Catanzaro,02/05/2021 05:00:00 AM,,calabria,99,overcast clouds,1013,74,291.68,0.0,0.0,287,5.05
+Provincia di Campobasso,02/05/2021 05:00:00 AM,,centro_sud,36,scattered clouds,1008,90,288.29,0.17,0.0,226,5.43
+Potenza,02/05/2021 06:00:00 AM,,sud,99,overcast clouds,1010,88,287.44,0.11,0.0,212,4.53
+Provincia di Genova,02/05/2021 06:00:00 AM,,nord,98,light rain,1006,98,281.88,0.16,0.0,165,2.27
+Sardinia,02/05/2021 06:00:00 AM,,sardegna,100,overcast clouds,1015,93,283.27,0.13,0.0,306,2.35
+Bari,02/05/2021 06:00:00 AM,,sud,84,broken clouds,1010,69,291.57,0.18,0.0,188,4.7
+Rome,02/05/2021 06:00:00 AM,,centro_sud,79,broken clouds,1012,95,286.96,0.42,0.0,190,2.15
+Province of Turin,02/05/2021 06:00:00 AM,,nord,13,few clouds,1007,80,277.16,0.54,0.0,295,4.12
+Trieste,02/05/2021 06:00:00 AM,,nord,91,moderate rain,1004,93,288.33,1.2,0.0,193,6.51
+Naples,02/05/2021 06:00:00 AM,,sud,5,clear sky,1012,91,289.31,0.17,0.0,233,4.82
+L'Aquila,02/05/2021 06:00:00 AM,,centro_sud,98,overcast clouds,1010,91,284.96,0.15,0.0,236,4.06
+Venice,02/05/2021 06:00:00 AM,,nord,62,broken clouds,1003,89,287.35,0.14,0.0,215,6.68
+Provincia di Perugia,02/05/2021 06:00:00 AM,,centro_nord,82,broken clouds,1009,87,286.82,0.3,0.0,207,7.71
+Provincia di Campobasso,02/05/2021 06:00:00 AM,,centro_sud,33,scattered clouds,1008,90,287.5,0.17,0.0,229,4.93
+Catanzaro,02/05/2021 06:00:00 AM,,calabria,87,overcast clouds,1013,80,290.75,0.0,0.0,289,5.98
+Valle d'Aosta,02/05/2021 06:00:00 AM,,nord,49,scattered clouds,1012,90,270.23,0.44,0.15,288,3.12
+Florence,02/05/2021 06:00:00 AM,,centro_nord,94,light rain,1008,93,286.14,0.12,0.0,240,5.69
+Milan,02/05/2021 06:00:00 AM,,nord,99,light rain,1005,91,284.03,0.12,0.0,282,2.74
+Provincia di Ancona,02/05/2021 06:00:00 AM,,centro_nord,62,broken clouds,1007,84,287.12,0.18,0.0,228,3.79
+Trento,02/05/2021 06:00:00 AM,,nord,100,moderate rain,1003,98,285.85,2.0,0.0,306,1.19
+Province of Palermo,02/05/2021 06:00:00 AM,,sicilia,39,scattered clouds,1016,86,286.25,0.0,0.0,289,1.15
+Bologna,02/05/2021 06:00:00 AM,,nord,7,clear sky,1004,84,285.51,1.56,0.0,223,3.16
+Province of Turin,02/05/2021 07:00:00 AM,,nord,11,few clouds,1008,79,277.55,0.54,0.0,296,4.0
+Provincia di Perugia,02/05/2021 07:00:00 AM,,centro_nord,86,overcast clouds,1010,89,286.69,0.3,0.0,203,6.48
+L'Aquila,02/05/2021 07:00:00 AM,,centro_sud,97,overcast clouds,1010,90,285.21,0.15,0.0,234,3.5
+Provincia di Genova,02/05/2021 07:00:00 AM,,nord,99,overcast clouds,1007,98,281.83,0.16,0.0,155,1.93
+Milan,02/05/2021 07:00:00 AM,,nord,100,overcast clouds,1005,90,284.01,0.12,0.0,294,2.55
+Rome,02/05/2021 07:00:00 AM,,centro_sud,68,broken clouds,1012,93,287.49,0.42,0.0,199,2.85
+Catanzaro,02/05/2021 07:00:00 AM,,calabria,83,broken clouds,1014,82,290.87,0.0,0.0,285,6.01
+Sardinia,02/05/2021 07:00:00 AM,,sardegna,100,overcast clouds,1017,90,283.62,0.13,0.0,297,1.33
+Bari,02/05/2021 07:00:00 AM,,sud,68,broken clouds,1010,68,292.34,0.18,0.0,191,5.38
+Valle d'Aosta,02/05/2021 07:00:00 AM,,nord,43,scattered clouds,1012,88,270.78,0.44,0.15,289,3.01
+Potenza,02/05/2021 07:00:00 AM,,sud,93,overcast clouds,1011,88,287.24,0.11,0.0,219,4.4
+Province of Palermo,02/05/2021 07:00:00 AM,,sicilia,51,broken clouds,1016,81,287.33,0.0,0.0,323,1.5
+Trieste,02/05/2021 07:00:00 AM,,nord,87,light rain,1005,91,288.36,0.75,0.0,204,6.92
+Naples,02/05/2021 07:00:00 AM,,sud,10,clear sky,1013,92,289.43,0.17,0.0,243,4.1
+Venice,02/05/2021 07:00:00 AM,,nord,62,broken clouds,1004,84,287.85,0.14,0.0,234,7.42
+Florence,02/05/2021 07:00:00 AM,,centro_nord,96,overcast clouds,1009,90,285.59,0.12,0.0,245,5.38
+Provincia di Ancona,02/05/2021 07:00:00 AM,,centro_nord,70,broken clouds,1008,82,287.67,0.18,0.0,234,4.25
+Bologna,02/05/2021 07:00:00 AM,,nord,7,clear sky,1005,81,286.18,1.56,0.0,227,3.52
+Trento,02/05/2021 07:00:00 AM,,nord,100,light rain,1004,98,285.84,0.75,0.0,298,0.76
+Provincia di Campobasso,02/05/2021 07:00:00 AM,,centro_sud,35,scattered clouds,1009,89,288.02,0.17,0.0,233,4.79
+Provincia di Perugia,02/05/2021 08:00:00 AM,,centro_nord,88,overcast clouds,1010,88,286.98,0.3,0.0,203,6.2
+Trento,02/05/2021 08:00:00 AM,,nord,100,light rain,1005,97,285.8,0.47,0.0,339,1.04
+Rome,02/05/2021 08:00:00 AM,,centro_sud,63,light rain,1013,89,288.09,0.16,0.0,224,5.14
+Sardinia,02/05/2021 08:00:00 AM,,sardegna,100,overcast clouds,1017,84,284.41,0.13,0.0,273,1.17
+Province of Palermo,02/05/2021 08:00:00 AM,,sicilia,59,broken clouds,1017,69,289.59,0.0,0.0,278,1.02
+Naples,02/05/2021 08:00:00 AM,,sud,16,few clouds,1013,89,290.09,0.17,0.0,262,5.28
+L'Aquila,02/05/2021 08:00:00 AM,,centro_sud,93,overcast clouds,1010,83,285.89,0.15,0.0,228,3.7
+Potenza,02/05/2021 08:00:00 AM,,sud,94,overcast clouds,1011,78,288.33,0.11,0.0,230,4.72
+Provincia di Campobasso,02/05/2021 08:00:00 AM,,centro_sud,38,scattered clouds,1009,85,289.15,0.17,0.0,239,4.67
+Valle d'Aosta,02/05/2021 08:00:00 AM,,nord,38,scattered clouds,1011,85,273.59,0.44,0.15,276,3.29
+Florence,02/05/2021 08:00:00 AM,,centro_nord,96,overcast clouds,1010,91,285.98,0.12,0.0,244,4.86
+Bologna,02/05/2021 08:00:00 AM,,nord,8,clear sky,1006,78,287.69,1.56,0.0,247,4.04
+Province of Turin,02/05/2021 08:00:00 AM,,nord,9,clear sky,1008,74,280.26,0.54,0.0,295,2.94
+Trieste,02/05/2021 08:00:00 AM,,nord,87,light rain,1006,90,288.12,0.43,0.0,206,6.69
+Bari,02/05/2021 08:00:00 AM,,sud,71,broken clouds,1011,65,293.91,0.18,0.0,199,5.92
+Provincia di Genova,02/05/2021 08:00:00 AM,,nord,96,overcast clouds,1007,97,281.92,0.16,0.0,154,1.75
+Milan,02/05/2021 08:00:00 AM,,nord,100,overcast clouds,1006,88,284.41,0.12,0.0,276,2.33
+Catanzaro,02/05/2021 08:00:00 AM,,calabria,86,overcast clouds,1015,80,291.41,0.0,0.0,286,6.35
+Venice,02/05/2021 08:00:00 AM,,nord,53,broken clouds,1005,83,288.27,0.14,0.0,232,6.94
+Provincia di Ancona,02/05/2021 08:00:00 AM,,centro_nord,75,broken clouds,1008,82,288.03,0.18,0.0,226,3.49
+Milan,02/05/2021 09:00:00 AM,,nord,26,scattered clouds,1006,78,285.91,0.12,0.0,281,2.78
+Bologna,02/05/2021 09:00:00 AM,,nord,3,clear sky,1006,67,289.61,1.56,0.0,231,4.07
+Valle d'Aosta,02/05/2021 09:00:00 AM,,nord,13,few clouds,1010,77,275.75,0.44,0.15,272,3.57
+Provincia di Campobasso,02/05/2021 09:00:00 AM,,centro_sud,39,scattered clouds,1010,78,289.9,0.17,0.0,237,5.01
+Provincia di Ancona,02/05/2021 09:00:00 AM,,centro_nord,99,overcast clouds,1009,75,289.22,0.18,0.0,223,4.1
+Bari,02/05/2021 09:00:00 AM,,sud,71,broken clouds,1011,59,295.2,0.18,0.0,200,6.57
+Sardinia,02/05/2021 09:00:00 AM,,sardegna,100,overcast clouds,1017,76,285.49,0.13,0.0,275,1.41
+Rome,02/05/2021 09:00:00 AM,,centro_sud,99,overcast clouds,1014,82,288.06,0.16,0.0,217,5.13
+L'Aquila,02/05/2021 09:00:00 AM,,centro_sud,69,broken clouds,1011,80,286.35,0.15,0.0,228,3.62
+Naples,02/05/2021 09:00:00 AM,,sud,60,broken clouds,1014,80,290.5,0.17,0.0,266,5.59
+Trento,02/05/2021 09:00:00 AM,,nord,100,light rain,1006,97,285.71,0.5,0.0,0,1.72
+Venice,02/05/2021 09:00:00 AM,,nord,50,scattered clouds,1005,77,288.85,0.14,0.0,236,8.2
+Catanzaro,02/05/2021 09:00:00 AM,,calabria,100,overcast clouds,1015,77,291.78,0.0,0.0,288,5.94
+Provincia di Genova,02/05/2021 09:00:00 AM,,nord,100,overcast clouds,1008,97,281.82,0.16,0.0,151,1.52
+Province of Palermo,02/05/2021 09:00:00 AM,,sicilia,100,overcast clouds,1017,54,291.64,0.0,0.0,306,1.57
+Province of Turin,02/05/2021 09:00:00 AM,,nord,1,clear sky,1007,63,282.87,0.54,0.0,281,1.36
+Trieste,02/05/2021 09:00:00 AM,,nord,50,light rain,1006,89,288.39,0.71,0.0,211,6.66
+Florence,02/05/2021 09:00:00 AM,,centro_nord,100,light rain,1010,90,286.3,0.12,0.0,248,4.2
+Provincia di Perugia,02/05/2021 09:00:00 AM,,centro_nord,100,overcast clouds,1011,89,286.96,0.3,0.0,199,5.26
+Potenza,02/05/2021 09:00:00 AM,,sud,73,broken clouds,1012,64,289.26,0.11,0.0,231,5.43
+Trieste,02/05/2021 10:00:00 AM,,nord,39,light rain,1007,89,288.9,0.56,0.0,212,6.47
+Potenza,02/05/2021 10:00:00 AM,,sud,86,overcast clouds,1012,57,289.86,0.11,0.0,237,5.58
+Province of Palermo,02/05/2021 10:00:00 AM,,sicilia,100,overcast clouds,1017,42,293.34,0.0,0.0,305,1.9
+Bologna,02/05/2021 10:00:00 AM,,nord,4,clear sky,1007,61,290.37,1.56,0.0,240,6.03
+Province of Turin,02/05/2021 10:00:00 AM,,nord,1,clear sky,1007,57,284.59,0.54,0.0,244,0.65
+Venice,02/05/2021 10:00:00 AM,,nord,28,scattered clouds,1006,72,289.87,0.14,0.0,237,8.17
+Naples,02/05/2021 10:00:00 AM,,sud,57,broken clouds,1015,78,290.72,0.17,0.0,262,6.73
+Sardinia,02/05/2021 10:00:00 AM,,sardegna,100,overcast clouds,1018,67,287.01,0.13,0.0,269,2.07
+Rome,02/05/2021 10:00:00 AM,,centro_sud,90,overcast clouds,1014,74,288.96,0.16,0.0,200,4.35
+Valle d'Aosta,02/05/2021 10:00:00 AM,,nord,14,few clouds,1009,72,277.4,0.44,0.15,273,3.66
+Provincia di Ancona,02/05/2021 10:00:00 AM,,centro_nord,99,overcast clouds,1009,73,289.58,0.18,0.0,221,4.8
+Provincia di Genova,02/05/2021 10:00:00 AM,,nord,100,overcast clouds,1008,95,282.12,0.16,0.0,155,1.34
+Milan,02/05/2021 10:00:00 AM,,nord,18,few clouds,1007,70,287.6,0.12,0.0,272,3.07
+Catanzaro,02/05/2021 10:00:00 AM,,calabria,100,overcast clouds,1015,66,293.11,0.0,0.0,286,6.08
+Bari,02/05/2021 10:00:00 AM,,sud,55,broken clouds,1011,53,296.09,0.18,0.0,208,6.25
+Provincia di Campobasso,02/05/2021 10:00:00 AM,,centro_sud,29,scattered clouds,1011,71,290.96,0.17,0.0,237,5.63
+L'Aquila,02/05/2021 10:00:00 AM,,centro_sud,74,broken clouds,1011,76,286.91,0.15,0.0,230,3.49
+Trento,02/05/2021 10:00:00 AM,,nord,100,light rain,1007,97,285.0,0.71,0.0,7,2.37
+Provincia di Perugia,02/05/2021 10:00:00 AM,,centro_nord,100,overcast clouds,1011,85,288.03,0.3,0.0,198,6.45
+Florence,02/05/2021 10:00:00 AM,,centro_nord,99,overcast clouds,1011,79,287.57,0.12,0.0,249,5.45
+Province of Palermo,02/05/2021 11:00:00 AM,,sicilia,94,overcast clouds,1017,37,294.47,0.0,0.0,298,2.24
+Catanzaro,02/05/2021 11:00:00 AM,,calabria,100,overcast clouds,1015,58,294.37,0.0,0.0,282,6.62
+Trento,02/05/2021 11:00:00 AM,,nord,100,light rain,1008,96,284.37,0.51,0.0,10,2.14
+Trieste,02/05/2021 11:00:00 AM,,nord,47,light rain,1007,86,288.68,0.45,0.0,214,6.52
+Bologna,02/05/2021 11:00:00 AM,,nord,6,clear sky,1007,58,290.99,1.56,0.0,234,6.39
+L'Aquila,02/05/2021 11:00:00 AM,,centro_sud,73,broken clouds,1012,74,287.47,0.15,0.0,235,3.51
+Sardinia,02/05/2021 11:00:00 AM,,sardegna,100,overcast clouds,1018,56,288.86,0.13,0.0,283,2.69
+Naples,02/05/2021 11:00:00 AM,,sud,69,broken clouds,1016,72,290.8,0.17,0.0,277,6.93
+Milan,02/05/2021 11:00:00 AM,,nord,13,few clouds,1007,64,289.18,0.12,0.0,261,3.26
+Potenza,02/05/2021 11:00:00 AM,,sud,91,overcast clouds,1013,58,290.22,0.11,0.0,237,5.64
+Florence,02/05/2021 11:00:00 AM,,centro_nord,98,overcast clouds,1011,63,289.51,0.12,0.0,246,6.46
+Venice,02/05/2021 11:00:00 AM,,nord,26,scattered clouds,1006,68,290.38,0.14,0.0,235,7.8
+Provincia di Ancona,02/05/2021 11:00:00 AM,,centro_nord,100,overcast clouds,1010,67,290.47,0.18,0.0,219,5.86
+Provincia di Campobasso,02/05/2021 11:00:00 AM,,centro_sud,25,scattered clouds,1011,67,291.72,0.17,0.0,236,6.22
+Provincia di Perugia,02/05/2021 11:00:00 AM,,centro_nord,100,overcast clouds,1011,78,289.07,0.3,0.0,200,7.6
+Rome,02/05/2021 11:00:00 AM,,centro_sud,88,overcast clouds,1014,67,290.05,0.16,0.0,202,4.05
+Province of Turin,02/05/2021 11:00:00 AM,,nord,1,clear sky,1007,53,285.94,0.54,0.0,188,0.83
+Valle d'Aosta,02/05/2021 11:00:00 AM,,nord,13,few clouds,1008,67,278.4,0.44,0.15,276,3.73
+Bari,02/05/2021 11:00:00 AM,,sud,54,broken clouds,1011,46,296.83,0.18,0.0,223,5.36
+Provincia di Genova,02/05/2021 11:00:00 AM,,nord,92,overcast clouds,1009,86,283.58,0.16,0.0,150,1.44
+Florence,02/05/2021 12:00:00 PM,,centro_nord,77,broken clouds,1011,53,291.21,0.12,0.0,251,7.81
+Province of Turin,02/05/2021 12:00:00 PM,,nord,3,clear sky,1007,50,286.9,0.54,0.0,168,0.91
+Milan,02/05/2021 12:00:00 PM,,nord,12,few clouds,1007,60,290.44,0.12,0.0,253,3.19
+Provincia di Perugia,02/05/2021 12:00:00 PM,,centro_nord,100,overcast clouds,1012,74,289.82,0.3,0.0,207,7.59
+Naples,02/05/2021 12:00:00 PM,,sud,77,broken clouds,1016,67,290.77,0.17,0.0,275,6.58
+Trento,02/05/2021 12:00:00 PM,,nord,100,light rain,1008,94,284.6,0.23,0.0,13,1.76
+Bologna,02/05/2021 12:00:00 PM,,nord,8,clear sky,1007,55,291.77,1.56,0.0,241,6.19
+Provincia di Campobasso,02/05/2021 12:00:00 PM,,centro_sud,43,scattered clouds,1011,65,291.96,0.17,0.0,233,7.45
+Potenza,02/05/2021 12:00:00 PM,,sud,93,overcast clouds,1013,58,290.55,0.11,0.0,237,6.39
+Rome,02/05/2021 12:00:00 PM,,centro_sud,90,overcast clouds,1015,66,290.32,0.16,0.0,209,4.34
+Provincia di Ancona,02/05/2021 12:00:00 PM,,centro_nord,100,overcast clouds,1010,62,291.58,0.18,0.0,226,7.28
+Trieste,02/05/2021 12:00:00 PM,,nord,60,light rain,1008,87,288.24,0.3,0.0,209,5.77
+Catanzaro,02/05/2021 12:00:00 PM,,calabria,99,overcast clouds,1015,54,295.31,0.0,0.0,279,7.07
+Provincia di Genova,02/05/2021 12:00:00 PM,,nord,86,overcast clouds,1008,77,285.1,0.16,0.0,166,2.15
+Province of Palermo,02/05/2021 12:00:00 PM,,sicilia,95,overcast clouds,1017,36,295.03,0.0,0.0,305,2.85
+Venice,02/05/2021 12:00:00 PM,,nord,25,scattered clouds,1007,67,290.95,0.14,0.0,236,7.04
+Sardinia,02/05/2021 12:00:00 PM,,sardegna,78,broken clouds,1018,48,290.46,0.13,0.0,273,3.91
+L'Aquila,02/05/2021 12:00:00 PM,,centro_sud,68,broken clouds,1012,66,288.66,0.15,0.0,237,3.73
+Bari,02/05/2021 12:00:00 PM,,sud,58,broken clouds,1011,44,296.83,0.18,0.0,246,4.69
+Valle d'Aosta,02/05/2021 12:00:00 PM,,nord,14,few clouds,1008,63,279.24,0.44,0.15,282,3.53
+Provincia di Ancona,02/05/2021 13:00:00 PM,,centro_nord,100,overcast clouds,1011,61,291.83,0.18,0.0,228,8.68
+Provincia di Perugia,02/05/2021 13:00:00 PM,,centro_nord,99,light rain,1012,70,290.75,0.12,0.0,211,8.43
+Milan,02/05/2021 13:00:00 PM,,nord,12,few clouds,1007,55,291.46,0.12,0.0,254,2.78
+Sardinia,02/05/2021 13:00:00 PM,,sardegna,65,broken clouds,1018,44,291.08,0.13,0.0,270,5.11
+Trieste,02/05/2021 13:00:00 PM,,nord,66,light rain,1008,82,288.74,0.34,0.0,218,5.9
+Bologna,02/05/2021 13:00:00 PM,,nord,14,few clouds,1007,50,292.68,1.56,0.0,246,5.59
+Naples,02/05/2021 13:00:00 PM,,sud,78,broken clouds,1017,65,290.78,0.17,0.0,272,7.08
+Bari,02/05/2021 13:00:00 PM,,sud,67,broken clouds,1011,42,296.97,0.18,0.0,260,5.17
+Trento,02/05/2021 13:00:00 PM,,nord,100,overcast clouds,1008,91,285.42,0.23,0.0,17,1.63
+L'Aquila,02/05/2021 13:00:00 PM,,centro_sud,61,broken clouds,1012,61,289.51,0.15,0.0,240,4.0
+Rome,02/05/2021 13:00:00 PM,,centro_sud,92,overcast clouds,1015,67,290.12,0.16,0.0,221,4.73
+Florence,02/05/2021 13:00:00 PM,,centro_nord,78,broken clouds,1011,56,291.35,0.12,0.0,247,8.44
+Province of Turin,02/05/2021 13:00:00 PM,,nord,7,clear sky,1007,48,287.55,0.54,0.0,156,0.89
+Potenza,02/05/2021 13:00:00 PM,,sud,95,overcast clouds,1013,58,290.55,0.11,0.0,241,7.13
+Provincia di Campobasso,02/05/2021 13:00:00 PM,,centro_sud,50,scattered clouds,1011,61,292.26,0.17,0.0,228,7.95
+Valle d'Aosta,02/05/2021 13:00:00 PM,,nord,25,scattered clouds,1008,61,279.69,0.44,0.15,291,3.42
+Catanzaro,02/05/2021 13:00:00 PM,,calabria,97,overcast clouds,1015,50,295.49,0.0,0.0,278,7.42
+Province of Palermo,02/05/2021 13:00:00 PM,,sicilia,96,overcast clouds,1017,38,295.25,0.0,0.0,315,3.4
+Venice,02/05/2021 13:00:00 PM,,nord,38,scattered clouds,1007,66,291.04,0.14,0.0,242,6.3
+Provincia di Genova,02/05/2021 13:00:00 PM,,nord,81,broken clouds,1008,69,286.88,0.16,0.0,171,3.23
+Provincia di Genova,02/05/2021 14:00:00 PM,,nord,85,light rain,1008,76,286.03,0.14,0.0,164,3.98
+Provincia di Perugia,02/05/2021 14:00:00 PM,,centro_nord,96,overcast clouds,1012,64,291.85,0.12,0.0,213,8.84
+Provincia di Campobasso,02/05/2021 14:00:00 PM,,centro_sud,58,broken clouds,1012,57,292.11,0.17,0.0,228,7.89
+Trieste,02/05/2021 14:00:00 PM,,nord,71,light rain,1009,75,289.01,0.12,0.0,213,6.34
+Florence,02/05/2021 14:00:00 PM,,centro_nord,82,broken clouds,1012,52,291.43,0.12,0.0,247,8.15
+Catanzaro,02/05/2021 14:00:00 PM,,calabria,98,overcast clouds,1015,47,295.0,0.0,0.0,281,7.73
+L'Aquila,02/05/2021 14:00:00 PM,,centro_sud,53,broken clouds,1013,57,289.68,0.15,0.0,245,4.17
+Provincia di Ancona,02/05/2021 14:00:00 PM,,centro_nord,92,overcast clouds,1011,58,292.65,0.18,0.0,226,9.45
+Trento,02/05/2021 14:00:00 PM,,nord,100,overcast clouds,1008,85,286.59,0.23,0.0,18,1.18
+Bari,02/05/2021 14:00:00 PM,,sud,72,broken clouds,1011,40,297.2,0.18,0.0,260,5.62
+Rome,02/05/2021 14:00:00 PM,,centro_sud,93,overcast clouds,1016,67,290.11,0.16,0.0,222,4.54
+Sardinia,02/05/2021 14:00:00 PM,,sardegna,58,broken clouds,1018,44,291.18,0.13,0.0,273,5.03
+Province of Palermo,02/05/2021 14:00:00 PM,,sicilia,96,overcast clouds,1017,40,295.22,0.0,0.0,329,3.47
+Milan,02/05/2021 14:00:00 PM,,nord,13,few clouds,1007,51,292.36,0.12,0.0,242,2.56
+Valle d'Aosta,02/05/2021 14:00:00 PM,,nord,36,scattered clouds,1008,60,279.79,0.44,0.15,296,3.58
+Potenza,02/05/2021 14:00:00 PM,,sud,95,overcast clouds,1013,58,290.41,0.11,0.0,244,7.42
+Province of Turin,02/05/2021 14:00:00 PM,,nord,17,few clouds,1007,48,287.92,0.54,0.0,151,0.79
+Venice,02/05/2021 14:00:00 PM,,nord,48,scattered clouds,1007,67,291.04,0.14,0.0,238,5.41
+Naples,02/05/2021 14:00:00 PM,,sud,75,broken clouds,1017,63,290.73,0.17,0.0,272,7.25
+Bologna,02/05/2021 14:00:00 PM,,nord,27,scattered clouds,1007,43,293.69,1.56,0.0,244,5.65
+L'Aquila,02/05/2021 15:00:00 PM,,centro_sud,16,few clouds,1013,58,289.33,0.15,0.0,246,4.24
+Catanzaro,02/05/2021 15:00:00 PM,,calabria,100,overcast clouds,1015,44,294.77,0.0,0.0,281,7.46
+Venice,02/05/2021 15:00:00 PM,,nord,100,overcast clouds,1007,65,291.63,0.14,0.0,224,5.28
+Rome,02/05/2021 15:00:00 PM,,centro_sud,92,overcast clouds,1016,65,290.17,0.16,0.0,224,4.58
+Trieste,02/05/2021 15:00:00 PM,,nord,89,overcast clouds,1008,71,289.86,0.12,0.0,211,5.3
+Provincia di Genova,02/05/2021 15:00:00 PM,,nord,100,light rain,1009,82,284.66,0.16,0.0,157,3.38
+Province of Palermo,02/05/2021 15:00:00 PM,,sicilia,100,overcast clouds,1017,43,294.67,0.0,0.0,337,3.48
+Provincia di Campobasso,02/05/2021 15:00:00 PM,,centro_sud,67,broken clouds,1012,58,292.02,0.17,0.0,230,8.01
+Bari,02/05/2021 15:00:00 PM,,sud,99,overcast clouds,1012,41,296.9,0.18,0.0,264,5.82
+Potenza,02/05/2021 15:00:00 PM,,sud,100,overcast clouds,1014,58,290.0,0.11,0.0,245,7.31
+Valle d'Aosta,02/05/2021 15:00:00 PM,,nord,98,overcast clouds,1009,60,279.49,0.44,0.15,300,3.66
+Naples,02/05/2021 15:00:00 PM,,sud,88,overcast clouds,1017,63,290.68,0.17,0.0,269,7.17
+Florence,02/05/2021 15:00:00 PM,,centro_nord,100,overcast clouds,1012,52,291.11,0.12,0.0,250,8.39
+Province of Turin,02/05/2021 15:00:00 PM,,nord,71,broken clouds,1007,50,287.96,0.54,0.0,164,0.41
+Milan,02/05/2021 15:00:00 PM,,nord,76,broken clouds,1006,49,292.91,0.12,0.0,228,2.64
+Provincia di Ancona,02/05/2021 15:00:00 PM,,centro_nord,42,scattered clouds,1010,55,293.42,0.18,0.0,238,8.85
+Provincia di Perugia,02/05/2021 15:00:00 PM,,centro_nord,80,light rain,1012,68,291.2,0.24,0.0,202,8.14
+Sardinia,02/05/2021 15:00:00 PM,,sardegna,22,few clouds,1018,45,291.14,0.13,0.0,273,4.47
+Trento,02/05/2021 15:00:00 PM,,nord,87,overcast clouds,1007,74,288.82,0.23,0.0,2,0.83
+Bologna,02/05/2021 15:00:00 PM,,nord,100,overcast clouds,1007,40,293.61,1.56,0.0,238,6.87
+Trieste,02/05/2021 16:00:00 PM,,nord,94,overcast clouds,1008,70,290.26,0.12,0.0,217,4.72
+Venice,02/05/2021 16:00:00 PM,,nord,100,overcast clouds,1007,67,291.13,0.14,0.0,206,5.15
+Trento,02/05/2021 16:00:00 PM,,nord,89,overcast clouds,1006,70,289.82,0.23,0.0,312,0.33
+Bari,02/05/2021 16:00:00 PM,,sud,99,overcast clouds,1012,44,296.21,0.18,0.0,265,5.57
+Provincia di Genova,02/05/2021 16:00:00 PM,,nord,100,overcast clouds,1009,70,285.14,0.16,0.0,153,3.41
+Milan,02/05/2021 16:00:00 PM,,nord,88,overcast clouds,1006,49,292.99,0.12,0.0,222,2.65
+Catanzaro,02/05/2021 16:00:00 PM,,calabria,96,overcast clouds,1015,44,294.34,0.0,0.0,282,7.22
+Province of Palermo,02/05/2021 16:00:00 PM,,sicilia,100,overcast clouds,1017,46,293.88,0.0,0.0,346,3.87
+Florence,02/05/2021 16:00:00 PM,,centro_nord,100,overcast clouds,1012,52,290.41,0.12,0.0,248,7.87
+Rome,02/05/2021 16:00:00 PM,,centro_sud,92,overcast clouds,1016,56,291.27,0.16,0.0,225,4.3
+L'Aquila,02/05/2021 16:00:00 PM,,centro_sud,25,scattered clouds,1013,61,288.76,0.15,0.0,242,4.13
+Provincia di Campobasso,02/05/2021 16:00:00 PM,,centro_sud,79,broken clouds,1012,61,291.53,0.17,0.0,231,7.55
+Provincia di Perugia,02/05/2021 16:00:00 PM,,centro_nord,71,light rain,1013,75,290.11,0.48,0.0,194,7.88
+Bologna,02/05/2021 16:00:00 PM,,nord,99,overcast clouds,1007,43,292.86,1.56,0.0,229,7.44
+Sardinia,02/05/2021 16:00:00 PM,,sardegna,28,scattered clouds,1018,48,290.88,0.13,0.0,269,4.52
+Valle d'Aosta,02/05/2021 16:00:00 PM,,nord,99,overcast clouds,1009,59,279.18,0.44,0.15,302,3.65
+Province of Turin,02/05/2021 16:00:00 PM,,nord,82,light rain,1007,51,287.62,0.24,0.0,260,0.62
+Provincia di Ancona,02/05/2021 16:00:00 PM,,centro_nord,44,scattered clouds,1011,58,292.75,0.18,0.0,239,7.87
+Naples,02/05/2021 16:00:00 PM,,sud,90,overcast clouds,1017,64,290.48,0.17,0.0,268,6.64
+Potenza,02/05/2021 16:00:00 PM,,sud,100,overcast clouds,1014,59,289.18,0.11,0.0,245,6.88
+Bologna,02/05/2021 17:00:00 PM,,nord,99,overcast clouds,1007,47,291.64,1.56,0.0,225,6.93
+Provincia di Ancona,02/05/2021 17:00:00 PM,,centro_nord,40,light rain,1011,64,291.5,0.15,0.0,233,7.69
+Provincia di Perugia,02/05/2021 17:00:00 PM,,centro_nord,76,light rain,1013,78,289.51,0.58,0.0,200,7.37
+Provincia di Campobasso,02/05/2021 17:00:00 PM,,centro_sud,86,overcast clouds,1012,62,290.81,0.17,0.0,231,6.53
+Venice,02/05/2021 17:00:00 PM,,nord,100,light rain,1007,66,291.26,0.12,0.0,203,4.33
+Province of Turin,02/05/2021 17:00:00 PM,,nord,88,light rain,1007,50,287.24,0.23,0.0,279,1.28
+Valle d'Aosta,02/05/2021 17:00:00 PM,,nord,93,overcast clouds,1009,58,278.75,0.44,0.15,298,3.84
+Rome,02/05/2021 17:00:00 PM,,centro_sud,84,broken clouds,1016,54,291.23,0.16,0.0,226,4.32
+Bari,02/05/2021 17:00:00 PM,,sud,99,overcast clouds,1012,45,295.64,0.18,0.0,260,5.69
+Province of Palermo,02/05/2021 17:00:00 PM,,sicilia,100,overcast clouds,1018,51,292.36,0.0,0.0,3,3.07
+Potenza,02/05/2021 17:00:00 PM,,sud,100,overcast clouds,1014,60,288.19,0.11,0.0,245,5.59
+Naples,02/05/2021 17:00:00 PM,,sud,93,overcast clouds,1017,63,290.31,0.17,0.0,263,5.81
+Provincia di Genova,02/05/2021 17:00:00 PM,,nord,100,overcast clouds,1009,65,285.48,0.16,0.0,153,3.98
+Milan,02/05/2021 17:00:00 PM,,nord,92,overcast clouds,1006,51,292.86,0.12,0.0,210,2.75
+Trento,02/05/2021 17:00:00 PM,,nord,92,light rain,1006,72,289.53,0.2,0.0,250,0.45
+Sardinia,02/05/2021 17:00:00 PM,,sardegna,39,scattered clouds,1018,51,290.03,0.13,0.0,273,3.77
+L'Aquila,02/05/2021 17:00:00 PM,,centro_sud,36,scattered clouds,1013,65,287.7,0.15,0.0,239,4.1
+Florence,02/05/2021 17:00:00 PM,,centro_nord,100,overcast clouds,1012,50,289.63,0.12,0.0,247,7.68
+Catanzaro,02/05/2021 17:00:00 PM,,calabria,97,overcast clouds,1015,51,293.18,0.0,0.0,280,7.13
+Trieste,02/05/2021 17:00:00 PM,,nord,96,light rain,1008,74,289.88,0.11,0.0,219,3.65
+Valle d'Aosta,02/05/2021 18:00:00 PM,,nord,82,broken clouds,1010,60,277.93,0.44,0.15,295,4.05
+Trieste,02/05/2021 18:00:00 PM,,nord,97,light rain,1008,80,289.22,0.29,0.0,208,2.5
+Trento,02/05/2021 18:00:00 PM,,nord,94,light rain,1006,81,288.51,0.46,0.0,242,0.72
+Florence,02/05/2021 18:00:00 PM,,centro_nord,100,overcast clouds,1013,48,288.83,0.12,0.0,245,7.31
+L'Aquila,02/05/2021 18:00:00 PM,,centro_sud,34,scattered clouds,1014,65,286.72,0.15,0.0,234,3.88
+Milan,02/05/2021 18:00:00 PM,,nord,94,light rain,1006,68,290.9,0.77,0.0,210,3.08
+Naples,02/05/2021 18:00:00 PM,,sud,94,overcast clouds,1017,63,290.08,0.17,0.0,259,5.03
+Potenza,02/05/2021 18:00:00 PM,,sud,100,overcast clouds,1015,65,287.04,0.11,0.0,240,5.27
+Bari,02/05/2021 18:00:00 PM,,sud,99,overcast clouds,1013,46,294.81,0.18,0.0,252,5.79
+Province of Palermo,02/05/2021 18:00:00 PM,,sicilia,100,overcast clouds,1018,60,290.82,0.0,0.0,25,2.6
+Province of Turin,02/05/2021 18:00:00 PM,,nord,85,light rain,1007,48,286.91,0.1,0.0,293,2.11
+Venice,02/05/2021 18:00:00 PM,,nord,100,light rain,1007,69,290.81,0.56,0.0,213,3.18
+Provincia di Ancona,02/05/2021 18:00:00 PM,,centro_nord,41,light rain,1011,68,290.57,0.14,0.0,228,7.74
+Provincia di Campobasso,02/05/2021 18:00:00 PM,,centro_sud,90,overcast clouds,1013,68,289.55,0.17,0.0,226,5.38
+Provincia di Genova,02/05/2021 18:00:00 PM,,nord,98,overcast clouds,1009,76,284.17,0.16,0.0,139,3.9
+Provincia di Perugia,02/05/2021 18:00:00 PM,,centro_nord,70,light rain,1013,79,288.91,0.32,0.0,199,7.42
+Rome,02/05/2021 18:00:00 PM,,centro_sud,76,broken clouds,1016,55,290.47,0.16,0.0,225,4.2
+Sardinia,02/05/2021 18:00:00 PM,,sardegna,33,scattered clouds,1018,53,289.44,0.13,0.0,286,2.85
+Catanzaro,02/05/2021 18:00:00 PM,,calabria,98,overcast clouds,1016,63,291.54,0.0,0.0,284,6.5
+Bologna,02/05/2021 18:00:00 PM,,nord,92,overcast clouds,1008,52,290.4,1.56,0.0,225,6.58
+Valle d'Aosta,02/05/2021 19:00:00 PM,,nord,73,broken clouds,1011,66,276.65,0.44,0.15,292,4.33
+Trieste,02/05/2021 19:00:00 PM,,nord,97,light rain,1008,82,288.48,0.3,0.0,170,2.23
+Province of Turin,02/05/2021 19:00:00 PM,,nord,73,broken clouds,1007,54,285.52,0.1,0.0,288,3.26
+Venice,02/05/2021 19:00:00 PM,,nord,100,moderate rain,1007,74,289.94,1.05,0.0,253,2.18
+Province of Palermo,02/05/2021 19:00:00 PM,,sicilia,100,overcast clouds,1018,74,288.56,0.0,0.0,26,2.42
+Bari,02/05/2021 19:00:00 PM,,sud,100,overcast clouds,1013,47,293.77,0.18,0.0,241,6.32
+Provincia di Genova,02/05/2021 19:00:00 PM,,nord,86,overcast clouds,1009,80,283.23,0.16,0.0,129,3.89
+Bologna,02/05/2021 19:00:00 PM,,nord,76,broken clouds,1008,58,288.8,1.56,0.0,226,5.65
+Rome,02/05/2021 19:00:00 PM,,centro_sud,73,broken clouds,1016,61,289.4,0.16,0.0,222,4.01
+Catanzaro,02/05/2021 19:00:00 PM,,calabria,98,overcast clouds,1016,72,289.92,0.0,0.0,287,5.96
+Provincia di Ancona,02/05/2021 19:00:00 PM,,centro_nord,44,scattered clouds,1011,69,289.33,0.14,0.0,230,6.96
+Trento,02/05/2021 19:00:00 PM,,nord,95,light rain,1007,90,287.23,0.83,0.0,246,0.48
+Florence,02/05/2021 19:00:00 PM,,centro_nord,80,broken clouds,1012,49,287.56,0.12,0.0,244,6.93
+Potenza,02/05/2021 19:00:00 PM,,sud,100,overcast clouds,1016,70,285.42,0.11,0.0,236,3.98
+L'Aquila,02/05/2021 19:00:00 PM,,centro_sud,36,scattered clouds,1014,71,285.32,0.15,0.0,228,3.44
+Provincia di Perugia,02/05/2021 19:00:00 PM,,centro_nord,60,broken clouds,1013,78,287.97,0.32,0.0,197,6.55
+Sardinia,02/05/2021 19:00:00 PM,,sardegna,43,scattered clouds,1017,60,288.37,0.13,0.0,295,1.79
+Milan,02/05/2021 19:00:00 PM,,nord,95,moderate rain,1006,78,288.77,1.5,0.0,258,3.47
+Provincia di Campobasso,02/05/2021 19:00:00 PM,,centro_sud,91,overcast clouds,1014,76,287.75,0.17,0.0,223,4.28
+Naples,02/05/2021 19:00:00 PM,,sud,95,overcast clouds,1017,65,289.68,0.17,0.0,263,4.04
+Valle d'Aosta,30/04/2021 20:00:00 PM,,nord,94,overcast clouds,1005,77,281.57,0.0,0.0,89,0.75
+Provincia di Campobasso,30/04/2021 20:00:00 PM,,centro_sud,76,broken clouds,1009,66,291.08,0.0,0.0,226,1.15
+Province of Turin,30/04/2021 20:00:00 PM,,nord,98,overcast clouds,1008,94,284.62,0.0,0.0,138,0.18
+Provincia di Ancona,30/04/2021 20:00:00 PM,,centro_nord,79,broken clouds,1010,68,290.66,0.0,0.0,139,2.29
+Naples,30/04/2021 20:00:00 PM,,sud,12,few clouds,1009,53,293.27,0.0,0.0,184,1.11
+Province of Palermo,30/04/2021 20:00:00 PM,,sicilia,100,overcast clouds,981,54,294.28,0.0,0.0,190,3.1
+Potenza,30/04/2021 20:00:00 PM,,sud,98,overcast clouds,1010,62,291.2,0.0,0.0,178,2.02
+Milan,30/04/2021 20:00:00 PM,,nord,52,light rain,1009,79,289.71,0.36,0.0,321,1.17
+L'Aquila,30/04/2021 20:00:00 PM,,centro_sud,95,overcast clouds,1016,85,288.65,0.0,0.0,278,0.52
+Florence,30/04/2021 20:00:00 PM,,centro_nord,52,broken clouds,1009,93,290.27,0.0,0.0,214,2.04
+Catanzaro,30/04/2021 20:00:00 PM,,calabria,95,overcast clouds,1010,58,293.84,0.0,0.0,318,0.32
+Bologna,30/04/2021 20:00:00 PM,,nord,20,few clouds,1008,57,289.43,0.0,0.0,205,2.65
+Venice,30/04/2021 20:00:00 PM,,nord,19,light rain,1009,76,290.28,0.31,0.0,113,2.86
+Provincia di Genova,30/04/2021 20:00:00 PM,,nord,100,light rain,1009,89,287.2,0.11,0.0,168,1.53
+Bari,30/04/2021 20:00:00 PM,,sud,19,few clouds,1010,54,293.9,0.0,0.0,168,4.29
+Trento,30/04/2021 20:00:00 PM,,nord,91,light rain,1012,92,280.67,0.14,0.0,170,1.76
+Sardinia,30/04/2021 20:00:00 PM,,sardegna,97,overcast clouds,1008,83,290.32,0.0,0.0,112,0.67
+Provincia di Perugia,30/04/2021 20:00:00 PM,,centro_nord,52,broken clouds,1009,64,292.96,0.0,0.0,344,0.67
+Trieste,30/04/2021 20:00:00 PM,,nord,51,light rain,1010,88,289.54,0.25,0.0,60,0.77
+Rome,30/04/2021 20:00:00 PM,,centro_sud,16,few clouds,1009,66,291.96,0.0,0.0,238,0.84
+Naples,30/04/2021 21:00:00 PM,,sud,0,clear sky,1009,52,293.18,0.0,0.0,237,1.4
+Milan,30/04/2021 21:00:00 PM,,nord,40,scattered clouds,1009,77,290.15,0.36,0.0,268,0.8
+Sardinia,30/04/2021 21:00:00 PM,,sardegna,100,overcast clouds,1008,85,290.37,0.0,0.0,78,1.35
+Potenza,30/04/2021 21:00:00 PM,,sud,99,overcast clouds,1010,60,291.72,0.0,0.0,164,2.31
+Trento,30/04/2021 21:00:00 PM,,nord,90,overcast clouds,1012,93,278.91,0.14,0.0,172,1.35
+L'Aquila,30/04/2021 21:00:00 PM,,centro_sud,100,overcast clouds,1017,87,288.68,0.0,0.0,188,0.78
+Province of Palermo,30/04/2021 21:00:00 PM,,sicilia,100,overcast clouds,974,58,294.62,0.0,0.0,183,3.31
+Florence,30/04/2021 21:00:00 PM,,centro_nord,40,scattered clouds,1009,94,290.42,0.0,0.0,173,0.87
+Venice,30/04/2021 21:00:00 PM,,nord,0,clear sky,1009,72,290.69,0.31,0.0,94,3.42
+Rome,30/04/2021 21:00:00 PM,,centro_sud,0,clear sky,1009,64,292.17,0.0,0.0,191,0.76
+Provincia di Genova,30/04/2021 21:00:00 PM,,nord,100,overcast clouds,1009,87,288.15,0.11,0.0,113,1.22
+Trieste,30/04/2021 21:00:00 PM,,nord,40,light rain,1010,88,289.8,0.49,0.0,112,1.48
+Province of Turin,30/04/2021 21:00:00 PM,,nord,97,overcast clouds,1007,95,285.12,0.0,0.0,325,0.36
+Catanzaro,30/04/2021 21:00:00 PM,,calabria,94,overcast clouds,1010,56,294.21,0.0,0.0,17,0.36
+Bari,30/04/2021 21:00:00 PM,,sud,0,clear sky,1010,52,293.86,0.0,0.0,170,4.43
+Valle d'Aosta,30/04/2021 21:00:00 PM,,nord,93,overcast clouds,1004,74,282.47,0.0,0.0,77,0.87
+Provincia di Ancona,30/04/2021 21:00:00 PM,,centro_nord,75,broken clouds,1010,63,290.95,0.0,0.0,166,2.97
+Provincia di Campobasso,30/04/2021 21:00:00 PM,,centro_sud,84,broken clouds,1008,64,291.28,0.0,0.0,247,1.44
+Bologna,30/04/2021 21:00:00 PM,,nord,0,clear sky,1008,52,289.24,0.0,0.0,208,2.91
+Provincia di Perugia,30/04/2021 21:00:00 PM,,centro_nord,40,scattered clouds,1009,60,293.49,0.0,0.0,10,0.09
+Bari,30/04/2021 22:00:00 PM,,sud,18,few clouds,1010,55,293.57,0.0,0.0,172,4.39
+L'Aquila,30/04/2021 22:00:00 PM,,centro_sud,100,overcast clouds,1016,85,288.46,0.0,0.0,171,1.07
+Catanzaro,30/04/2021 22:00:00 PM,,calabria,95,overcast clouds,1011,57,293.83,0.0,0.0,64,0.09
+Trento,30/04/2021 22:00:00 PM,,nord,92,light rain,1012,92,280.36,0.12,0.0,146,0.87
+Florence,30/04/2021 22:00:00 PM,,centro_nord,52,broken clouds,1009,93,289.93,0.0,0.0,146,1.02
+Bologna,30/04/2021 22:00:00 PM,,nord,20,few clouds,1008,58,289.13,0.0,0.0,211,3.29
+Trieste,30/04/2021 22:00:00 PM,,nord,52,light rain,1010,89,289.33,0.12,0.0,101,1.68
+Valle d'Aosta,30/04/2021 22:00:00 PM,,nord,94,overcast clouds,1006,78,281.16,0.0,0.0,89,0.9
+Milan,30/04/2021 22:00:00 PM,,nord,51,broken clouds,1009,79,289.65,0.36,0.0,262,1.29
+Provincia di Genova,30/04/2021 22:00:00 PM,,nord,100,overcast clouds,1010,89,286.93,0.11,0.0,125,1.2
+Rome,30/04/2021 22:00:00 PM,,centro_sud,18,few clouds,1009,66,291.74,0.0,0.0,26,0.27
+Venice,30/04/2021 22:00:00 PM,,nord,20,few clouds,1009,77,290.13,0.31,0.0,78,2.83
+Provincia di Perugia,30/04/2021 22:00:00 PM,,centro_nord,41,scattered clouds,1009,65,292.49,0.0,0.0,55,0.81
+Province of Palermo,30/04/2021 22:00:00 PM,,sicilia,100,overcast clouds,982,54,294.07,0.0,0.0,176,4.04
+Provincia di Ancona,30/04/2021 22:00:00 PM,,centro_nord,80,broken clouds,1010,68,290.45,0.0,0.0,184,2.87
+Provincia di Campobasso,30/04/2021 22:00:00 PM,,centro_sud,85,overcast clouds,1009,66,290.71,0.0,0.0,241,1.59
+Province of Turin,30/04/2021 22:00:00 PM,,nord,97,overcast clouds,1008,94,284.52,0.0,0.0,310,0.73
+Potenza,30/04/2021 22:00:00 PM,,sud,99,overcast clouds,1010,58,291.04,0.0,0.0,166,2.53
+Naples,30/04/2021 22:00:00 PM,,sud,15,few clouds,1009,54,293.02,0.0,0.0,312,0.88
+Sardinia,30/04/2021 22:00:00 PM,,sardegna,100,overcast clouds,1008,84,289.93,0.0,0.0,84,1.27
+Provincia di Campobasso,30/04/2021 23:00:00 PM,,centro_sud,88,overcast clouds,1009,66,290.15,0.0,0.0,233,2.14
+Province of Turin,30/04/2021 23:00:00 PM,,nord,98,overcast clouds,1009,94,283.92,0.0,0.0,293,0.29
+Provincia di Ancona,30/04/2021 23:00:00 PM,,centro_nord,85,overcast clouds,1010,71,289.94,0.0,0.0,196,2.71
+Provincia di Genova,30/04/2021 23:00:00 PM,,nord,97,overcast clouds,1010,91,285.62,0.11,0.0,100,1.16
+Bologna,30/04/2021 23:00:00 PM,,nord,40,scattered clouds,1009,64,288.88,0.0,0.0,216,3.04
+Valle d'Aosta,30/04/2021 23:00:00 PM,,nord,93,overcast clouds,1007,83,279.81,0.0,0.0,76,0.93
+Bari,30/04/2021 23:00:00 PM,,sud,37,scattered clouds,1010,58,293.13,0.0,0.0,171,4.15
+Milan,30/04/2021 23:00:00 PM,,nord,63,light rain,1009,81,289.05,0.15,0.0,249,1.52
+Trieste,30/04/2021 23:00:00 PM,,nord,64,light rain,1011,91,288.71,0.24,0.0,89,1.97
+Catanzaro,30/04/2021 23:00:00 PM,,calabria,96,overcast clouds,1011,55,293.53,0.0,0.0,48,0.35
+Sardinia,30/04/2021 23:00:00 PM,,sardegna,100,overcast clouds,1009,84,289.34,0.0,0.0,84,1.03
+Venice,30/04/2021 23:00:00 PM,,nord,38,scattered clouds,1010,81,289.53,0.31,0.0,54,2.95
+Florence,30/04/2021 23:00:00 PM,,centro_nord,64,broken clouds,1010,92,289.31,0.0,0.0,72,0.42
+Trento,30/04/2021 23:00:00 PM,,nord,93,overcast clouds,1012,92,281.75,0.12,0.0,173,0.84
+Rome,30/04/2021 23:00:00 PM,,centro_sud,37,scattered clouds,1010,68,291.17,0.0,0.0,43,0.46
+Potenza,30/04/2021 23:00:00 PM,,sud,99,overcast clouds,1011,53,290.3,0.0,0.0,179,2.58
+L'Aquila,30/04/2021 23:00:00 PM,,centro_sud,100,overcast clouds,1015,85,288.0,0.0,0.0,214,0.85
+Naples,30/04/2021 23:00:00 PM,,sud,33,scattered clouds,1010,56,292.83,0.0,0.0,294,1.3
+Provincia di Perugia,30/04/2021 23:00:00 PM,,centro_nord,49,scattered clouds,1010,70,291.31,0.0,0.0,51,0.71
+Province of Palermo,30/04/2021 23:00:00 PM,,sicilia,100,overcast clouds,989,51,293.59,0.0,0.0,165,3.08

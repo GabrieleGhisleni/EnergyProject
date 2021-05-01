@@ -38,7 +38,6 @@ def HOW_TO_CALL_THE_FUNCTION():
             check = obs.current_from_class_to_dict()
     print(datetime.datetime.now())
     ######################################################################################################
-
 def create_tmp_csv():
     meteo=JsonManagerCurrentMeteo().load()
     tmp = []
@@ -46,7 +45,6 @@ def create_tmp_csv():
         tmp.append(MeteoData.current_from_dict_to_class(obs).from_class_to_dict())
     df = pd.DataFrame(tmp)
     df.to_csv("meteo.csv", index=False)
-
     radiation=JsonManagerCurrentRadiation().load()
     tmp = []
     for obs in radiation:
@@ -54,15 +52,12 @@ def create_tmp_csv():
     df = pd.DataFrame(tmp)
     df.to_csv("radiation.csv", index=False)
 
-
-
-def main():
+def main_cli():
     title = """------------------------>  Deal all the steps of the pipeline from here! <---------------------------"""
     parser = argparse.ArgumentParser(description=title, formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     ### must add argument, one for each distributed process.
     parser.add_argument('-m', "--start_manager", action='store_true',
                         help="Start colleting current meteo and radiation and updating the storico")
-
     parser.add_argument('-f', "--force_start", default='force',choices=['force','production'])
     args = parser.parse_args()
     if args.start_manager:
@@ -71,4 +66,4 @@ def main():
 
 
 if __name__=="__main__":
-    main()
+    main_cli()

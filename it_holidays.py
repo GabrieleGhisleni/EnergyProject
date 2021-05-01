@@ -58,5 +58,4 @@ def create_calendar():
     return df
 
 if __name__ == "__main__":
-    if not os.path.exists("italian-holiday-calendar.csv"):
-        create_calendar().to_csv("italian-holiday-calendar.csv", index=False)
+    print("im fine")
