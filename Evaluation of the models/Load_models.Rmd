@@ -1,0 +1,107 @@
+---
+title: "Load"
+author: "Gabriele"
+date: "2/5/2021"
+output: html_document
+---
+
+This notebook is made to understand how to predict the total load in italy.
+We basically start from some exploratory analysis and then we will look for the optimal model, after that we will implement that model into python.
+
+> # 1) Exploratory analisys
+
+```{r warning=F, message=F}
+load <- read.csv("ao.csv")[c(-1,-5,-2)]
+load$Holiday <- factor(load$Holiday)
+load$Hours <- factor(load$Hours)
+load$Month <- factor(load$Month)
+str(load)
+```
+Let's see some details of Load related to the other variables:
+
+```{r warning=F, message=F}
+library(pander)
+pander(aggregate(Load~Holiday, data=load, FUN =mean), justify="center")
+```
+
+```{r warning=F, message=F}
+pander(aggregate(Load~Month, data=load, FUN=mean), justify= "center")
+```
+ 
+ Let's also have a graphical representation of those data:
+ 
+ 
+```{r fig.align="center", warning=F, message=F}
+library(ggplot2)
+library(ggthemes)
+ggplot(data=load, aes(x=Holiday, y=Load, fill=Holiday))+
+  geom_boxplot()+theme_tufte()+ggtitle("Boxplot Load ~ Holiday")+
+  theme(legend.position = "top")
+
+```
+
+```{r fig.align="center", warning=F, message=F}
+ggplot(data=load, aes(x=Hours, y=Load, fill=Hours))+
+  geom_boxplot()+theme_tufte()+ggtitle("Boxplot Load ~ Hours")+
+  theme(legend.position = "none")
+```
+
+> # Linear Regression
+
+```{r warning=F, message=F}
+set.seed(42)
+r <- sample(nrow(load), nrow(load)*0.33)
+train <- load[-r,]
+test_x <- load[r,-1]
+test_y <- load[r,1]
+reg1 <- glm(Load ~ ., data=train)
+pander(summary(reg1), justify = "center")
+```
+
+- MSE:
+
+```{r warning=F, message=F} 
+pred <- predict(reg1, test_x)
+MSE_LM <- mean((test_y-pred)^2)
+print(MSE_LM)
+```
+
+> # Linear Regression with interaction terms:
+
+```{r warning=F, message=F}
+reg2 <- glm(Load ~ Month*Hours+Holiday, data=train)
+```
+
+- MSE:
+
+```{r warning=F, message=F}
+pred <- predict(reg2, test_x)
+MSE_LM_interaction <- mean((test_y-pred)^2)
+print(MSE_LM_interaction)
+```
+
+> # RandomForest
+
+- Since the problems is non linear we will use models that perform better in this situation as the randomForest!
+
+```{r warning=F, message=F}
+library(randomForest)
+MSE_randomForest <- c()
+forest <- randomForest(Load~., data=train, ntree=250, mtry=2)
+pred_forest <- predict(forest, test_x)
+MSE_Forest <- mean((test_y-pred_forest)^2)
+MSE_randomForest <- append(MSE_randomForest, MSE_Forest)
+print(MSE_randomForest)
+```
+
+> # Comparision of the models:
+
+```{r fig.align="center",warning=F, message=F}
+tmp <- data.frame(MSE= c(MSE_LM_interaction, MSE_LM, min(MSE_randomForest)),
+                  Model = c('Linear_with_interaction', 'Linear', 'RandomForest'))
+ggplot(data=tmp, aes(x=Model, y=MSE, fill=MSE))+
+  geom_histogram(stat="identity")+ theme_tufte()+ggtitle("MSE ~ Models")+
+  theme(legend.position="none")
+```
+
+
