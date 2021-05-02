@@ -60,7 +60,25 @@ class MeteoRadiationData():
 
 
     @staticmethod
-    def current_from_dict_to_class(obj:dict):
+    def current_from_preprocess_dict_to_class(obj:dict):
+        """
+        This function has to be applied on a single call from the forecast radiation.
+        So for each city one call.
+        """
+        return MeteoRadiationData(
+            name=obj["name"],
+            date= obj["date"],
+            cross_join=obj["cross_join"],
+            region= obj["region"],
+            globalhorizontalirradiance= obj["globalhorizontalirradiance"],
+            directnormalirradiance= obj["directnormalirradiance"],
+            diffusehorizontalirradiance= obj["diffusehorizontalirradiance"],
+            globalhorizontalirradiance_2= obj["globalhorizontalirradiance_2"],
+            directnormalirradiance_2=obj["directnormalirradiance_2"],
+            diffusehorizontalirradiance_2= obj["diffusehorizontalirradiance_2"])
+
+    @staticmethod
+    def current_from_original_dict_to_class(obj:dict):
         """
         This function has to be applied on a single call from the forecast radiation.
         So for each city one call.
@@ -79,28 +97,32 @@ class MeteoRadiationData():
             diffusehorizontalirradiance_2= obj["list"][0]["radiation"]["dhi_cs"])
 
     @staticmethod
-    def forecast_from_dict_to_class(obj: dict, rain=0, snow=0):
+    def forecast_from_dict_to_class(city: List[dict], rain=0, snow=0):
         """
         obj is the forecast meteo for one city!
         This function has to be applied on a single call from the forecast meteo.
         So for each city one call and it will return a list of dict, each dict will have
         the forecast meteo for that city and the next 48 hour.
         """
-        res = []
-        hours_3dayplus = obj["list"]
-        for hour in hours_3dayplus:
-            res.append(MeteoRadiationData(
-                name=obj["name"],
-                date=hour["date"],
-                region=obj["region"],
-                globalhorizontalirradiance= hour["radiation"]["ghi"],
-                directnormalirradiance= hour["radiation"]["dni"],
-                diffusehorizontalirradiance=hour["radiation"]["dhi"],
-                globalhorizontalirradiance_2=hour["radiation"]["ghi_cs"],
-                directnormalirradiance_2= hour["radiation"]["ghi_cs"],
-                diffusehorizontalirradiance_2=hour["radiation"]["ghi_cs"],
-            ))
-        return res
+        tmp = []
+        for obj in city:
+            res = []
+            hours_3dayplus = obj["list"]
+            for hour in hours_3dayplus:
+                res.append(MeteoRadiationData(
+                    name=obj["name"],
+                    date=hour["date"],
+                    region=obj["region"],
+                    globalhorizontalirradiance= hour["radiation"]["ghi"],
+                    directnormalirradiance= hour["radiation"]["dni"],
+                    diffusehorizontalirradiance=hour["radiation"]["dhi"],
+                    globalhorizontalirradiance_2=hour["radiation"]["ghi_cs"],
+                    directnormalirradiance_2= hour["radiation"]["ghi_cs"],
+                    diffusehorizontalirradiance_2=hour["radiation"]["ghi_cs"],
+                ))
+            tmp.append(res)
+
+        return tmp
 
 
 class MeteoData():
@@ -166,7 +188,7 @@ class MeteoData():
 
 
     @staticmethod
-    def current_from_dict_to_class(obj:dict, rain=0, snow=0):
+    def current_from_original_dict_to_class(obj:dict, rain=0, snow=0):
         """
         This function has to be applied on a single call from the current data.
         So for each city one call and it will return an object MeteoCurrentData.
@@ -190,34 +212,60 @@ class MeteoData():
             wind_speed= obj["wind"]["speed"])
 
     @staticmethod
-    def forecast_from_dict_to_class(obj: dict, rain=0, snow=0):
+    def current_from_preprocess_dict_to_class(obj:dict, rain=0, snow=0):
+        """
+        This function has to be applied on a single call from the current data.
+        So for each city one call and it will return an object MeteoCurrentData.
+        """
+        if 'rain' in obj: rain = obj['rain_1h']
+        if 'snow' in obj: snow=obj["snow_1h"]
+        return MeteoData(
+            name = obj["name"],
+            date = obj["date"],
+            region = obj["region"],
+            clouds = obj["clouds"],
+            cross_join=obj["cross_join"],
+            text_description = obj["text_description"],
+            pressure= obj["pressure"],
+            humidity= obj["humidity"],
+            temp = obj["temp"],
+            rain_1h = rain,
+            snow_1h = snow,
+            wind_deg= obj["wind_deg"],
+            wind_speed= obj["wind_speed"])
+
+    @staticmethod
+    def forecast_from_dict_to_class(city: List[dict], rain=0, snow=0):
         """
         obj is the forecast meteo for one city!
         This function has to be applied on a single call from the forecast meteo.
         So for each city one call and it will return a list of dict, each dict will have
         the forecast meteo for that city and the next 48 hour.
         """
-        res = []
-        hours_48 = obj["hourly"]
-        for hour in hours_48:
-            if 'rain' in hour: rain = hour['rain']["1h"]
-            if 'snow' in hour: snow = hour["snow"]["1h"]
-            original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(hour["dt"]))
-            res.append(MeteoData(
-                name=obj["name"],
-                date=original_dt,
-                region=obj["region"],
-                clouds=hour["clouds"],
-                text_description=hour["weather"][0]["description"],
-                pressure=hour["pressure"],
-                humidity=hour["humidity"],
-                temp=hour["temp"],
-                rain_1h=rain,
-                snow_1h=snow,
-                wind_deg=hour["wind_deg"],
-                wind_speed=hour["wind_speed"],
-            ))
-        return res
+        tmp = []
+        for obj in city:
+            res = []
+            hours_48 = obj["hourly"]
+            for hour in hours_48:
+                if 'rain' in hour: rain = hour['rain']["1h"]
+                if 'snow' in hour: snow = hour["snow"]["1h"]
+                original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(hour["dt"]))
+                res.append(MeteoData(
+                    name=obj["name"],
+                    date=original_dt,
+                    region=obj["region"],
+                    clouds=hour["clouds"],
+                    text_description=hour["weather"][0]["description"],
+                    pressure=hour["pressure"],
+                    humidity=hour["humidity"],
+                    temp=hour["temp"],
+                    rain_1h=rain,
+                    snow_1h=snow,
+                    wind_deg=hour["wind_deg"],
+                    wind_speed=hour["wind_speed"],
+                ))
+            tmp.append(res)
+        return tmp
 
 if __name__ == "__main__":
     print("i'm fine")

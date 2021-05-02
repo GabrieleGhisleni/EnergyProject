@@ -70,6 +70,8 @@ class ManagerTernaSql():
                         current = current[current["Bidding zone"] == "Italy"]
                         current.drop(columns=["Forecast Total load [MW]", "Bidding zone"], inplace=True)
                         tmp = pd.to_datetime(current["Date"], format="%d/%m/%Y %H:%M:%S %p")
+                        # current["Hours"] = current["Date"].dt.strftime("%H")
+                        # current["Minute"] = current["Date"].dt.strftime("%M")
                         current["cross_date"] = tmp.dt.strftime("%Y-%m-%d")
                         current["Date"] = current["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
                         current = current.merge(holiday, how="inner", on="cross_date")
@@ -118,23 +120,26 @@ class JsonManagerCurrentMeteo():
             with open("storico_meteo.json", "r") as file:
                 storico = json.load(file)
                 file.close()
-            return storico
+            return [MeteoData.current_from_preprocess_dict_to_class(obj) for obj in storico]
         else:
-            self.first_update()
-            return self.load()
+            print(f"Do not find the right path!")
 
-    def first_update(self):
+    ################### MUST FIX ###########################
+    def first_update(self, current_meteo:List[MeteoData]):
         print("File not found, created 'storico_meteo.json' and first update")
-        obs = (GetMeteoData().fetching_current_meteo_json())
+        obs = [MeteoData.from_class_to_dict(obj) for obj in current_meteo]
         with open("storico_meteo.json", "w") as file:
             json.dump(obs, file, indent=4)
 
-    def update(self)->None:
-        storico = self.load()
-        new_obs = (GetMeteoData().fetching_current_meteo_json())
-        update = storico + new_obs # must optimize this process
-        with open("storico_meteo.json", "w") as file:
-            json.dump(update, file, indent=4)
+    def update(self, current_meteo:List[MeteoData])->None:
+        if os.path.exists('storico_meteo.json'):
+            storico = self.load()
+            update = storico + current_meteo
+            with open("storico_meteo.json", "w") as file:
+                json.dump([MeteoData.from_class_to_dict(obj) for obj in update], file, indent=4)
+        else:
+            self.first_update(current_meteo)
+
 #############################################################################################
 class JsonManagerCurrentRadiation():
     """
@@ -146,30 +151,57 @@ class JsonManagerCurrentRadiation():
             with open("storico_radiation.json", "r") as file:
                 storico = json.load(file)
                 file.close()
-            return storico
+            return [MeteoRadiationData.current_from_preprocess_dict_to_class(obj) for obj in storico]
         else:
-            self.first_update()
-            return self.load()
+            print(f"Do not find the right path!")
 
-    def first_update(self):
+    def first_update(self, radiations:List[MeteoRadiationData])->None:
         print("File not found, created 'storico_radiation.json' and first update")
-        obs = (GetMeteoData().fetching_current_solar_radiation())
+        obs = [MeteoRadiationData.current_from_class_to_dict(obj) for obj in radiations]
         with open("storico_radiation.json", "w") as file:
             json.dump(obs, file, indent=4)
 
-    def update(self)->None:
-        storico = self.load()
-        new_obs = (GetMeteoData().fetching_current_solar_radiation())
-        update = storico + new_obs # must optimize this process
-        with open("storico_radiation.json", "w") as file:
-            json.dump(update, file, indent=4)
+    def update(self, radiations:List[MeteoRadiationData])->None:
+        if os.path.exists('storico_radiation.json'):
+            storico = self.load()
+            update = storico + radiations # must optimize this process
+            with open("storico_radiation.json", "w") as file:
+                json.dump([MeteoRadiationData.current_from_class_to_dict(obj) for obj in update], file, indent=4)
+        else:
+            self.first_update(radiations)
+#############################################################################################
+class SqlMeteoAndRadiationData():
+    def __init__(self):
+        self.connection = sql.connect(
+            host="127.0.0.1",
+            port=3306,
+            user="root",
+            password=os.environ.get("SQL"),
+            database='energy')
+        self.connection.autocommit = True
+
+    def MeteoAndRadiationSave(self, meteos:List[MeteoData], radiations:List[MeteoRadiationData])->None:
+        """
+        Given two list of MeteoData and MeteoRadiation data it update the local SQL database!
+        """
+        print("Updating Meteo database")
+        cursor = self.connection
+        query = """INSERT into * (..) VALUES  (...)"""
+        for iel in tqdm(range(len(meteos))):
+            first = self.preprocess_MeteoData(meteos[iel])
+            second = self.preprocess_RadiationData(radiations[iel])
+            attributes = tuple(first+second)
+            print(attributes)
+            # cursor.execute(query, attributes)
+
 #############################################################################################
 class ForecastData():
-    def update_forecast_radiation(self):
+    def update_forecast_radiation(self, forecast_radiations:List[MeteoRadiationData]):
+        """
+        require the List obtained from MeteoRadiationData.forecast_from_dict_to_class()
+        """
         tmp = []
-        datas = GetMeteoData().fetching_forecast_solar_radiation()
-        for data in datas:
-            city = MeteoRadiationData.forecast_from_dict_to_class(data)
+        for city in forecast_radiations:
             for obs in city:
                 tmp.append(obs.current_from_class_to_dict())
         df=pd.DataFrame(tmp)
@@ -177,12 +209,10 @@ class ForecastData():
         # df.to_csv("forecast_solar_radiation.csv", index=False)
         return df
 
-    def update_forecast_meteo(self):
+    def update_forecast_meteo(self, forecast_meteo:List[MeteoData]):
         res = []
-        forecast = GetMeteoData().fetching_forecast_meteo()
-        for city in forecast:
-            tmp = MeteoData.forecast_from_dict_to_class(city)
-            for hour in tmp:
+        for city in forecast_meteo:
+            for hour in city:
                 obj = hour.from_class_to_dict()
                 res.append(obj)
         df = pd.DataFrame(res)
@@ -190,10 +220,8 @@ class ForecastData():
         # df.to_csv("forecast_meteo.csv", index=False)
         return df
 
-    def merge_forecast(self,):
-        meteo=ForecastData().update_forecast_meteo()
-        radiation=ForecastData().update_forecast_radiation()
-        final = pd.merge(meteo, radiation[
+    def merge_forecast(self,radiations_df, meteo_df):
+        final = pd.merge(meteo_df, radiations_df[
             ['name', 'date', 'globalhorizontalirradiance', 'directnormalirradiance',
              'diffusehorizontalirradiance', 'globalhorizontalirradiance_2',
              'directnormalirradiance_2', 'diffusehorizontalirradiance_2']],
@@ -221,15 +249,15 @@ def into_the_loop_json():
                     print("done")
 
 def load_energy_load()->None:
-    listu = os.listdir("files/load_terna")
-    listu = ["files/load_terna/"+path for path in listu]
-    ManagerTernaSql().load_from_terna_and_holiday(listu,"files/italian-holiday-calendar.csv")
+    listu = os.listdir("Files example/load_terna")
+    listu = ["Files example/load_terna/"+path for path in listu]
+    ManagerTernaSql().load_from_terna_and_holiday(listu, "Files example/italian-holiday-calendar.csv")
 def load_energy_generation()->None:
-    ManagerTernaSql().generation_from_terna_to_db("files/generation_terna/renawable_production.csv")
+    ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/renawable_production.csv")
 def load_energy_capacity()->None:
-    ManagerTernaSql().load_energy_installed_capacity("files/installed_capacity.csv")
+    ManagerTernaSql().load_energy_installed_capacity("Files example/installed_capacity.csv")
 
 
 
 if __name__ == "__main__":
-    print("im fine")
+    ""

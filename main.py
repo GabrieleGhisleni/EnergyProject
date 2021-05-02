@@ -13,13 +13,13 @@ def HOW_TO_CALL_THE_FUNCTION():
     # CURRENT METEO DATA
     print(datetime.datetime.now())
     current_meteo = GetMeteoData().fetching_current_meteo_json()
-    check=(MeteoData.current_from_dict_to_class(current_meteo[0]).from_class_to_dict())
+    check=(MeteoData.current_from_original_dict_to_class(current_meteo[0]).from_class_to_dict())
     print(datetime.datetime.now())
     ######################################################################################################
     # CURRENT SOLAR RADIATION
     print(datetime.datetime.now())
     current_solar = GetMeteoData().fetching_current_solar_radiation()
-    check=(MeteoRadiationData.current_from_dict_to_class(current_solar[0]).current_from_class_to_dict())
+    check=(MeteoRadiationData.current_from_original_dict_to_class(current_solar[0]).current_from_class_to_dict())
     print(datetime.datetime.now())
     ######################################################################################################
     # FORECAST METEO DATA
@@ -42,13 +42,13 @@ def create_tmp_csv():
     meteo=JsonManagerCurrentMeteo().load()
     tmp = []
     for obs in meteo:
-        tmp.append(MeteoData.current_from_dict_to_class(obs).from_class_to_dict())
+        tmp.append(MeteoData.current_from_original_dict_to_class(obs).from_class_to_dict())
     df = pd.DataFrame(tmp)
     df.to_csv("meteo.csv", index=False)
     radiation=JsonManagerCurrentRadiation().load()
     tmp = []
     for obs in radiation:
-        tmp.append(MeteoRadiationData.current_from_dict_to_class(obs).current_from_class_to_dict())
+        tmp.append(MeteoRadiationData.current_from_original_dict_to_class(obs).current_from_class_to_dict())
     df = pd.DataFrame(tmp)
     df.to_csv("radiation.csv", index=False)
 
@@ -66,4 +66,6 @@ def main_cli():
 
 
 if __name__=="__main__":
-    main_cli()
+    x = GetMeteoData().fetching_forecast_meteo()
+    x = MeteoData.forecast_from_dict_to_class(x)
+    ForecastData().update_forecast_meteo(x)
