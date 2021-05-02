@@ -66,6 +66,5 @@ def main_cli():
 
 
 if __name__=="__main__":
-    x = GetMeteoData().fetching_forecast_meteo()
-    x = MeteoData.forecast_from_dict_to_class(x)
-    ForecastData().update_forecast_meteo(x)
+    ""
+
