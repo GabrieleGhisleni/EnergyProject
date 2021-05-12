@@ -2,13 +2,14 @@
 title: "Load"
 author: "Gabriele"
 date: "2/5/2021"
-output: html_document
+output:
+  rmarkdown::github_document: default
 ---
 
 This notebook is made to understand how to predict the total load in italy.
 We basically start from some exploratory analysis and then we will look for the optimal model, after that we will implement that model into python.
 
-> # 1) Exploratory analisys
+> ### 1) Exploratory analisys
 
 ```{r warning=F, message=F}
 load <- read.csv("ao.csv")[c(-1,-5,-2)]
@@ -19,14 +20,15 @@ str(load)
 ```
 Let's see some details of Load related to the other variables:
 
-```{r warning=F, message=F}
+
+```{r fig.align="center", warning=F, message=F}
 library(pander)
-pander(aggregate(Load~Holiday, data=load, FUN =mean), justify="center")
+
+x <- data.frame(aggregate(Load~Holiday, data=load, FUN =mean)) 
+pander(x,justify = "center")
 ```
 
-```{r warning=F, message=F}
-pander(aggregate(Load~Month, data=load, FUN=mean), justify= "center")
-```
+
  
  Let's also have a graphical representation of those data:
  
@@ -40,13 +42,34 @@ ggplot(data=load, aes(x=Holiday, y=Load, fill=Holiday))+
 
 ```
 
+
 ```{r fig.align="center", warning=F, message=F}
-ggplot(data=load, aes(x=Hours, y=Load, fill=Hours))+
-  geom_boxplot()+theme_tufte()+ggtitle("Boxplot Load ~ Hours")+
+library(gridExtra)
+g1<-ggplot(data=load[load$Holiday=="no",], aes(x=Hours, y=Load, fill=Hours))+
+  geom_boxplot()+theme_tufte()+ggtitle("Load ~ Hours when holiday = no ")+
   theme(legend.position = "none")
+
+g2<-ggplot(data=load[load$Holiday=="yes",], aes(x=Hours, y=Load, fill=Hours))+
+  geom_boxplot()+theme_tufte()+ggtitle("Load ~ Hours when holiday = yes")+
+  theme(legend.position = "none")
+
+g3<-ggplot(data=load[load$Holiday=="half",], aes(x=Hours, y=Load, fill=Hours))+
+  geom_boxplot()+theme_tufte()+ggtitle("Load ~ Hours when holiday = half ")+
+  theme(legend.position = "none")
+
+g1
+```
+```{r fig.align="center", warning=F, message=F}
+g2
 ```
 
-> # Linear Regression
+```{r fig.align="center", warning=F, message=F}
+g3
+```
+
+
+
+> ### Linear Regression
 
 ```{r warning=F, message=F}
 set.seed(42)
@@ -55,7 +78,7 @@ train <- load[-r,]
 test_x <- load[r,-1]
 test_y <- load[r,1]
 reg1 <- glm(Load ~ ., data=train)
-pander(summary(reg1), justify = "center")
+(summary(reg1))
 ```
 
 - MSE:
@@ -66,7 +89,7 @@ MSE_LM <- mean((test_y-pred)^2)
 print(MSE_LM)
 ```
 
-> # Linear Regression with interaction terms:
+> ### Linear Regression with interaction terms:
 
 ```{r warning=F, message=F}
 reg2 <- glm(Load ~ Month*Hours+Holiday, data=train)
@@ -80,7 +103,7 @@ MSE_LM_interaction <- mean((test_y-pred)^2)
 print(MSE_LM_interaction)
 ```
 
-> # RandomForest
+> ### RandomForest
 
 - Since the problems is non linear we will use models that perform better in this situation as the randomForest!
 
@@ -94,7 +117,7 @@ MSE_randomForest <- append(MSE_randomForest, MSE_Forest)
 print(MSE_randomForest)
 ```
 
-> # Comparision of the models:
+> ### Comparision of the models:
 
 ```{r fig.align="center",warning=F, message=F}
 tmp <- data.frame(MSE= c(MSE_LM_interaction, MSE_LM, min(MSE_randomForest)),
@@ -104,4 +127,12 @@ ggplot(data=tmp, aes(x=Model, y=MSE, fill=MSE))+
   theme(legend.position="none")
 ```
 
+
+```{r}
+df <- read.csv("data.csv")
+df <- df[2041:2160,]
+colnames(df)<- c("date","gen","s")
+x<-data.frame(aggregate(gen~date,data=df, FUN=sum))
+nrow(x)
+```
 

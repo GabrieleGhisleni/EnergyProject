@@ -9,7 +9,16 @@
 
 ######################################################################################################
 
+R STUFF
 
+*.RDATA
+*.Rhistory
+*.R
+*.RDM
+
+AO.csv
+
+#########
 
 ## JetBrains ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm

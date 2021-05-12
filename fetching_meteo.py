@@ -165,4 +165,4 @@ class GetMeteoData():
         return res
 
 if __name__ == "__main__":
-    print("i'm fine")
+    pprint(GetMeteoData().fetching_forecast_solar_radiation()[0:2])

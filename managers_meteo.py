@@ -1,11 +1,12 @@
 from sqlalchemy import create_engine
 import json, time, datetime,os, csv
 from tqdm import tqdm
-from typing import List
+from typing import List, TypeVar
 from fetching_meteo import *
 from meteo_classes import *
 import pandas as pd
 import mysql.connector as sql
+PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 #############################################################################################
 class ManagerTernaSql():
     """
@@ -19,6 +20,10 @@ class ManagerTernaSql():
             password= os.environ.get("SQL"),
             database='energy')
         self.connection.autocommit = True
+        self.engine = create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+        self.engine.connect()
+
+
 
     def generation_from_terna_to_db(self, path_to_file:str, process:str='linebyline')->None:
         """
@@ -41,10 +46,10 @@ class ManagerTernaSql():
                             query = """INSERT into energy_production (date, energy_source, generation) VALUES (%s,%s,%s)"""
                             cursor.execute(query, (row["date"],row["energy_source"], row["generation"]))
                 else:
-                    query = """INSERT into energy_production (date, energy_source, generation) VALUES (%s,%s,%s)"""
                     df = pd.read_csv(path_to_file)
-                    for i,row in tqdm(df.iterrows()):
-                        cursor.execute(query, (row["Date"],row["Energy Source"], row["Renewable Generation [GWh]"]))
+                    df.rename(columns={'Date': "date", 'Energy Source': 'energy_source',
+                                       'Renewable Generation [GWh]': 'generation'},inplace=True)
+                    df.to_sql('energy_production', con=self.engine, if_exists='append', index=False)
             elif path_to_file.endswith(".xlsx"):
                 print("to implement yet, pass a csv instead")
             else:
@@ -59,10 +64,11 @@ class ManagerTernaSql():
         and store it into our local sql database. this is a process to made just once.
         """
         if os.path.exists(path_to_holiday):
+            tot = 0
             cursor = self.connection.cursor()
             holiday = pd.read_csv(path_to_holiday)
             holiday.rename(columns={'Date': 'cross_date'}, inplace=True)
-            holiday.drop(columns=["DayName"], inplace=True)
+            #holiday.drop(columns=["DayName"], inplace=True)
             print("Start process and updating energy_load table!")
             for path in tqdm(paths_to_file):
                 if os.path.exists(path):
@@ -71,16 +77,13 @@ class ManagerTernaSql():
                         current = current[current["Bidding zone"] == "Italy"]
                         current.drop(columns=["Forecast Total load [MW]", "Bidding zone"], inplace=True)
                         tmp = pd.to_datetime(current["Date"], format="%d/%m/%Y %H:%M:%S %p")
-                        # current["Hours"] = current["Date"].dt.strftime("%H")
-                        # current["Minute"] = current["Date"].dt.strftime("%M")
                         current["cross_date"] = tmp.dt.strftime("%Y-%m-%d")
                         current["Date"] = current["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
                         current = current.merge(holiday, how="inner", on="cross_date")
                         current.drop(columns=["cross_date"], inplace=True)
-                        current.rename(columns={'Total Load [MW]': "Load"}, inplace=True)
-                        query = """INSERT into energy_load(date, holiday, total_load) VALUES (%s,%s,%s)"""
-                        for i, row in (current.iterrows()):
-                            cursor.execute(query,(str(row["Date"]), row["Holiday"], row["Load"]))
+                        current.rename(columns={'Total Load [MW]': "total_load", 'Date':'date', 'Holiday':'holiday'}, inplace=True)
+                        current.to_sql('energy_load', con=self.engine, if_exists='append', index=False)
+                        tot += len(current)
                     else:
                         extension = path.split('.')[1]
                         print(f".{extension} is not a valid format!")
@@ -88,6 +91,7 @@ class ManagerTernaSql():
                     print(f"{path} is not a valid load path!")
         else:
             print(f"{path_to_holiday} is not a valid holiday path!")
+        print(f"Update {tot} rows")
 
     def load_energy_installed_capacity(self, path:str)->None:
         """
@@ -109,10 +113,26 @@ class ManagerTernaSql():
         else:
             print(f"{path} is not a valid path!")
 
-    def query_from_sql_to_pandas(self,query):
-        engine = create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
-        engine.connect()
-        return (pd.read_sql_query(query, engine))
+    def query_from_sql_to_pandas(self,query)-> PandasDataFrame:
+        return (pd.read_sql_query(query, self.engine))
+
+    def load_prediction_to_sql(self, predictions:list[dict])->None:
+        new,tot = 0,0
+        for day in predictions:
+            for hour in day:
+                try:
+                    query = """insert into prediction_load(date, prediction_load) VALUES(%s,%s);"""
+                    self.engine.execute(query, (hour, day[hour]))
+                    new+=1
+                except Exception as e:
+                    query = f"""update  prediction_load
+                                set  prediction_load={day[hour]}
+                                where(date='{hour}');"""
+                    self.engine.execute(query)
+                    tot+=1
+        print(f"Update {tot}, Added {new} --> records into prediction_load")
+
+
 
 #############################################################################################
 class JsonManagerCurrentMeteo():
@@ -232,7 +252,7 @@ class ForecastData():
                          on=["date", "name"], how='left')
 
         final.drop(columns=["cross_join"], inplace=True)
-        # final.to_csv("new_forecast_obs.csv", index=False)
+        final.to_csv("new_forecast_obs.csv", index=False)
         return final
 
 
@@ -264,46 +284,54 @@ def load_energy_capacity()->None:
 
 
 if __name__ == "__main__":
-    pprint(ManagerTernaSql().query_from_sql_to_pandas("""
-        SELECT total_load, holiday, date,
-    CASE EXTRACT(MONTH FROM date)
-        WHEN  '1' THEN  'january'
-        WHEN 2 THEN  'february'
-        WHEN '3' THEN  'march'
-        WHEN '4' THEN  'april'
-        WHEN '5' THEN  'may'
-        WHEN '6' THEN  'june'
-        WHEN '7' THEN  'july'
-        WHEN '8' THEN  'august'
-        WHEN '9' THEN  'september'
-        WHEN '10' THEN  'october'
-        WHEN '11' THEN  'november'
-        WHEN '12' THEN  'december'
-    END as str_month,
-    CASE EXTRACT(HOUR FROM date)
-        WHEN '1' THEN  '1AM'
-        WHEN '2' THEN  '2AM'
-        WHEN '3' THEN  '3AM'
-        WHEN '4' THEN  '4AM'
-        WHEN '5' THEN  '5AM'
-        WHEN '6' THEN  '6AM'
-        WHEN '7' THEN  '7AM'
-        WHEN '8' THEN  '8AM'
-        WHEN '9' THEN  '9AM'
-        WHEN '10' THEN  '10AM'
-        WHEN '11' THEN  '11AM'
-        WHEN '12' THEN  '12PM'
-        WHEN '13' THEN  '1PM'
-        WHEN '14' THEN  '2PM'
-        WHEN '15' THEN  '3PM'
-        WHEN '16' THEN  '4PM'
-        WHEN '17' THEN  '5PM'
-        WHEN '18' THEN  '6PM'
-        WHEN '19' THEN  '7PM'
-        WHEN '20' THEN  '8PM'
-        WHEN '21' THEN  '9PM'
-        WHEN '22' THEN  '10PM'
-        WHEN '23' THEN  '11PM'
-        WHEN '0' THEN  '12AM'    
-    END as str_hour
-    from energy_load;"""))
+    "im fine"
+
+    # print(datetime.datetime.today().strftime('%A'))
+    # 'Wednesday'
+    # path = ["Files example/load_terna/"+paths for paths in os.listdir("Files example/load_terna")]
+    # ManagerTernaSql().load_from_terna_and_holiday(path, "holiday_BACKWARD.csv")
+    #print(os.getcwd())
+    #ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/renawable_production.csv", "")
+    # pprint(ManagerTernaSql().query_from_sql_to_pandas("""
+    #     SELECT total_load, holiday, date,
+    # CASE EXTRACT(MONTH FROM date)
+    #     WHEN  '1' THEN  'january'
+    #     WHEN 2 THEN  'february'
+    #     WHEN '3' THEN  'march'
+    #     WHEN '4' THEN  'april'
+    #     WHEN '5' THEN  'may'
+    #     WHEN '6' THEN  'june'
+    #     WHEN '7' THEN  'july'
+    #     WHEN '8' THEN  'august'
+    #     WHEN '9' THEN  'september'
+    #     WHEN '10' THEN  'october'
+    #     WHEN '11' THEN  'november'
+    #     WHEN '12' THEN  'december'
+    # END as str_month,
+    # CASE EXTRACT(HOUR FROM date)
+    #     WHEN '1' THEN  '1AM'
+    #     WHEN '2' THEN  '2AM'
+    #     WHEN '3' THEN  '3AM'
+    #     WHEN '4' THEN  '4AM'
+    #     WHEN '5' THEN  '5AM'
+    #     WHEN '6' THEN  '6AM'
+    #     WHEN '7' THEN  '7AM'
+    #     WHEN '8' THEN  '8AM'
+    #     WHEN '9' THEN  '9AM'
+    #     WHEN '10' THEN  '10AM'
+    #     WHEN '11' THEN  '11AM'
+    #     WHEN '12' THEN  '12PM'
+    #     WHEN '13' THEN  '1PM'
+    #     WHEN '14' THEN  '2PM'
+    #     WHEN '15' THEN  '3PM'
+    #     WHEN '16' THEN  '4PM'
+    #     WHEN '17' THEN  '5PM'
+    #     WHEN '18' THEN  '6PM'
+    #     WHEN '19' THEN  '7PM'
+    #     WHEN '20' THEN  '8PM'
+    #     WHEN '21' THEN  '9PM'
+    #     WHEN '22' THEN  '10PM'
+    #     WHEN '23' THEN  '11PM'
+    #     WHEN '0' THEN  '12AM'
+    # END as str_hour
+    # from energy_load;"""))
