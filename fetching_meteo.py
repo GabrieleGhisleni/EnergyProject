@@ -1,10 +1,11 @@
-import requests, time, datetime, json, copy, typing
+import requests, time, datetime, json, copy, typing,os
 from pprint import pprint
 from typing import List, Dict
 from tqdm import tqdm
 
 class GetMeteoData():
     def __init__(self):
+        self.key = os.environ.get("APP_ID_METEO")
         self.coordinates= {'Bari': {'lat': 41.1177, 'lon': 16.8512, 'region':'sud'},
                      'Bologna': {'lat': 44.4667, 'lon': 11.4333,'region':'nord'},
                      'Catanzaro': {'lat': 38.8908, 'lon': 16.5987,'region':'calabria'},
@@ -49,7 +50,7 @@ class GetMeteoData():
         for regione in regions:
             for capoluogo in regions[regione]:
                 try:
-                    url = " https://api.openweathermap.org/data/2.5/weather?appid=a054032d5e094190a9eba85b70421ff3&units=metric&q={},it".format(capoluogo)
+                    url = f"https://api.openweathermap.org/data/2.5/weather?appid={self.key}&units=metric&q={capoluogo},it"
                     response = requests.request("GET", url)
                     if not response.ok:
                         print ("Something wrong with the respunsus ok API" + str(response) + "at " + capoluogo)
@@ -89,7 +90,7 @@ class GetMeteoData():
         res = []
         for citta in coordinates:
             try:
-                url = "http://api.openweathermap.org/data/2.5/solar_radiation?lat={}&lon={}&appid=a054032d5e094190a9eba85b70421ff3".format(coordinates[citta]["lat"],coordinates[citta]["lon"])
+                url = f"http://api.openweathermap.org/data/2.5/solar_radiation?lat={coordinates[citta]['lat']}&lon={coordinates[citta]['lon']}&appid={self.key}"
                 response = requests.request("GET", url)
                 if not response.ok:
                     print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
@@ -119,7 +120,7 @@ class GetMeteoData():
         res = []
         for citta in tqdm(coordinates):
             try:
-                url = "https://api.openweathermap.org/data/2.5/onecall?lat={}&lon={}&exclude=minutely,current,daily,alerts&appid=a054032d5e094190a9eba85b70421ff3".format(coordinates[citta]["lat"],coordinates[citta]["lon"])
+                url = f"https://api.openweathermap.org/data/2.5/onecall?lat={coordinates[citta]['lat']}&lon={coordinates[citta]['lon']}&exclude=minutely,current,daily,alerts&appid={self.key}"
                 response = requests.request("GET", url)
                 if not response.ok:
                     print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
@@ -147,7 +148,7 @@ class GetMeteoData():
         res = []
         for citta in tqdm(coordinates):
             try:
-                url = "http://api.openweathermap.org/data/2.5/solar_radiation/forecast?lat={}&lon={}&appid=a054032d5e094190a9eba85b70421ff3".format(coordinates[citta]["lat"],coordinates[citta]["lon"])
+                url = f"http://api.openweathermap.org/data/2.5/solar_radiation/forecast?lat={coordinates[citta]['lat']}&lon={coordinates[citta]['lon']}&appid={self.key}"
                 response = requests.request("GET", url)
                 if not response.ok:
                     print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
@@ -165,4 +166,4 @@ class GetMeteoData():
         return res
 
 if __name__ == "__main__":
-    pprint(GetMeteoData().fetching_forecast_solar_radiation()[0:2])
+    "fine"

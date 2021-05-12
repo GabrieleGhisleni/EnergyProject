@@ -181,6 +181,10 @@ def pre_process_prediction_custom(predictions:List[float])->PandasDataFrame:
     return (pd.DataFrame(predictions,tmp))
 
 def send_to_mqtt_load_prediction(force="yes"):
+    """
+    Function that take the prediction for the load of today and tomorrow
+    and push this information into the mosquitto broker!
+    """
     forest = LoadForest()
     today_pred = forest.custom_predict(create_load_to_predict('today'))
     tomorrow_pred = forest.custom_predict(create_load_to_predict('tomorrow'))

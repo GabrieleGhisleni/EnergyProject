@@ -114,9 +114,20 @@ class ManagerTernaSql():
             print(f"{path} is not a valid path!")
 
     def query_from_sql_to_pandas(self,query)-> PandasDataFrame:
+        """
+        Fancy function that given a query it return the result as
+        a Pandas DataFrame, if the query return none the data frame
+        will be empty
+        """
         return (pd.read_sql_query(query, self.engine))
 
     def load_prediction_to_sql(self, predictions:list[dict])->None:
+        """
+        Function created to drop the messages from Mqtt to the local database
+        since we perform this operation twice a day first it try to insert the value
+        and in case those values are already present (since there are unique) python will
+        raise an error and in this case it will update those rows with the new predictions :P.
+        """
         new,tot = 0,0
         for day in predictions:
             for hour in day:
@@ -131,8 +142,6 @@ class ManagerTernaSql():
                     self.engine.execute(query)
                     tot+=1
         print(f"Update {tot}, Added {new} --> records into prediction_load")
-
-
 
 #############################################################################################
 class JsonManagerCurrentMeteo():
@@ -285,53 +294,46 @@ def load_energy_capacity()->None:
 
 if __name__ == "__main__":
     "im fine"
-
-    # print(datetime.datetime.today().strftime('%A'))
-    # 'Wednesday'
-    # path = ["Files example/load_terna/"+paths for paths in os.listdir("Files example/load_terna")]
-    # ManagerTernaSql().load_from_terna_and_holiday(path, "holiday_BACKWARD.csv")
-    #print(os.getcwd())
-    #ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/renawable_production.csv", "")
-    # pprint(ManagerTernaSql().query_from_sql_to_pandas("""
-    #     SELECT total_load, holiday, date,
-    # CASE EXTRACT(MONTH FROM date)
-    #     WHEN  '1' THEN  'january'
-    #     WHEN 2 THEN  'february'
-    #     WHEN '3' THEN  'march'
-    #     WHEN '4' THEN  'april'
-    #     WHEN '5' THEN  'may'
-    #     WHEN '6' THEN  'june'
-    #     WHEN '7' THEN  'july'
-    #     WHEN '8' THEN  'august'
-    #     WHEN '9' THEN  'september'
-    #     WHEN '10' THEN  'october'
-    #     WHEN '11' THEN  'november'
-    #     WHEN '12' THEN  'december'
-    # END as str_month,
-    # CASE EXTRACT(HOUR FROM date)
-    #     WHEN '1' THEN  '1AM'
-    #     WHEN '2' THEN  '2AM'
-    #     WHEN '3' THEN  '3AM'
-    #     WHEN '4' THEN  '4AM'
-    #     WHEN '5' THEN  '5AM'
-    #     WHEN '6' THEN  '6AM'
-    #     WHEN '7' THEN  '7AM'
-    #     WHEN '8' THEN  '8AM'
-    #     WHEN '9' THEN  '9AM'
-    #     WHEN '10' THEN  '10AM'
-    #     WHEN '11' THEN  '11AM'
-    #     WHEN '12' THEN  '12PM'
-    #     WHEN '13' THEN  '1PM'
-    #     WHEN '14' THEN  '2PM'
-    #     WHEN '15' THEN  '3PM'
-    #     WHEN '16' THEN  '4PM'
-    #     WHEN '17' THEN  '5PM'
-    #     WHEN '18' THEN  '6PM'
-    #     WHEN '19' THEN  '7PM'
-    #     WHEN '20' THEN  '8PM'
-    #     WHEN '21' THEN  '9PM'
-    #     WHEN '22' THEN  '10PM'
-    #     WHEN '23' THEN  '11PM'
-    #     WHEN '0' THEN  '12AM'
-    # END as str_hour
-    # from energy_load;"""))
+    pprint(ManagerTernaSql().query_from_sql_to_pandas("""
+    SELECT total_load, holiday, date,
+    CASE EXTRACT(MONTH FROM date)
+        WHEN  '1' THEN  'january'
+        WHEN 2 THEN  'february'
+        WHEN '3' THEN  'march'
+        WHEN '4' THEN  'april'
+        WHEN '5' THEN  'may'
+        WHEN '6' THEN  'june'
+        WHEN '7' THEN  'july'
+        WHEN '8' THEN  'august'
+        WHEN '9' THEN  'september'
+        WHEN '10' THEN  'october'
+        WHEN '11' THEN  'november'
+        WHEN '12' THEN  'december'
+    END as str_month,
+    CASE EXTRACT(HOUR FROM date)
+        WHEN '1' THEN  '1AM'
+        WHEN '2' THEN  '2AM'
+        WHEN '3' THEN  '3AM'
+        WHEN '4' THEN  '4AM'
+        WHEN '5' THEN  '5AM'
+        WHEN '6' THEN  '6AM'
+        WHEN '7' THEN  '7AM'
+        WHEN '8' THEN  '8AM'
+        WHEN '9' THEN  '9AM'
+        WHEN '10' THEN  '10AM'
+        WHEN '11' THEN  '11AM'
+        WHEN '12' THEN  '12PM'
+        WHEN '13' THEN  '1PM'
+        WHEN '14' THEN  '2PM'
+        WHEN '15' THEN  '3PM'
+        WHEN '16' THEN  '4PM'
+        WHEN '17' THEN  '5PM'
+        WHEN '18' THEN  '6PM'
+        WHEN '19' THEN  '7PM'
+        WHEN '20' THEN  '8PM'
+        WHEN '21' THEN  '9PM'
+        WHEN '22' THEN  '10PM'
+        WHEN '23' THEN  '11PM'
+        WHEN '0' THEN  '12AM'
+        END as str_hour
+        from energy_load;"""))

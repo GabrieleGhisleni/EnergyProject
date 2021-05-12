@@ -66,4 +66,4 @@ def main_cli():
 
 
 if __name__=="__main__":
-    ""
+    HOW_TO_CALL_THE_FUNCTION()
