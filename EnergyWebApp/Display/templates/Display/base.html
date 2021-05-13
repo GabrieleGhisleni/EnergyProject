@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <style>
+    .status[data-status = 0.3]:after {
+ color : orange;
+ box-sizing: 5px;
+ background-color: orange;
+}
+
+.status[data-status="to do"]:after {
+ content : "This task still has to be done.";
+ color : blue
+}
+
+.status[data-status="done"]:after {
+ content : "This task is done ! ";
+ color : green
+}
+
+.date { 
+ display : none 
+}
+
+.status[data-status="done"] + .date {
+ display : block
+}
+  </style>
+<head>
+  <!-- Required meta tags -->
+     <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap CSS -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital@1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Shadows+Into+Light&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@100&display=swap" rel="stylesheet">
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script defer src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+<script defer src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+</head>
+<body style="background-color:rgba(255,196,173,.1) ;">
+  <div class="header" align="center">
+{#    <img class="img-fluid" src="https://raw.githubusercontent.com/GabrieleGhisleni/MachineLearning-Basis/main/logo.png" alt="Chania" width="460" height="345">#}
+  </div>
+  <nav class="navbar navbar-dark navbar-expand-lg" style="background-color:rgba(44, 130, 201, 1);margin-top: 10px;">
+  <a class="navbar-brand" href= {% url 'home' %}>
+    <span class="fs-title text-white" style="font-family: 'Raleway', sans-serif;">Energy Project </span>
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenu"
+    aria-controls="navbarSupportedContent15" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id = "navbarMenu">
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" style="color: white" href= {% url 'home' %} >Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"  style="color: white" href= {% url 'data' %} >Data Prediction</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link"  style="color: white" href={% url 'about' %} >About Us</a>
+        </li>
+        </ul>
+    </div>
+</nav>
+  <main role="main" class="container-fluid">
+    {% block content %}{% endblock %}
+    </main>
+</body>
+  <footer class="text-center text-white" style="background-color: rgba(44, 130, 201, 0.7); margin-top: 30px"  >
+  <!-- Grid container -->
+  <div class="container p-2 pb-0">
+    <!-- Section: Social media -->
+    <section class="mb-4" >
+        <div class="d-flex align-items-center justify-content-center bg-main rounded mr-3" style="margin-top: 15px">
+            <a href="mailto: eelisy63@gmail.com" class="text-white btn ">
+            <i class="fa fa-envelope-square"> Contattaci</i>
+            </a>
+        </div>
+      </section>
+    <!-- Section: Social media -->
+  </div>
+  <!-- Grid container -->
+  <!-- Copyright -->
+  <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+    © 2020 Copyright:
+    <a class="text-white" href="https://amigurumi-lisi.herokuapp.com">OurPorject...</a>
+  </div>
+  <!-- Copyright -->
+</footer>
+</html>

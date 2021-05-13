@@ -39,13 +39,15 @@ def HOW_TO_CALL_THE_FUNCTION():
     print(datetime.datetime.now())
     ######################################################################################################
 def create_tmp_csv():
-    meteo=JsonManagerCurrentMeteo().load()
+    with open('storico_meteo.json') as f:
+        meteo= json.load(f)
     tmp = []
     for obs in meteo:
         tmp.append(MeteoData.current_from_original_dict_to_class(obs).from_class_to_dict())
     df = pd.DataFrame(tmp)
     df.to_csv("meteo.csv", index=False)
-    radiation=JsonManagerCurrentRadiation().load()
+    with open('storico_radiation.json') as f:
+        radiation= json.load(f)
     tmp = []
     for obs in radiation:
         tmp.append(MeteoRadiationData.current_from_original_dict_to_class(obs).current_from_class_to_dict())
@@ -66,4 +68,4 @@ def main_cli():
 
 
 if __name__=="__main__":
-    HOW_TO_CALL_THE_FUNCTION()
+    """"""

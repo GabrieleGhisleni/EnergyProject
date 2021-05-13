@@ -1,0 +1,43 @@
+SELECT total_load, holiday, date,
+CASE EXTRACT(MONTH FROM date)
+	WHEN  '1' THEN  'january'
+	WHEN 2 THEN  'february'
+	WHEN '3' THEN  'march'
+	WHEN '4' THEN  'april'
+	WHEN '5' THEN  'may'
+	WHEN '6' THEN  'june'
+	WHEN '7' THEN  'july'
+	WHEN '8' THEN  'august'
+	WHEN '9' THEN  'september'
+	WHEN '10' THEN  'october'
+	WHEN '11' THEN  'november'
+	WHEN '12' THEN  'december'
+END as str_month,
+CASE EXTRACT(HOUR FROM date)
+	WHEN '1' THEN  '1AM'
+	WHEN '2' THEN  '2AM'
+	WHEN '3' THEN  '3AM'
+	WHEN '4' THEN  '4AM'
+	WHEN '5' THEN  '5AM'
+	WHEN '6' THEN  '6AM'
+	WHEN '7' THEN  '7AM'
+	WHEN '8' THEN  '8AM'
+	WHEN '9' THEN  '9AM'
+	WHEN '10' THEN  '10AM'
+	WHEN '11' THEN  '11AM'
+	WHEN '12' THEN  '12PM'
+	WHEN '13' THEN  '1PM'
+	WHEN '14' THEN  '2PM'
+	WHEN '15' THEN  '3PM'
+	WHEN '16' THEN  '4PM'
+	WHEN '17' THEN  '5PM'
+	WHEN '18' THEN  '6PM'
+	WHEN '19' THEN  '7PM'
+	WHEN '20' THEN  '8PM'
+	WHEN '21' THEN  '9PM'
+	WHEN '22' THEN  '10PM'
+	WHEN '23' THEN  '11PM'
+	WHEN '0' THEN  '12AM'    
+END as str_hour
+from energy_load
+WHERE EXTRACT(MINUTE FROM date) ="00";

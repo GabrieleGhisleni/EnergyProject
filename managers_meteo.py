@@ -143,6 +143,44 @@ class ManagerTernaSql():
                     tot+=1
         print(f"Update {tot}, Added {new} --> records into prediction_load")
 
+    def thermal_from_terna_to_db(self, paths:List[str])->None:
+        """
+        Given all the csv from energy balance in Terna it will update perform some
+        preprocess operation, it will sum up all the energy source that are not thermal
+        and will update the database. the field are date, sum_energies, thermal_energy.
+        """
+        tmp = []
+        for path in paths:
+            df = pd.read_csv(path, parse_dates=["Date"])
+            tmp.append(df)
+        final = pd.concat(tmp)
+        final = final.sort_values("Date")
+        only_thermal = final[final["Energy Source"] == "Thermal"]
+        only_but_thermal = final[final["Energy Source"] != "Thermal"]
+        only_but_thermal.drop(columns=["Energy Source"], inplace=True)
+        only_thermal.drop(columns=["Energy Source"], inplace=True)
+        only_but_thermal.rename(columns={"Energy Balance [GWh]": "Sum_of_rest_GW"}, inplace=True)
+        only_thermal.rename(columns={"Energy Balance [GWh]": "termal_GW"}, inplace=True)
+        g = only_but_thermal.groupby('Date', as_index=False)
+        res = []
+        for name, group in tqdm(g):
+            tmp = pd.DataFrame(group.sum())
+            columns = list(tmp.index)[0:]
+            valori = list(tmp[0][0:].values)
+            df_2 = pd.DataFrame([valori], columns=columns)
+            df_2.insert(loc=0, column='Date', value=name)
+            res.append(df_2)
+        final_sources = pd.concat(res)
+        final = final_sources.merge(only_thermal, how="inner", on="Date")
+        final.rename(columns={"Date":"date","Sum_of_rest_GW":"sum_of_rest_GW","termal_GW":"thermal_GW"},inplace=True)
+        print(f"Updating {len(final)} into the database!")
+        final.to_csv("energy_thermal.csv", index=False)
+        #final.to_sql("energy_thermal",  con=self.engine,if_exists = 'append', index = False)
+
+
+
+
+
 #############################################################################################
 class JsonManagerCurrentMeteo():
     """
@@ -281,59 +319,71 @@ def into_the_loop_json():
                     time.sleep(890)
                     print("done")
 
-def load_energy_load()->None:
-    listu = os.listdir("Files example/load_terna")
-    listu = ["Files example/load_terna/"+path for path in listu]
-    ManagerTernaSql().load_from_terna_and_holiday(listu, "Files example/italian-holiday-calendar.csv")
-def load_energy_generation()->None:
-    ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/renawable_production.csv")
-def load_energy_capacity()->None:
-    ManagerTernaSql().load_energy_installed_capacity("Files example/installed_capacity.csv")
+
+def populating_the_sql_database():
+    """
+    Following the already prepared folder inside the git, launch this function
+    to populate all the SQL tables.
+    """
+    def energy_load()->None:
+        listu = os.listdir("Files example/load_terna")
+        listu = ["Files example/load_terna/"+path for path in listu]
+        ManagerTernaSql().load_from_terna_and_holiday(listu, "Files example/holiday_BACKWARD.csv")
+    def energy_production()->None:
+        ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/renawable_production.csv")
+    def energy_thermal()->None:
+        paths = ["Files example/Energy_balance/" + i for i in os.listdir("Files example/Energy_balance")]
+        ManagerTernaSql().thermal_from_terna_to_db(paths)
+    def energy_installed_capacity()->None:
+        ManagerTernaSql().load_energy_installed_capacity("Files example/installed_capacity.csv")
+
 
 
 
 if __name__ == "__main__":
+    populating_the_sql_database()
     "im fine"
-    pprint(ManagerTernaSql().query_from_sql_to_pandas("""
-    SELECT total_load, holiday, date,
-    CASE EXTRACT(MONTH FROM date)
-        WHEN  '1' THEN  'january'
-        WHEN 2 THEN  'february'
-        WHEN '3' THEN  'march'
-        WHEN '4' THEN  'april'
-        WHEN '5' THEN  'may'
-        WHEN '6' THEN  'june'
-        WHEN '7' THEN  'july'
-        WHEN '8' THEN  'august'
-        WHEN '9' THEN  'september'
-        WHEN '10' THEN  'october'
-        WHEN '11' THEN  'november'
-        WHEN '12' THEN  'december'
-    END as str_month,
-    CASE EXTRACT(HOUR FROM date)
-        WHEN '1' THEN  '1AM'
-        WHEN '2' THEN  '2AM'
-        WHEN '3' THEN  '3AM'
-        WHEN '4' THEN  '4AM'
-        WHEN '5' THEN  '5AM'
-        WHEN '6' THEN  '6AM'
-        WHEN '7' THEN  '7AM'
-        WHEN '8' THEN  '8AM'
-        WHEN '9' THEN  '9AM'
-        WHEN '10' THEN  '10AM'
-        WHEN '11' THEN  '11AM'
-        WHEN '12' THEN  '12PM'
-        WHEN '13' THEN  '1PM'
-        WHEN '14' THEN  '2PM'
-        WHEN '15' THEN  '3PM'
-        WHEN '16' THEN  '4PM'
-        WHEN '17' THEN  '5PM'
-        WHEN '18' THEN  '6PM'
-        WHEN '19' THEN  '7PM'
-        WHEN '20' THEN  '8PM'
-        WHEN '21' THEN  '9PM'
-        WHEN '22' THEN  '10PM'
-        WHEN '23' THEN  '11PM'
-        WHEN '0' THEN  '12AM'
-        END as str_hour
-        from energy_load;"""))
+    #
+    # pprint(ManagerTernaSql().query_from_sql_to_pandas("""
+    # SELECT total_load, holiday, date,
+    # CASE EXTRACT(MONTH FROM date)
+    #     WHEN  '1' THEN  'january'
+    #     WHEN 2 THEN  'february'
+    #     WHEN '3' THEN  'march'
+    #     WHEN '4' THEN  'april'
+    #     WHEN '5' THEN  'may'
+    #     WHEN '6' THEN  'june'
+    #     WHEN '7' THEN  'july'
+    #     WHEN '8' THEN  'august'
+    #     WHEN '9' THEN  'september'
+    #     WHEN '10' THEN  'october'
+    #     WHEN '11' THEN  'november'
+    #     WHEN '12' THEN  'december'
+    # END as str_month,
+    # CASE EXTRACT(HOUR FROM date)
+    #     WHEN '1' THEN  '1AM'
+    #     WHEN '2' THEN  '2AM'
+    #     WHEN '3' THEN  '3AM'
+    #     WHEN '4' THEN  '4AM'
+    #     WHEN '5' THEN  '5AM'
+    #     WHEN '6' THEN  '6AM'
+    #     WHEN '7' THEN  '7AM'
+    #     WHEN '8' THEN  '8AM'
+    #     WHEN '9' THEN  '9AM'
+    #     WHEN '10' THEN  '10AM'
+    #     WHEN '11' THEN  '11AM'
+    #     WHEN '12' THEN  '12PM'
+    #     WHEN '13' THEN  '1PM'
+    #     WHEN '14' THEN  '2PM'
+    #     WHEN '15' THEN  '3PM'
+    #     WHEN '16' THEN  '4PM'
+    #     WHEN '17' THEN  '5PM'
+    #     WHEN '18' THEN  '6PM'
+    #     WHEN '19' THEN  '7PM'
+    #     WHEN '20' THEN  '8PM'
+    #     WHEN '21' THEN  '9PM'
+    #     WHEN '22' THEN  '10PM'
+    #     WHEN '23' THEN  '11PM'
+    #     WHEN '0' THEN  '12AM'
+    #     END as str_hour
+    #     from energy_load;"""))
