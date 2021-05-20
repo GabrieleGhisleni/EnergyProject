@@ -5,9 +5,9 @@ from sklearn.compose import make_column_transformer
 #from sklearn.compose import make_column_selector ! check
 from sklearn.pipeline import make_pipeline
 from sqlalchemy import create_engine
-import joblib
+from sklearn.linear_model import LinearRegression
+import joblib, os
 import pandas as pd
-import os
 import datetime as dt
 import matplotlib.pyplot as plt
 from typing import TypeVar, Tuple,List
@@ -15,8 +15,443 @@ from mqtt import *
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 NumpyArray = TypeVar("numpy.ndarray")
 
+class GeoThermalModel():
+    """
+    When created the class look up in the specified path for an existing model.
+    In case there isn't first fit the model with fit_model!
+    """
+    def __init__(self, path:str="Models/geothermal_linear.mod"):
+        self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+        if os.path.exists(path):
+            print(f" --> Model loaded and ready {path.split('/')[-1]} <--- ")
+            self.pipeline = joblib.load(path)
+        else:
+            print(f"Do not found an already existing model at {path}")
 
-class LoadForest():
+    def get_geothermal_data(self):
+        """
+        Since the thermal is higly correlated with the load we have to extract
+        the data from the thermal table and inner join them with the load table and
+        add also the str_name of the month which is an important variable to kept
+        explicit!
+        """
+        self.engine.connect()
+        query = f"""SELECT energy_meteo.humidity,temp,rain_1h,directnormalirradiance,globalhorizontalirradiance_2,
+        energy_production.generation,
+            CASE EXTRACT(MONTH FROM energy_meteo.date)
+        	WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
+        	WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
+        	WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
+        END as str_month,
+		CASE EXTRACT(HOUR FROM energy_meteo.date)
+			WHEN '1' THEN  '1AM'
+			WHEN '2' THEN  '2AM'
+			WHEN '3' THEN  '3AM'
+			WHEN '4' THEN  '4AM'
+			WHEN '5' THEN  '5AM'
+			WHEN '6' THEN  '6AM'
+			WHEN '7' THEN  '7AM'
+			WHEN '8' THEN  '8AM'
+			WHEN '9' THEN  '9AM'
+			WHEN '10' THEN  '10AM'
+			WHEN '11' THEN  '11AM'
+			WHEN '12' THEN  '12PM'
+			WHEN '13' THEN  '1PM'
+			WHEN '14' THEN  '2PM'
+			WHEN '15' THEN  '3PM'
+			WHEN '16' THEN  '4PM'
+			WHEN '17' THEN  '5PM'
+			WHEN '18' THEN  '6PM'
+			WHEN '19' THEN  '7PM'
+			WHEN '20' THEN  '8PM'
+			WHEN '21' THEN  '9PM'
+			WHEN '22' THEN  '10PM'
+			WHEN '23' THEN  '11PM'
+			WHEN '0' THEN  '12AM'
+        END as str_hour
+        FROM energy_production
+        INNER JOIN energy_meteo
+        ON energy_meteo.date = energy_production.date
+        where energy_production.energy_source = 'geothermal';"""
+        df = pd.read_sql_query(query, con=self.engine)
+        predictors = df[["humidity","rain_1h","temp", "directnormalirradiance","globalhorizontalirradiance_2",
+                         "str_hour", "str_month"]]
+        target = df[["generation"]]
+        return (predictors,target)
+
+    def custom_fit_model(self, force="force") -> None:
+        """
+        It took all the database and trains the model!
+        """
+        if force == 'force':
+            print(f"--> Training the model, start at {dt.datetime.now()} <--")
+            pre_process = make_column_transformer((OneHotEncoder(),
+                                                   ["str_hour","str_month"]),
+                                                  remainder='passthrough')
+            model = LinearRegression()
+            self.pipeline = make_pipeline(pre_process, model)
+            pred, target = self.get_geothermal_data()
+            self.pipeline.fit(pred, target.values.ravel())
+            joblib.dump(self.pipeline, 'Models/geothermal_linear.mod')
+            print(
+                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
+class BiomassModel():
+    """
+    When created the class look up in the specified path for an existing model.
+    In case there isn't first fit the model with fit_model!
+    """
+    def __init__(self, path:str="Models/biomass_forest.mod"):
+        self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+        if os.path.exists(path):
+            print(f" --> Model loaded and ready {path.split('/')[-1]} <--- ")
+            self.pipeline = joblib.load(path)
+        else:
+            print(f"Do not found an already existing model at {path}")
+
+    def get_biomass_data(self):
+        """
+        Since the thermal is higly correlated with the load we have to extract
+        the data from the thermal table and inner join them with the load table and
+        add also the str_name of the month which is an important variable to kept
+        explicit!
+        """
+        self.engine.connect()
+        query = f"""SELECT energy_meteo.temp,rain_1h,globalhorizontalirradiance_2,directnormalirradiance_2,diffusehorizontalirradiance_2,
+            energy_production.generation,
+            CASE EXTRACT(MONTH FROM energy_meteo.date)
+        	WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
+        	WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
+        	WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
+        END as str_month,
+		CASE EXTRACT(HOUR FROM energy_meteo.date)
+			WHEN '1' THEN  '1AM'
+			WHEN '2' THEN  '2AM'
+			WHEN '3' THEN  '3AM'
+			WHEN '4' THEN  '4AM'
+			WHEN '5' THEN  '5AM'
+			WHEN '6' THEN  '6AM'
+			WHEN '7' THEN  '7AM'
+			WHEN '8' THEN  '8AM'
+			WHEN '9' THEN  '9AM'
+			WHEN '10' THEN  '10AM'
+			WHEN '11' THEN  '11AM'
+			WHEN '12' THEN  '12PM'
+			WHEN '13' THEN  '1PM'
+			WHEN '14' THEN  '2PM'
+			WHEN '15' THEN  '3PM'
+			WHEN '16' THEN  '4PM'
+			WHEN '17' THEN  '5PM'
+			WHEN '18' THEN  '6PM'
+			WHEN '19' THEN  '7PM'
+			WHEN '20' THEN  '8PM'
+			WHEN '21' THEN  '9PM'
+			WHEN '22' THEN  '10PM'
+			WHEN '23' THEN  '11PM'
+			WHEN '0' THEN  '12AM'
+        END as str_hour
+        FROM energy_production
+        INNER JOIN energy_meteo
+        ON energy_meteo.date = energy_production.date
+        where energy_production.energy_source = 'biomass';"""
+        df = pd.read_sql_query(query, con=self.engine)
+        predictors = df[["rain_1h","temp", "globalhorizontalirradiance_2","directnormalirradiance_2",
+                         "diffusehorizontalirradiance_2","str_hour", "str_month"]]
+        target = df[["generation"]]
+        return (predictors,target)
+
+    def custom_fit_model(self, force="force") -> None:
+        """
+        It took all the database and trains the model!
+        """
+        if force == 'force':
+            print(f"--> Training the model, start at {dt.datetime.now()} <--")
+            pre_process = make_column_transformer((OneHotEncoder(),
+                                                   ["str_hour","str_month"]),
+                                                  remainder='passthrough')
+            model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
+            self.pipeline = make_pipeline(pre_process, model)
+            pred, target = self.get_biomass_data()
+            self.pipeline.fit(pred, target.values.ravel())
+            joblib.dump(self.pipeline, 'Models/biomass_forest.mod')
+            print(
+                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
+class PhotovoltaicModel():
+    """
+    When created the class look up in the specified path for an existing model.
+    In case there isn't first fit the model with fit_model!
+    """
+    def __init__(self, path:str="Models/photovoltaic_forest.mod"):
+        self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+        if os.path.exists(path):
+            print(f" --> Model loaded and ready {path.split('/')[-1]}<--- ")
+            self.pipeline = joblib.load(path)
+        else:
+            print(f"Do not found an already existing model at {path}")
+
+    def get_photovoltaid_data(self):
+        """
+        Since the thermal is higly correlated with the load we have to extract
+        the data from the thermal table and inner join them with the load table and
+        add also the str_name of the month which is an important variable to kept
+        explicit!
+        """
+        self.engine.connect()
+        query = f"""SELECT energy_meteo.humidity,temp,rain_1h,snow_1h,wind_deg,directnormalirradiance,
+            diffusehorizontalirradiance,globalhorizontalirradiance_2,directnormalirradiance_2,diffusehorizontalirradiance_2,
+            energy_production.generation,
+            CASE EXTRACT(MONTH FROM energy_meteo.date)
+                WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
+                WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
+                WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
+            END as str_month,
+		    CASE EXTRACT(HOUR FROM energy_meteo.date)
+                WHEN '1' THEN  '1AM'
+                WHEN '2' THEN  '2AM'
+                WHEN '3' THEN  '3AM'
+                WHEN '4' THEN  '4AM'
+                WHEN '5' THEN  '5AM'
+                WHEN '6' THEN  '6AM'
+                WHEN '7' THEN  '7AM'
+                WHEN '8' THEN  '8AM'
+                WHEN '9' THEN  '9AM'
+                WHEN '10' THEN  '10AM'
+                WHEN '11' THEN  '11AM'
+                WHEN '12' THEN  '12PM'
+                WHEN '13' THEN  '1PM'
+                WHEN '14' THEN  '2PM'
+                WHEN '15' THEN  '3PM'
+                WHEN '16' THEN  '4PM'
+                WHEN '17' THEN  '5PM'
+                WHEN '18' THEN  '6PM'
+                WHEN '19' THEN  '7PM'
+                WHEN '20' THEN  '8PM'
+                WHEN '21' THEN  '9PM'
+                WHEN '22' THEN  '10PM'
+                WHEN '23' THEN  '11PM'
+                WHEN '0' THEN  '12AM'
+            END as str_hour
+            FROM energy_production
+            INNER JOIN energy_meteo
+            ON energy_meteo.date = energy_production.date
+            where energy_production.energy_source = 'photovoltaic';"""
+        df = pd.read_sql_query(query, con=self.engine)
+        predictors = df[["humidity","temp", "rain_1h","snow_1h", "wind_deg","directnormalirradiance",
+                         "diffusehorizontalirradiance","globalhorizontalirradiance_2","directnormalirradiance_2",
+                         "diffusehorizontalirradiance_2","str_month","str_hour"]]
+        target = df[["generation"]]
+        return (predictors,target)
+
+    def custom_fit_model(self, force="force") -> None:
+        """
+        It took all the database and trains the model!
+        """
+        if force == 'force':
+            print(f"--> Training the model, start at {dt.datetime.now()} <--")
+            pre_process = make_column_transformer((OneHotEncoder(),
+                                                   ["str_month","str_hour"]),
+                                                  remainder='passthrough')
+            model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
+            self.pipeline = make_pipeline(pre_process, model)
+            pred, target = self.get_photovoltaid_data()
+            self.pipeline.fit(pred, target.values.ravel())
+            joblib.dump(self.pipeline, 'Models/photovoltaic_forest.mod')
+            print(
+                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
+
+class WindModel():
+    """
+    When created the class look up in the specified path for an existing model.
+    In case there isn't first fit the model with fit_model!
+    """
+    def __init__(self, path:str="Models/wind_forest.mod"):
+        self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+        if os.path.exists(path):
+            print(f" --> Model loaded and ready {path.split('/')[-1]}<--- ")
+            self.pipeline = joblib.load(path)
+        else:
+            print(f"Do not found an already existing model at {path}")
+
+    def get_wind_data(self):
+        """
+        Since the thermal is higly correlated with the load we have to extract
+        the data from the thermal table and inner join them with the load table and
+        add also the str_name of the month which is an important variable to kept
+        explicit!
+        """
+        self.engine.connect()
+        query = f"""SELECT energy_meteo.humidity,wind_deg,wind_speed,diffusehorizontalirradiance_2, energy_production.generation,
+            CASE EXTRACT(MONTH FROM energy_meteo.date)
+                WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
+                WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
+                WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
+            END as str_month     
+            FROM energy_production
+            INNER JOIN energy_meteo
+            ON energy_meteo.date = energy_production.date
+            where energy_production.energy_source = 'wind';"""
+        df = pd.read_sql_query(query, con=self.engine)
+        predictors = df[["humidity","wind_deg", "wind_speed","diffusehorizontalirradiance_2", "str_month"]]
+        target = df[["generation"]]
+        return (predictors,target)
+
+    def custom_fit_model(self, force="force") -> None:
+        """
+        It took all the database and trains the model!
+        """
+        if force == 'force':
+            print(f"--> Training the model, start at {dt.datetime.now()} <--")
+            pre_process = make_column_transformer((OneHotEncoder(),
+                                                   ["str_month"]),
+                                                  remainder='passthrough')
+            model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
+            self.pipeline = make_pipeline(pre_process, model)
+            pred, target = self.get_wind_data()
+            self.pipeline.fit(pred, target.values.ravel())
+            joblib.dump(self.pipeline, 'Models/wind_forest.mod')
+            print(
+                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
+
+class HydroModel():
+    """
+    When created the class look up in the specified path for an existing model.
+    In case there isn't first fit the model with fit_model!
+    """
+    def __init__(self, path:str="Models/hydro_r_forest.mod"):
+        self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+        if os.path.exists(path):
+            print(f" --> Model loaded and ready {path.split('/')[-1]}<--- ")
+            self.pipeline = joblib.load(path)
+        else:
+            print(f"Do not found an already existing model at {path}")
+
+    def get_hydro_data(self):
+        """
+        Since the thermal is higly correlated with the load we have to extract
+        the data from the thermal table and inner join them with the load table and
+        add also the str_name of the month which is an important variable to kept
+        explicit!
+        """
+        self.engine.connect()
+        query = f"""SELECT energy_meteo.humidity,temp,rain_1h,directnormalirradiance,globalhorizontalirradiance_2, energy_production.generation,
+        CASE EXTRACT(HOUR FROM energy_meteo.date)
+            WHEN '1' THEN  '1AM'
+            WHEN '2' THEN  '2AM'
+            WHEN '3' THEN  '3AM'
+            WHEN '4' THEN  '4AM'
+            WHEN '5' THEN  '5AM'
+            WHEN '6' THEN  '6AM'
+            WHEN '7' THEN  '7AM'
+            WHEN '8' THEN  '8AM'
+            WHEN '9' THEN  '9AM'
+            WHEN '10' THEN  '10AM'
+            WHEN '11' THEN  '11AM'
+            WHEN '12' THEN  '12PM'
+            WHEN '13' THEN  '1PM'
+            WHEN '14' THEN  '2PM'
+            WHEN '15' THEN  '3PM'
+            WHEN '16' THEN  '4PM'
+            WHEN '17' THEN  '5PM'
+            WHEN '18' THEN  '6PM'
+            WHEN '19' THEN  '7PM'
+            WHEN '20' THEN  '8PM'
+            WHEN '21' THEN  '9PM'
+            WHEN '22' THEN  '10PM'
+            WHEN '23' THEN  '11PM'
+            WHEN '0' THEN  '12AM'
+        END as str_hour
+        FROM energy_production
+        INNER JOIN energy_meteo
+        ON energy_meteo.date = energy_production.date
+        where energy_production.energy_source = 'hydro';"""
+        df = pd.read_sql_query(query, con=self.engine)
+        predictors = df[["humidity","temp", "rain_1h","directnormalirradiance", "globalhorizontalirradiance_2","str_hour"]]
+        target = df[["generation"]]
+        return (predictors,target)
+
+    def custom_fit_model(self, force="force") -> None:
+        """
+        It took all the database and trains the model!
+        """
+        if force == 'force':
+            print(f"--> Training the model, start at {dt.datetime.now()} <--")
+            pre_process = make_column_transformer((OneHotEncoder(),
+                                                   ["str_hour"]),
+                                                  remainder='passthrough')
+            model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
+            self.pipeline = make_pipeline(pre_process, model)
+            pred, target = self.get_hydro_data()
+            self.pipeline.fit(pred, target.values.ravel())
+            joblib.dump(self.pipeline, 'Models/hydro_r_forest.mod')
+            print(
+                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
+
+class ThermalModel():
+    """
+    When created the class look up in the specified path for an existing model.
+    In case there isn't first fit the model with fit_model!
+    """
+    def __init__(self, path:str="Models/thermal_forest.mod"):
+        self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+        if os.path.exists(path):
+            print(f" --> Model loaded and ready {path.split('/')[-1]}<--- ")
+            self.pipeline = joblib.load(path)
+        else:
+            print(f"Do not found an already existing model at {path}")
+
+    def get_thermal_data(self):
+        """
+        Since the thermal is higly correlated with the load we have to extract
+        the data from the thermal table and inner join them with the load table and
+        add also the str_name of the month which is an important variable to kept
+        explicit!
+        """
+        self.engine.connect()
+        query = f"""SELECT holiday, total_load, thermal_GW, Sum_of_rest_GW, energy_load.`date`,
+                    CASE EXTRACT(MONTH FROM energy_load.`date`)
+                                        WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
+                                        WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
+                                        WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
+                    END as str_month    
+                    FROM energy_load
+                    INNER JOIN energy_thermal
+                    ON energy_load.date = energy_thermal.date;"""
+        df = pd.read_sql_query(query, con=self.engine)
+        #df.to_csv("aggregate_only.csv")
+        predictors = df[["holiday","total_load", "Sum_of_rest_GW","str_month"]]
+        target = df[["thermal_GW"]]
+        return (predictors,target)
+
+    def custom_fit_model(self, force="force") -> None:
+        """
+        It took all the database and trains the model!
+        """
+        if force == 'force':
+            print(f"--> Training the model, start at {dt.datetime.now()} <--")
+            pre_process = make_column_transformer((OneHotEncoder(),
+                                                   ["holiday", "str_month"]),
+                                                  remainder='passthrough')
+            model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
+            self.pipeline = make_pipeline(pre_process, model)
+            pred, target = self.__get_thermal_data()
+            self.pipeline.fit(pred, target.values.ravel())
+            joblib.dump(self.pipeline, 'Models/thermal_forest.mod')
+            print(
+                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
+        def custom_predict(self, generation_prediction:PandasDataFrame, load_prediction:PandasDataFrame) -> NumpyArray:
+            """
+            HOLY FUCK
+            """
+            ""
+
+
+
+class LoadModel():
     """
     When created the class look up in the specified path for an existing model.
     In case there isn't first fit the model with fit_model!
@@ -24,7 +459,7 @@ class LoadForest():
     def __init__(self, path:str="Models/load_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f" --> Model loaded and ready <--- ")
+            print(f" --> Model loaded and ready at {path.split('/')[-1]} <--- ")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -70,6 +505,7 @@ class LoadForest():
             model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
             self.pipeline = make_pipeline(pre_process, model)
             pred, target = self.__get_training_data()
+            print("Extracted the data from sql --> Fitting")
             self.pipeline.fit(pred, target.values.ravel())
             joblib.dump(self.pipeline, 'Models/load_forest.mod')
             print(f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
@@ -185,7 +621,7 @@ def send_to_mqtt_load_prediction(force="yes"):
     Function that take the prediction for the load of today and tomorrow
     and push this information into the mosquitto broker!
     """
-    forest = LoadForest()
+    forest = LoadModel()
     today_pred = forest.custom_predict(create_load_to_predict('today'))
     tomorrow_pred = forest.custom_predict(create_load_to_predict('tomorrow'))
     today_processed = (pre_process_prediction_today(today_pred))
@@ -195,7 +631,10 @@ def send_to_mqtt_load_prediction(force="yes"):
     MqttManager().publish_load_prediction(tmp)
 
 if __name__ == "__main__":
-    import time
-    while True:
-        send_to_mqtt_load_prediction()
-        time.sleep(6000)
+    ""
+    # HydroModel().custom_fit_model()
+    # WindModel().custom_fit_model()
+    # PhotovoltaicModel().custom_fit_model()
+    # BiomassModel().custom_fit_model()
+    # GeoThermalModel().custom_fit_model()
+    # LoadModel().custom_fit_model()

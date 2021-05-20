@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-import json, time, datetime,os, csv
+import json, time, datetime,os, csv, datetime
 from tqdm import tqdm
 from typing import List, TypeVar
 from fetching_meteo import *
@@ -13,13 +13,6 @@ class ManagerTernaSql():
     class created to handle the file transfer from Terna to our databases.
     """
     def __init__(self):
-        self.connection = sql.connect(
-            host="127.0.0.1",
-            port=3306,
-            user="root",
-            password= os.environ.get("SQL"),
-            database='energy')
-        self.connection.autocommit = True
         self.engine = create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         self.engine.connect()
 
@@ -33,7 +26,6 @@ class ManagerTernaSql():
         While the same with pandas without spark it took around 40 second.
         """
         if os.path.exists(path_to_file):
-            cursor = self.connection.cursor()
             if path_to_file.endswith(".csv"):
                 if process == 'linebyline':
                     with open(path_to_file, "r", encoding="utf-8") as file:
@@ -44,7 +36,7 @@ class ManagerTernaSql():
                         print("Start process and updating energy_generation table!")
                         for row in tqdm(obs):
                             query = """INSERT into energy_production (date, energy_source, generation) VALUES (%s,%s,%s)"""
-                            cursor.execute(query, (row["date"],row["energy_source"], row["generation"]))
+                            self.engine.execute(query, (row["date"],row["energy_source"], row["generation"]))
                 else:
                     df = pd.read_csv(path_to_file)
                     df.rename(columns={'Date': "date", 'Energy Source': 'energy_source',
@@ -65,7 +57,6 @@ class ManagerTernaSql():
         """
         if os.path.exists(path_to_holiday):
             tot = 0
-            cursor = self.connection.cursor()
             holiday = pd.read_csv(path_to_holiday)
             holiday.rename(columns={'Date': 'cross_date'}, inplace=True)
             #holiday.drop(columns=["DayName"], inplace=True)
@@ -97,7 +88,6 @@ class ManagerTernaSql():
         """
         Accept only csv.
         """
-        cursor = self.connection.cursor()
         if os.path.exists(path):
             if not path.endswith(".csv"):
                 extension = path.split(".")[1]
@@ -109,7 +99,7 @@ class ManagerTernaSql():
                 VALUES (%s,%s,%s)"""
                 print("Updating energy_installed_capacity databse!")
                 for i, row in df.iterrows():
-                    cursor.execute(query, (str(row["Year"]), row["Type"], row["Installed Capacity [GW]"]))
+                    self.engine.execute(query, (str(row["Year"]), row["Type"], row["Installed Capacity [GW]"]))
         else:
             print(f"{path} is not a valid path!")
 
@@ -174,22 +164,31 @@ class ManagerTernaSql():
         final = final_sources.merge(only_thermal, how="inner", on="Date")
         final.rename(columns={"Date":"date","Sum_of_rest_GW":"sum_of_rest_GW","termal_GW":"thermal_GW"},inplace=True)
         print(f"Updating {len(final)} into the database!")
-        final.to_csv("energy_thermal.csv", index=False)
-        #final.to_sql("energy_thermal",  con=self.engine,if_exists = 'append', index = False)
+        #final.to_csv("energy_thermal.csv", index=False)
+        final.to_sql("energy_thermal",  con=self.engine,if_exists = 'append', index = False)
 
 
 
-
-
-#############################################################################################
 class JsonManagerCurrentMeteo():
     """
     Manager created to deal the JSON operation as save and load for
     current meteo data. Used for the first collection of the storico.
     """
+    def __init__(self, path:str=None):
+        self.path = path
+
+    def load_unprocess(self)->List[MeteoData]:
+        if os.path.exists(self.path):
+            with open(self.path, "r") as file:
+                storico = json.load(file)
+                file.close()
+            return [MeteoData.current_from_original_dict_to_class(obj) for obj in storico]
+        else:
+            print(f"Do not find the right path!")
+
     def load(self)->List[MeteoData]:
-        if os.path.exists('storico_meteo.json'):
-            with open("storico_meteo.json", "r") as file:
+        if os.path.exists(self.path):
+            with open(self.path, "r") as file:
                 storico = json.load(file)
                 file.close()
             return [MeteoData.current_from_preprocess_dict_to_class(obj) for obj in storico]
@@ -201,25 +200,38 @@ class JsonManagerCurrentMeteo():
         obs = [MeteoData.from_class_to_dict(obj) for obj in current_meteo]
         with open("storico_meteo.json", "w") as file:
             json.dump(obs, file, indent=4)
+            self.path = "storico_meteo.json"
 
     def update(self, current_meteo:List[MeteoData])->None:
-        if os.path.exists('storico_meteo.json'):
+        if os.path.exists(self.path):
             storico = self.load()
             update = storico + current_meteo
-            with open("storico_meteo.json", "w") as file:
+            with open(self.path, "w") as file:
                 json.dump([MeteoData.from_class_to_dict(obj) for obj in update], file, indent=4)
         else:
             self.first_update(current_meteo)
 
-#############################################################################################
+
 class JsonManagerCurrentRadiation():
     """
     Manager created to deal the JSON operation as save and load for
     current radiation data. Used for the first collection of the storico.
     """
+    def __init__(self, path:str=None):
+        self.path = path
+
+    def load_unprocess(self)->List[MeteoRadiationData]:
+        if os.path.exists(self.path):
+            with open(self.path, "r") as file:
+                storico = json.load(file)
+                file.close()
+            return [MeteoRadiationData.current_from_original_dict_to_class(obj) for obj in storico]
+        else:
+            print(f"Do not find the right path!")
+
     def load(self)->List[MeteoRadiationData]:
-        if os.path.exists('storico_radiation.json'):
-            with open("storico_radiation.json", "r") as file:
+        if os.path.exists(self.path):
+            with open(self.path, "r") as file:
                 storico = json.load(file)
                 file.close()
             return [MeteoRadiationData.current_from_preprocess_dict_to_class(obj) for obj in storico]
@@ -231,16 +243,17 @@ class JsonManagerCurrentRadiation():
         obs = [MeteoRadiationData.current_from_class_to_dict(obj) for obj in radiations]
         with open("storico_radiation.json", "w") as file:
             json.dump(obs, file, indent=4)
+            self.path = "storico_radiation.json"
 
     def update(self, radiations:List[MeteoRadiationData])->None:
-        if os.path.exists('storico_radiation.json'):
+        if os.path.exists(self.path):
             storico = self.load()
             update = storico + radiations # must optimize this process
-            with open("storico_radiation.json", "w") as file:
+            with open(self.path, "w") as file:
                 json.dump([MeteoRadiationData.current_from_class_to_dict(obj) for obj in update], file, indent=4)
         else:
             self.first_update(radiations)
-#############################################################################################
+
 class SqlMeteoAndRadiationData():
     def __init__(self):
         self.connection = sql.connect(
@@ -253,19 +266,36 @@ class SqlMeteoAndRadiationData():
 
     def MeteoAndRadiationSave(self, meteos:List[MeteoData], radiations:List[MeteoRadiationData])->None:
         """
-        Given two list of MeteoData and MeteoRadiation data it update the local SQL database!
+        Given two list of MeteoData and MeteoRadiation data it update the local SQL database.
         """
         print("Updating Meteo database")
-        cursor = self.connection
-        query = """INSERT into * (..) VALUES  (...)"""
-        for iel in tqdm(range(len(meteos))):
-            first = self.preprocess_MeteoData(meteos[iel])
-            second = self.preprocess_RadiationData(radiations[iel])
-            attributes = tuple(first+second)
-            print(attributes)
-            # cursor.execute(query, attributes)
+        cursor = self.connection.cursor()
+        query = """INSERT into energy_meteo (
+        date, clouds, pressure, humidity, temp, rain_1h, snow_1h, wind_deg, wind_speed,
+        globalhorizontalirradiance_2,directnormalirradiance,directnormalirradiance_2,
+        diffusehorizontalirradiance,diffusehorizontalirradiance_2) VALUES 
+        (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+        fix_hour = datetime.timedelta(hours=2)
+        for iel in tqdm(range(len(radiations))):
+            if ":00 " in radiations[iel].cross_join and ":00" in meteos[iel].cross_join:
+                cursor.execute(query, (
+                    str(datetime.datetime.strptime(meteos[iel].cross_join, "%d/%m/%Y %H:%M %p")-fix_hour),
+                    meteos[iel].clouds,
+                    meteos[iel].pressure,
+                    meteos[iel].humidity,
+                    meteos[iel].temp,
+                    meteos[iel].rain_1h,
+                    meteos[iel].snow_1h,
+                    meteos[iel].wind_deg,
+                    meteos[iel].wind_speed,
+                    radiations[iel].globalhorizontalirradiance_2,
+                    radiations[iel].directnormalirradiance,
+                    radiations[iel].directnormalirradiance_2,
+                    radiations[iel].diffusehorizontalirradiance,
+                    radiations[iel].diffusehorizontalirradiance_2,
+                ))
 
-#############################################################################################
+
 class ForecastData():
     def update_forecast_radiation(self, forecast_radiations:List[MeteoRadiationData]):
         """
@@ -333,6 +363,8 @@ def populating_the_sql_database():
         ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/renawable_production.csv")
     def energy_thermal()->None:
         paths = ["Files example/Energy_balance/" + i for i in os.listdir("Files example/Energy_balance")]
+        #paths = ["Files example/EnergyBalance_all/" + i for i in os.listdir("Files example/EnergyBalance_all")]
+
         ManagerTernaSql().thermal_from_terna_to_db(paths)
     def energy_installed_capacity()->None:
         ManagerTernaSql().load_energy_installed_capacity("Files example/installed_capacity.csv")
@@ -341,8 +373,19 @@ def populating_the_sql_database():
 
 
 if __name__ == "__main__":
-    populating_the_sql_database()
-    "im fine"
+    """      meteo = JsonManagerCurrentMeteo().load_unprocess()
+    rad = JsonManagerCurrentRadiation().load_unprocess()
+    SqlMeteoAndRadiationData().MeteoAndRadiationSave(meteo, rad)"""
+    #ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/generation.csv")
+    # s = "27/04/2021 12:15 PM"
+    # str(datetime.datetime.strptime(s, "%d/%m/%Y %H:%M %p"))
+    # with open("storico_meteo.json", "r") as file:
+    #     storico = json.load(file)
+    #     file.close()
+    # for f in storico:
+    #     if  ":00 AM" in f["cross_join"]:
+    #         print(f["cross_join"])
+    # "im fine"
     #
     # pprint(ManagerTernaSql().query_from_sql_to_pandas("""
     # SELECT total_load, holiday, date,

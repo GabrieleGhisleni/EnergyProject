@@ -83,7 +83,6 @@ class MeteoRadiationData():
         This function has to be applied on a single call from the forecast radiation.
         So for each city one call.
         """
-        original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(obj["list"][0]["dt"]))
         return MeteoRadiationData(
             name=obj["name"],
             date= obj["organized_data"],
@@ -129,17 +128,14 @@ class MeteoData():
     """
     class created to handle the meteo data!
     """
-    def __init__(self, date, name, region, clouds, text_description,
-                 pressure, humidity, temp, wind_deg, wind_speed,
-                  rain_1h=0, snow_1h=0,cross_join=None):
+    def __init__(self, date, name,clouds, pressure, humidity,
+                 temp, wind_deg, wind_speed,rain_1h=0, snow_1h=0,cross_join=None):
         ## General info
         self.date = date
         self.name = name
         self.cross_join = cross_join #use only in current to cross_join with solar
-        self.region = region
         ## Meteo general description
         self.clouds = clouds
-        self.text_description = text_description
         ## Meteo main
         self.pressure = pressure
         self.humidity = humidity
@@ -174,9 +170,7 @@ class MeteoData():
             'name':self.name,
             'date': self.date,
             'cross_join': self.cross_join,
-            'region': self.region,
             'clouds': self.clouds,
-            'text_description': self.text_description,
             'pressure': self.pressure,
             'humidity': self.humidity,
             'temp': self.temp,
@@ -199,10 +193,8 @@ class MeteoData():
         return MeteoData(
             name = obj["name"],
             date = original_dt,
-            region = obj["region"],
             clouds = obj["clouds"]["all"],
             cross_join=obj["cross_join"],
-            text_description = obj["weather"][0]["description"],
             pressure= obj["main"]["pressure"],
             humidity= obj["main"]["humidity"],
             temp = obj["main"]["temp"],
@@ -222,10 +214,8 @@ class MeteoData():
         return MeteoData(
             name = obj["name"],
             date = obj["date"],
-            region = obj["region"],
             clouds = obj["clouds"],
             cross_join=obj["cross_join"],
-            text_description = obj["text_description"],
             pressure= obj["pressure"],
             humidity= obj["humidity"],
             temp = obj["temp"],
@@ -253,9 +243,7 @@ class MeteoData():
                 res.append(MeteoData(
                     name=obj["name"],
                     date=original_dt,
-                    region=obj["region"],
                     clouds=hour["clouds"],
-                    text_description=hour["weather"][0]["description"],
                     pressure=hour["pressure"],
                     humidity=hour["humidity"],
                     temp=hour["temp"],
@@ -268,4 +256,4 @@ class MeteoData():
         return tmp
 
 if __name__ == "__main__":
-    print("i'm fine")
+    ""
