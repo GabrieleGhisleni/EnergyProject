@@ -7,7 +7,8 @@ from meteo_classes import *
 import pandas as pd
 import mysql.connector as sql
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
-#############################################################################################
+
+###################################################################################################################
 class ManagerTernaSql():
     """
     class created to handle the file transfer from Terna to our databases.
@@ -16,7 +17,36 @@ class ManagerTernaSql():
         self.engine = create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         self.engine.connect()
 
-
+    def MeteoAndRadiationSave(self, meteos:List[MeteoData], radiations:List[MeteoRadiationData])->None:
+        """
+        Given two list of MeteoData and MeteoRadiation data it update the local SQL database.
+        """
+        print("Updating Meteo database")
+        cursor = self.connection.cursor()
+        query = """INSERT into energy_meteo (
+        date, clouds, pressure, humidity, temp, rain_1h, snow_1h, wind_deg, wind_speed,
+        globalhorizontalirradiance_2,directnormalirradiance,directnormalirradiance_2,
+        diffusehorizontalirradiance,diffusehorizontalirradiance_2) VALUES 
+        (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+        fix_hour = datetime.timedelta(hours=2)
+        for iel in tqdm(range(len(radiations))):
+            if ":00 " in radiations[iel].cross_join and ":00" in meteos[iel].cross_join:
+                cursor.execute(query, (
+                    str(datetime.datetime.strptime(meteos[iel].cross_join, "%d/%m/%Y %H:%M %p")-fix_hour),
+                    meteos[iel].clouds,
+                    meteos[iel].pressure,
+                    meteos[iel].humidity,
+                    meteos[iel].temp,
+                    meteos[iel].rain_1h,
+                    meteos[iel].snow_1h,
+                    meteos[iel].wind_deg,
+                    meteos[iel].wind_speed,
+                    radiations[iel].globalhorizontalirradiance_2,
+                    radiations[iel].directnormalirradiance,
+                    radiations[iel].directnormalirradiance_2,
+                    radiations[iel].diffusehorizontalirradiance,
+                    radiations[iel].diffusehorizontalirradiance_2,
+                ))
 
     def generation_from_terna_to_db(self, path_to_file:str, process:str='linebyline')->None:
         """
@@ -73,6 +103,7 @@ class ManagerTernaSql():
                         current = current.merge(holiday, how="inner", on="cross_date")
                         current.drop(columns=["cross_date"], inplace=True)
                         current.rename(columns={'Total Load [MW]': "total_load", 'Date':'date', 'Holiday':'holiday'}, inplace=True)
+                        current["total_load"] = current["total_load"]/1000
                         current.to_sql('energy_load', con=self.engine, if_exists='append', index=False)
                         tot += len(current)
                     else:
@@ -111,27 +142,26 @@ class ManagerTernaSql():
         """
         return (pd.read_sql_query(query, self.engine))
 
-    def load_prediction_to_sql(self, predictions:list[dict])->None:
-        """
-        Function created to drop the messages from Mqtt to the local database
-        since we perform this operation twice a day first it try to insert the value
-        and in case those values are already present (since there are unique) python will
-        raise an error and in this case it will update those rows with the new predictions :P.
-        """
-        new,tot = 0,0
-        for day in predictions:
-            for hour in day:
-                try:
-                    query = """insert into prediction_load(date, prediction_load) VALUES(%s,%s);"""
-                    self.engine.execute(query, (hour, day[hour]))
-                    new+=1
-                except Exception as e:
-                    query = f"""update  prediction_load
-                                set  prediction_load={day[hour]}
-                                where(date='{hour}');"""
-                    self.engine.execute(query)
-                    tot+=1
-        print(f"Update {tot}, Added {new} --> records into prediction_load")
+    def prediction_to_sql(self, predictions:List[Dict]):
+        ""
+        i=0
+        query = """insert into prediction_energy(date, energy, generation) VALUES(%s,%s,%s);"""
+        predictions = predictions[0]
+        for hour in predictions:
+            for source in predictions[hour]:
+                self.engine.execute(query, (hour, source, predictions[hour][source]))
+                i+=1
+        print()
+        print(f"Updating renewable generation and load --> {i} rows")
+
+    def preprocess_thermal_prediction_to_sql(self, pred, dates: pd.Series):
+        df =  pd.DataFrame(pred, dates)
+        df["date"] = df.index
+        df["energy"] = "thermal"
+        df.rename(columns={0:'generation'}, inplace=True)
+        df.to_sql("prediction_energy",  con=self.engine,
+                                         if_exists = 'append', index = False)
+        print(f"Updating thermal generation --> {len(df)} rows")
 
     def thermal_from_terna_to_db(self, paths:List[str])->None:
         """
@@ -167,8 +197,43 @@ class ManagerTernaSql():
         #final.to_csv("energy_thermal.csv", index=False)
         final.to_sql("energy_thermal",  con=self.engine,if_exists = 'append', index = False)
 
+    # def load_prediction_to_sql(self, predictions:list[dict])->None:
+    #     """
+    #     Function created to drop the messages from Mqtt to the local database
+    #     since we perform this operation twice a day first it try to insert the value
+    #     and in case those values are already present (since there are unique) python will
+    #     raise an error and in this case it will update those rows with the new predictions :P.
+    #     """
+    #     new,tot = 0,0
+    #     for day in predictions:
+    #         for hour in day:
+    #             try:
+    #                 query = """insert into prediction_load(date, prediction_load) VALUES(%s,%s);"""
+    #                 self.engine.execute(query, (hour, day[hour]))
+    #                 new+=1
+    #             except Exception as e:
+    #                 query = f"""update  prediction_load
+    #                             set  prediction_load={day[hour]}
+    #                             where(date='{hour}');"""
+    #                 self.engine.execute(query)
+    #                 tot+=1
+    #     print(f"Update {tot}, Added {new} --> records into prediction_load")
 
+###################################################################################################################
+def into_the_loop_json():
+    manager = JsonManagerCurrentMeteo()
+    manager_2 = JsonManagerCurrentRadiation()
+    while True:
+        now = datetime.datetime.now()
+        if now.strftime("%M").endswith("00") or now.strftime("%M").endswith("15") \
+                or now.strftime("%M").endswith("30") or now.strftime("%M").endswith("45"):
+                    print("inside")
+                    manager.update()
+                    manager_2.update()
+                    time.sleep(890)
+                    print("done")
 
+###################################################################################################################
 class JsonManagerCurrentMeteo():
     """
     Manager created to deal the JSON operation as save and load for
@@ -211,7 +276,6 @@ class JsonManagerCurrentMeteo():
         else:
             self.first_update(current_meteo)
 
-
 class JsonManagerCurrentRadiation():
     """
     Manager created to deal the JSON operation as save and load for
@@ -253,180 +317,24 @@ class JsonManagerCurrentRadiation():
                 json.dump([MeteoRadiationData.current_from_class_to_dict(obj) for obj in update], file, indent=4)
         else:
             self.first_update(radiations)
-
-class SqlMeteoAndRadiationData():
-    def __init__(self):
-        self.connection = sql.connect(
-            host="127.0.0.1",
-            port=3306,
-            user="root",
-            password=os.environ.get("SQL"),
-            database='energy')
-        self.connection.autocommit = True
-
-    def MeteoAndRadiationSave(self, meteos:List[MeteoData], radiations:List[MeteoRadiationData])->None:
-        """
-        Given two list of MeteoData and MeteoRadiation data it update the local SQL database.
-        """
-        print("Updating Meteo database")
-        cursor = self.connection.cursor()
-        query = """INSERT into energy_meteo (
-        date, clouds, pressure, humidity, temp, rain_1h, snow_1h, wind_deg, wind_speed,
-        globalhorizontalirradiance_2,directnormalirradiance,directnormalirradiance_2,
-        diffusehorizontalirradiance,diffusehorizontalirradiance_2) VALUES 
-        (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-        fix_hour = datetime.timedelta(hours=2)
-        for iel in tqdm(range(len(radiations))):
-            if ":00 " in radiations[iel].cross_join and ":00" in meteos[iel].cross_join:
-                cursor.execute(query, (
-                    str(datetime.datetime.strptime(meteos[iel].cross_join, "%d/%m/%Y %H:%M %p")-fix_hour),
-                    meteos[iel].clouds,
-                    meteos[iel].pressure,
-                    meteos[iel].humidity,
-                    meteos[iel].temp,
-                    meteos[iel].rain_1h,
-                    meteos[iel].snow_1h,
-                    meteos[iel].wind_deg,
-                    meteos[iel].wind_speed,
-                    radiations[iel].globalhorizontalirradiance_2,
-                    radiations[iel].directnormalirradiance,
-                    radiations[iel].directnormalirradiance_2,
-                    radiations[iel].diffusehorizontalirradiance,
-                    radiations[iel].diffusehorizontalirradiance_2,
-                ))
-
-
-class ForecastData():
-    def update_forecast_radiation(self, forecast_radiations:List[MeteoRadiationData]):
-        """
-        require the List obtained from MeteoRadiationData.forecast_from_dict_to_class()
-        """
-        tmp = []
-        for city in forecast_radiations:
-            for obs in city:
-                tmp.append(obs.current_from_class_to_dict())
-        df=pd.DataFrame(tmp)
-        df.sort_values(by="date", ascending=False, inplace=True)
-        # df.to_csv("forecast_solar_radiation.csv", index=False)
-        return df
-
-    def update_forecast_meteo(self, forecast_meteo:List[MeteoData]):
-        res = []
-        for city in forecast_meteo:
-            for hour in city:
-                obj = hour.from_class_to_dict()
-                res.append(obj)
-        df = pd.DataFrame(res)
-        df.sort_values(by="date", inplace=True)
-        # df.to_csv("forecast_meteo.csv", index=False)
-        return df
-
-    def merge_forecast(self,radiations_df, meteo_df):
-        final = pd.merge(meteo_df, radiations_df[
-            ['name', 'date', 'globalhorizontalirradiance', 'directnormalirradiance',
-             'diffusehorizontalirradiance', 'globalhorizontalirradiance_2',
-             'directnormalirradiance_2', 'diffusehorizontalirradiance_2']],
-                         on=["date", "name"], how='left')
-
-        final.drop(columns=["cross_join"], inplace=True)
-        final.to_csv("new_forecast_obs.csv", index=False)
-        return final
-
-
-def into_the_loop_json():
-    """
-    General function to start the operations and collect data.
-    """
-    manager = JsonManagerCurrentMeteo()
-    manager_2 = JsonManagerCurrentRadiation()
-    while True:
-        now = datetime.datetime.now()
-        if now.strftime("%M").endswith("00") or now.strftime("%M").endswith("15") \
-                or now.strftime("%M").endswith("30") or now.strftime("%M").endswith("45"):
-                    print("inside")
-                    manager.update()
-                    manager_2.update()
-                    time.sleep(890)
-                    print("done")
-
-
-def populating_the_sql_database():
+###################################################################################################################
+class populating_the_sql_database:
     """
     Following the already prepared folder inside the git, launch this function
     to populate all the SQL tables.
     """
-    def energy_load()->None:
+    def energy_load(self)->None:
         listu = os.listdir("Files example/load_terna")
         listu = ["Files example/load_terna/"+path for path in listu]
         ManagerTernaSql().load_from_terna_and_holiday(listu, "Files example/holiday_BACKWARD.csv")
-    def energy_production()->None:
+    def energy_production(self)->None:
         ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/renawable_production.csv")
-    def energy_thermal()->None:
+    def energy_thermal(self)->None:
         paths = ["Files example/Energy_balance/" + i for i in os.listdir("Files example/Energy_balance")]
         #paths = ["Files example/EnergyBalance_all/" + i for i in os.listdir("Files example/EnergyBalance_all")]
-
         ManagerTernaSql().thermal_from_terna_to_db(paths)
-    def energy_installed_capacity()->None:
+    def energy_installed_capacity(self)->None:
         ManagerTernaSql().load_energy_installed_capacity("Files example/installed_capacity.csv")
-
-
-
-
+###################################################################################################################
 if __name__ == "__main__":
-    """      meteo = JsonManagerCurrentMeteo().load_unprocess()
-    rad = JsonManagerCurrentRadiation().load_unprocess()
-    SqlMeteoAndRadiationData().MeteoAndRadiationSave(meteo, rad)"""
-    #ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/generation.csv")
-    # s = "27/04/2021 12:15 PM"
-    # str(datetime.datetime.strptime(s, "%d/%m/%Y %H:%M %p"))
-    # with open("storico_meteo.json", "r") as file:
-    #     storico = json.load(file)
-    #     file.close()
-    # for f in storico:
-    #     if  ":00 AM" in f["cross_join"]:
-    #         print(f["cross_join"])
-    # "im fine"
-    #
-    # pprint(ManagerTernaSql().query_from_sql_to_pandas("""
-    # SELECT total_load, holiday, date,
-    # CASE EXTRACT(MONTH FROM date)
-    #     WHEN  '1' THEN  'january'
-    #     WHEN 2 THEN  'february'
-    #     WHEN '3' THEN  'march'
-    #     WHEN '4' THEN  'april'
-    #     WHEN '5' THEN  'may'
-    #     WHEN '6' THEN  'june'
-    #     WHEN '7' THEN  'july'
-    #     WHEN '8' THEN  'august'
-    #     WHEN '9' THEN  'september'
-    #     WHEN '10' THEN  'october'
-    #     WHEN '11' THEN  'november'
-    #     WHEN '12' THEN  'december'
-    # END as str_month,
-    # CASE EXTRACT(HOUR FROM date)
-    #     WHEN '1' THEN  '1AM'
-    #     WHEN '2' THEN  '2AM'
-    #     WHEN '3' THEN  '3AM'
-    #     WHEN '4' THEN  '4AM'
-    #     WHEN '5' THEN  '5AM'
-    #     WHEN '6' THEN  '6AM'
-    #     WHEN '7' THEN  '7AM'
-    #     WHEN '8' THEN  '8AM'
-    #     WHEN '9' THEN  '9AM'
-    #     WHEN '10' THEN  '10AM'
-    #     WHEN '11' THEN  '11AM'
-    #     WHEN '12' THEN  '12PM'
-    #     WHEN '13' THEN  '1PM'
-    #     WHEN '14' THEN  '2PM'
-    #     WHEN '15' THEN  '3PM'
-    #     WHEN '16' THEN  '4PM'
-    #     WHEN '17' THEN  '5PM'
-    #     WHEN '18' THEN  '6PM'
-    #     WHEN '19' THEN  '7PM'
-    #     WHEN '20' THEN  '8PM'
-    #     WHEN '21' THEN  '9PM'
-    #     WHEN '22' THEN  '10PM'
-    #     WHEN '23' THEN  '11PM'
-    #     WHEN '0' THEN  '12AM'
-    #     END as str_hour
-    #     from energy_load;"""))
+    populating_the_sql_database().energy_load()

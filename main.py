@@ -1,6 +1,9 @@
+import pandas as pd
+import numpy as np
 from fetching_meteo import *
 from managers_meteo import *
 from meteo_classes import  *
+from models import *
 from pprint import pprint
 import argparse, sys, textwrap
 
@@ -65,6 +68,7 @@ def main_cli():
     if args.start_manager:
         if args.force_start == "Force":
             print(args.start_manager)
+
 
 
 if __name__=="__main__":

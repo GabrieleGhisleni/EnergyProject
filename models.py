@@ -7,13 +7,17 @@ from sklearn.pipeline import make_pipeline
 from sqlalchemy import create_engine
 from sklearn.linear_model import LinearRegression
 import joblib, os
+import numpy as np
 import pandas as pd
 import datetime as dt
 import matplotlib.pyplot as plt
 from typing import TypeVar, Tuple,List
 from mqtt import *
+from managers_meteo import *
+from meteo_classes import *
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 NumpyArray = TypeVar("numpy.ndarray")
+###################################################################################################################
 
 class GeoThermalModel():
     """
@@ -23,7 +27,7 @@ class GeoThermalModel():
     def __init__(self, path:str="Models/geothermal_linear.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f" --> Model loaded and ready {path.split('/')[-1]} <--- ")
+            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -84,17 +88,27 @@ class GeoThermalModel():
         It took all the database and trains the model!
         """
         if force == 'force':
-            print(f"--> Training the model, start at {dt.datetime.now()} <--")
             pre_process = make_column_transformer((OneHotEncoder(),
                                                    ["str_hour","str_month"]),
                                                   remainder='passthrough')
             model = LinearRegression()
             self.pipeline = make_pipeline(pre_process, model)
             pred, target = self.get_geothermal_data()
+            print(f"Training the GeoThermalModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
             joblib.dump(self.pipeline, 'Models/geothermal_linear.mod')
-            print(
-                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
+
+    def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
+        """
+        Function that given a pandas dataframe having three columns as 'holiday',
+        'str_hour' and 'str_month' preprocess the dataframe perfoming the encoding
+        operation and predict the result.
+        """
+        new_obs = new_observation[["humidity","rain_1h","temp", "directnormalirradiance","globalhorizontalirradiance_2",
+                         "str_hour", "str_month"]]
+        today_prediction = self.pipeline.predict(new_obs)
+        return today_prediction
 
 class BiomassModel():
     """
@@ -104,7 +118,7 @@ class BiomassModel():
     def __init__(self, path:str="Models/biomass_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f" --> Model loaded and ready {path.split('/')[-1]} <--- ")
+            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -165,17 +179,29 @@ class BiomassModel():
         It took all the database and trains the model!
         """
         if force == 'force':
-            print(f"--> Training the model, start at {dt.datetime.now()} <--")
             pre_process = make_column_transformer((OneHotEncoder(),
                                                    ["str_hour","str_month"]),
                                                   remainder='passthrough')
             model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
             self.pipeline = make_pipeline(pre_process, model)
             pred, target = self.get_biomass_data()
+            print(f"Training the BiomassModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
             joblib.dump(self.pipeline, 'Models/biomass_forest.mod')
-            print(
-                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
+    def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
+        """
+        Function that given a pandas dataframe having three columns as 'holiday',
+        'str_hour' and 'str_month' preprocess the dataframe perfoming the encoding
+        operation and predict the result.
+        """
+        new_obs = new_observation[["rain_1h","temp", "globalhorizontalirradiance_2","directnormalirradiance_2",
+                         "diffusehorizontalirradiance_2","str_hour", "str_month"]]
+
+        today_prediction = self.pipeline.predict(new_obs)
+        return today_prediction
+
+###################################################################################################################
 
 class PhotovoltaicModel():
     """
@@ -185,7 +211,7 @@ class PhotovoltaicModel():
     def __init__(self, path:str="Models/photovoltaic_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f" --> Model loaded and ready {path.split('/')[-1]}<--- ")
+            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -248,18 +274,31 @@ class PhotovoltaicModel():
         It took all the database and trains the model!
         """
         if force == 'force':
-            print(f"--> Training the model, start at {dt.datetime.now()} <--")
             pre_process = make_column_transformer((OneHotEncoder(),
                                                    ["str_month","str_hour"]),
                                                   remainder='passthrough')
             model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
             self.pipeline = make_pipeline(pre_process, model)
             pred, target = self.get_photovoltaid_data()
+            print(f"Training the PhotovoltaicModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
             joblib.dump(self.pipeline, 'Models/photovoltaic_forest.mod')
-            print(
-                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
 
+
+
+    def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
+        """
+        Function that given a pandas dataframe having three columns as 'holiday',
+        'str_hour' and 'str_month' preprocess the dataframe perfoming the encoding
+        operation and predict the result.
+        """
+        new_obs = new_observation[["humidity","temp", "rain_1h","snow_1h", "wind_deg","directnormalirradiance",
+                         "diffusehorizontalirradiance","globalhorizontalirradiance_2","directnormalirradiance_2",
+                         "diffusehorizontalirradiance_2","str_month","str_hour"]]
+        today_prediction = self.pipeline.predict(new_obs)
+        return today_prediction
+
+###################################################################################################################
 
 class WindModel():
     """
@@ -269,7 +308,7 @@ class WindModel():
     def __init__(self, path:str="Models/wind_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f" --> Model loaded and ready {path.split('/')[-1]}<--- ")
+            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -302,18 +341,29 @@ class WindModel():
         It took all the database and trains the model!
         """
         if force == 'force':
-            print(f"--> Training the model, start at {dt.datetime.now()} <--")
             pre_process = make_column_transformer((OneHotEncoder(),
                                                    ["str_month"]),
                                                   remainder='passthrough')
             model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
             self.pipeline = make_pipeline(pre_process, model)
             pred, target = self.get_wind_data()
+            print(f"Training the WindModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
             joblib.dump(self.pipeline, 'Models/wind_forest.mod')
-            print(
-                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
 
+
+    def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
+        """
+        Function that given a pandas dataframe having three columns as 'holiday',
+        'str_hour' and 'str_month' preprocess the dataframe perfoming the encoding
+        operation and predict the result.
+        """
+        new_obs = new_observation[["humidity","wind_deg", "wind_speed",
+                                   "diffusehorizontalirradiance_2", "str_month"]]
+        today_prediction = self.pipeline.predict(new_obs)
+        return today_prediction
+
+###################################################################################################################
 
 class HydroModel():
     """
@@ -323,7 +373,7 @@ class HydroModel():
     def __init__(self, path:str="Models/hydro_r_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f" --> Model loaded and ready {path.split('/')[-1]}<--- ")
+            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -377,18 +427,30 @@ class HydroModel():
         It took all the database and trains the model!
         """
         if force == 'force':
-            print(f"--> Training the model, start at {dt.datetime.now()} <--")
             pre_process = make_column_transformer((OneHotEncoder(),
                                                    ["str_hour"]),
                                                   remainder='passthrough')
             model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
             self.pipeline = make_pipeline(pre_process, model)
             pred, target = self.get_hydro_data()
+            print(f"Training the HydroModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
             joblib.dump(self.pipeline, 'Models/hydro_r_forest.mod')
-            print(
-                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
 
+
+
+    def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
+        """
+        Function that given a pandas dataframe having three columns as 'holiday',
+        'str_hour' and 'str_month' preprocess the dataframe perfoming the encoding
+        operation and predict the result.
+        """
+        new_obs = new_observation[["humidity","temp", "rain_1h",
+                                   "directnormalirradiance", "globalhorizontalirradiance_2","str_hour"]]
+        today_prediction = self.pipeline.predict(new_obs)
+        return today_prediction
+
+###################################################################################################################
 
 class ThermalModel():
     """
@@ -398,7 +460,7 @@ class ThermalModel():
     def __init__(self, path:str="Models/thermal_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f" --> Model loaded and ready {path.split('/')[-1]}<--- ")
+            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -431,25 +493,42 @@ class ThermalModel():
         It took all the database and trains the model!
         """
         if force == 'force':
-            print(f"--> Training the model, start at {dt.datetime.now()} <--")
             pre_process = make_column_transformer((OneHotEncoder(),
                                                    ["holiday", "str_month"]),
                                                   remainder='passthrough')
             model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
             self.pipeline = make_pipeline(pre_process, model)
-            pred, target = self.__get_thermal_data()
+            pred, target = self.get_thermal_data()
+            print(f"Training the TermalModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
             joblib.dump(self.pipeline, 'Models/thermal_forest.mod')
-            print(
-                f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
-
-        def custom_predict(self, generation_prediction:PandasDataFrame, load_prediction:PandasDataFrame) -> NumpyArray:
-            """
-            HOLY FUCK
-            """
-            ""
 
 
+
+    def pre_process_for_thermal(self, predictions:dict):
+        tmp = []
+        predictions = predictions[0]
+        for key in predictions:
+            sum_of_rest, load = 0, 0
+            holiday = check_holiday_day(key)
+            str_month = datetime.datetime.strptime(key, "%Y/%m/%d %H:%M:%S").strftime("%B").lower()
+            for energy in predictions[key]:
+                if energy == 'load':  load = predictions[key][energy]
+                else: sum_of_rest += predictions[key][energy]
+            tmp.append([holiday, sum_of_rest, load, str_month, key])
+        df = pd.DataFrame(tmp).rename(
+            columns={0: 'holiday', 1: 'Sum_of_rest_GW', 2: 'total_load', 3: 'str_month', 4: 'date'})
+        return df
+
+    def custom_predict(self,new_observation) -> NumpyArray:
+        """
+        HOLY FUCK
+        """
+        new_obs = new_observation[["holiday","total_load", "Sum_of_rest_GW","str_month"]]
+        today_prediction = self.pipeline.predict(new_obs)
+        return today_prediction
+
+###################################################################################################################
 
 class LoadModel():
     """
@@ -459,7 +538,7 @@ class LoadModel():
     def __init__(self, path:str="Models/load_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f" --> Model loaded and ready at {path.split('/')[-1]} <--- ")
+            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -498,17 +577,18 @@ class LoadModel():
         It took all the database and trains the model!
         """
         if force == 'force':
-            print(f"--> Training the model, start at {dt.datetime.now()} <--")
+
             pre_process = make_column_transformer((OneHotEncoder(),
                                                         ["holiday", "str_hour", "str_month"]),
                                                        remainder='passthrough')
             model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
             self.pipeline = make_pipeline(pre_process, model)
             pred, target = self.__get_training_data()
+            print(f"Training the LoadModel --> on {len(pred)} observations")
             print("Extracted the data from sql --> Fitting")
             self.pipeline.fit(pred, target.values.ravel())
             joblib.dump(self.pipeline, 'Models/load_forest.mod')
-            print(f"--> Training the model, finished at {dt.datetime.now()}, trained on {len(pred)} observations <--")
+
 
     def custom_predict(self, new_observation:PandasDataFrame)->NumpyArray:
         """
@@ -534,6 +614,8 @@ class LoadModel():
         plt.title(f"Results of the prediction for {data}:")
         plt.show()
 
+###################################################################################################################
+
 def create_load_to_predict(day="today")->PandasDataFrame:
     """
     Auxiliary function to get the requested data.
@@ -549,7 +631,6 @@ def create_load_to_predict(day="today")->PandasDataFrame:
               '2042-7-04', '2021-5-04', '2040-2-04', '2024-01-04', '2025-21-04', '2029-2-04',
               '2038-26-04', '2027-29-03', '2044-18-04', '2033-18-04', '2031-14-04', '2023-10-04',
               '2050-11-04', '2048-6-04', '2022-18-04', '2047-15-04', '2043-30-03', '2026-6-04'}
-
     if day == "today":
         today = dt.datetime.today().date()
         tomorrow = today + dt.timedelta(days=1)
@@ -588,53 +669,67 @@ def create_load_to_predict(day="today")->PandasDataFrame:
         except Exception:
             print("Accept only format '%Y-%m-%d'")
 
-def pre_process_prediction_today(predictions:List[float])->PandasDataFrame:
-    tmp = {}
-    for i in range(0,24):
-        if i<10:
-            tmp[(dt.datetime.now().strftime("%Y-%m-%d")+f" 0{str(i)}:00")] = predictions[i]
-        else:
-            tmp[((dt.datetime.now().strftime("%Y-%m-%d") + f" {str(i)}:00"))] = predictions[i]
-    return tmp
+def check_holiday_day(day_string_format):
+    italian_holiday = {"01-01", "06-01", "25-04", "01-05",
+                       "02-06", "15-08", "01-10", "08-12", "25-12", "26-12"}
+    easter = {'2041-22-04', '2028-17-04', '2049-26-04', '2046-26-03', '2037-6-04', '2035-26-03',
+              '2036-14-04', '2034-10-04', '2045-10-04', '2039-11-04', '2032-29-03', '2030-22-04',
+              '2042-7-04', '2021-5-04', '2040-2-04', '2024-01-04', '2025-21-04', '2029-2-04',
+              '2038-26-04', '2027-29-03', '2044-18-04', '2033-18-04', '2031-14-04', '2023-10-04',
+              '2050-11-04', '2048-6-04', '2022-18-04', '2047-15-04', '2043-30-03', '2026-6-04'}
 
-def pre_process_prediction_tomorrow(predictions:List[float])->PandasDataFrame:
-    tmp = {}
-    for i in range(0,24):
-        if i<10:
-            tmp[((dt.datetime.now()+dt.timedelta(days=1)).strftime("%Y-%m-%d")+f" 0{str(i)}:00")] = predictions[i]
-        else:
-            tmp[((dt.datetime.now()+dt.timedelta(days=1)).strftime("%Y-%m-%d")+f" {str(i)}:00")] = predictions[i]
-    return tmp
+    day = datetime.datetime.strptime(day_string_format, "%Y/%m/%d %H:%M:%S")
+    holiday_today = 'no'
+    if day.strftime('%A')=="Sunday": holiday_today = "sunday"
+    if day.strftime('%A')=="Saturday": holiday_today = "saturday"
+    if day in easter: holiday_today="holiday"
+    if day.strftime('%d-%m') in italian_holiday: holiday_today="holiday"
+    return holiday_today
 
-def pre_process_prediction_custom(predictions:List[float])->PandasDataFrame:
-    # da implementaer#
-    tmp = {}
-    for i in range(0,24):
-        if i<10:
-            tmp[((dt.datetime.now()+dt.timedelta(days=1)).strftime("%Y-%m-%d")+f" 0{str(i)}:00")] = predictions[i]
-        else:
-            tmp[((dt.datetime.now()+dt.timedelta(days=1)).strftime("%Y-%m-%d")+f" {str(i)}:00")]= predictions[i]
-    return (pd.DataFrame(predictions,tmp))
+def send_predictions():
+    meteo_forecast = MeteoData.forecast_from_dict_to_class(
+        city=GetMeteoData().fetching_forecast_meteo())
+    radiation_forecast = MeteoRadiationData.forecast_from_dict_to_class(
+        city=GetMeteoData().fetching_forecast_solar_radiation())
 
-def send_to_mqtt_load_prediction(force="yes"):
-    """
-    Function that take the prediction for the load of today and tomorrow
-    and push this information into the mosquitto broker!
-    """
-    forest = LoadModel()
-    today_pred = forest.custom_predict(create_load_to_predict('today'))
-    tomorrow_pred = forest.custom_predict(create_load_to_predict('tomorrow'))
-    today_processed = (pre_process_prediction_today(today_pred))
-    tomorrow_processed = (pre_process_prediction_tomorrow(tomorrow_pred))
-    tmp = [today_processed]
-    tmp.append(tomorrow_processed)
-    MqttManager().publish_load_prediction(tmp)
+    forecaster = ForecastData()
+    meteo = forecaster.update_forecast_meteo(forecast_meteo=meteo_forecast)
+    rad = forecaster.update_forecast_radiation(forecast_radiations=radiation_forecast)
+    new_obs = forecaster.merge_forecast(radiations_df=rad, meteo_df=meteo)
 
+    hours_of_prediction = new_obs["date"].unique()
+
+    load_tot = np.append(LoadModel().custom_predict(create_load_to_predict('today')),
+                         LoadModel().custom_predict(create_load_to_predict('tomorrow')))
+
+    hydro_prediction = HydroModel().custom_predict(new_obs)
+    geothermal_prediction = GeoThermalModel().custom_predict(new_obs)
+    wind_prediction = WindModel().custom_predict(new_obs)
+    photovoltaic_prediction = PhotovoltaicModel().custom_predict(new_obs)
+    biomass_prediction = BiomassModel().custom_predict(new_obs)
+
+    res = {}
+    for ih in range(len(hours_of_prediction)):
+        res[hours_of_prediction[ih]] = {
+            'hydro': hydro_prediction[ih],
+            'geothermal': geothermal_prediction[ih],
+            'wind': wind_prediction[ih],
+            'photovoltaic': photovoltaic_prediction[ih],
+            'biomass': biomass_prediction[ih],
+            'load': load_tot[ih]
+        }
+    MqttManager().publish_prediction([res])
+
+def train_all():
+    HydroModel().custom_fit_model()
+    LoadModel().custom_fit_model()
+    ThermalModel().custom_fit_model()
+    PhotovoltaicModel().custom_fit_model()
+    BiomassModel().custom_fit_model()
+    GeoThermalModel().custom_fit_model()
+    WindModel().custom_fit_model()
+
+###################################################################################################################
 if __name__ == "__main__":
-    ""
-    # HydroModel().custom_fit_model()
-    # WindModel().custom_fit_model()
-    # PhotovoltaicModel().custom_fit_model()
-    # BiomassModel().custom_fit_model()
-    # GeoThermalModel().custom_fit_model()
-    # LoadModel().custom_fit_model()
+    #train_all()
+    send_predictions()

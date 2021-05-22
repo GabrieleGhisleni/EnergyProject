@@ -2,7 +2,8 @@ from pprint import pprint
 from typing import List, Optional, Type
 from tqdm import tqdm
 import typing, json, time
-
+import pandas as pd
+###################################################################################################################
 
 class MeteoRadiationData():
     """
@@ -96,7 +97,7 @@ class MeteoRadiationData():
             diffusehorizontalirradiance_2= obj["list"][0]["radiation"]["dhi_cs"])
 
     @staticmethod
-    def forecast_from_dict_to_class(city: List[dict], rain=0, snow=0):
+    def forecast_from_dict_to_class(city: List[dict]):
         """
         obj is the forecast meteo for one city!
         This function has to be applied on a single call from the forecast meteo.
@@ -123,7 +124,7 @@ class MeteoRadiationData():
 
         return tmp
 
-
+###################################################################################################################
 class MeteoData():
     """
     class created to handle the meteo data!
@@ -254,6 +255,60 @@ class MeteoData():
                 ))
             tmp.append(res)
         return tmp
+
+###################################################################################################################
+class ForecastData():
+    def update_forecast_radiation(self, forecast_radiations:List[MeteoRadiationData]):
+        """
+        require the List obtained from MeteoRadiationData.forecast_from_dict_to_class()
+        """
+        tmp = []
+        for city in forecast_radiations:
+            for obs in city:
+                tmp.append(obs.current_from_class_to_dict())
+        df=pd.DataFrame(tmp)
+        df.sort_values(by="date", ascending=False, inplace=True)
+        # df.to_csv("forecast_solar_radiation.csv", index=False)
+        return df
+
+    def update_forecast_meteo(self, forecast_meteo:List[MeteoData]):
+        res = []
+        for city in forecast_meteo:
+            for hour in city:
+                obj = hour.from_class_to_dict()
+                res.append(obj)
+        df = pd.DataFrame(res)
+        df.sort_values(by="date", inplace=True)
+        # df.to_csv("forecast_meteo.csv", index=False)
+        return df
+
+    def merge_forecast(self,radiations_df, meteo_df):
+        """
+        This function will return the forecast for the next 48 hours!
+        """
+        final = pd.merge(meteo_df, radiations_df[
+            ['name', 'date', 'globalhorizontalirradiance', 'directnormalirradiance',
+             'diffusehorizontalirradiance', 'globalhorizontalirradiance_2',
+             'directnormalirradiance_2', 'diffusehorizontalirradiance_2']],
+                         on=["date", "name"], how='left')
+
+        final.drop(columns=["cross_join"], inplace=True)
+        #final.to_csv("new_forecast_obs.csv", index=False)
+        final["date"] = pd.to_datetime(final["date"], format='%d/%m/%Y %H:%M:%S %p')
+        final["str_hour"] = final["date"].dt.strftime("%H")
+        final["str_month"] = final["date"].dt.strftime("%B")
+        final["str_month"] = final["str_month"].str.lower()
+        def AM_PM(str_hour):
+            if int(str_hour)>=13:  str_hour = str(24-13)+"PM"
+            elif int(str_hour)== 0: str_hour = "12PM"
+            elif int(str_hour) < 10:  str_hour = str_hour[-1]+"AM"
+            else:  str_hour = str_hour + "AM"
+            return str_hour
+        final["str_hour"] = final["str_hour"].apply(AM_PM)
+        #final.to_csv("to_check_forecast.csv", index=False)
+        final = final.sort_values(by="date")
+        final["date"] = final["date"].dt.strftime('%Y/%m/%d %H:%M:%S')
+        return final
 
 if __name__ == "__main__":
     ""
