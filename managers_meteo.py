@@ -154,14 +154,18 @@ class ManagerTernaSql():
         print()
         print(f"Updating renewable generation and load --> {i} rows")
 
-    def preprocess_thermal_prediction_to_sql(self, pred, dates: pd.Series):
+    def preprocess_thermal_prediction_to_sql(self, pred, dates: pd.Series)->None:
+        """
+        Must find a way to UPDATE IF EXISTS ELSE INSERT INTO
+        """
         df =  pd.DataFrame(pred, dates)
         df["date"] = df.index
         df["energy"] = "thermal"
         df.rename(columns={0:'generation'}, inplace=True)
         df.to_sql("prediction_energy",  con=self.engine,
                                          if_exists = 'append', index = False)
-        print(f"Updating thermal generation --> {len(df)} rows")
+        print(f"Updating thermal generation --> {len(df)} rows,"
+              f"from {dates[0]} to {dates[-1]}")
 
     def thermal_from_terna_to_db(self, paths:List[str])->None:
         """
@@ -196,28 +200,6 @@ class ManagerTernaSql():
         print(f"Updating {len(final)} into the database!")
         #final.to_csv("energy_thermal.csv", index=False)
         final.to_sql("energy_thermal",  con=self.engine,if_exists = 'append', index = False)
-
-    # def load_prediction_to_sql(self, predictions:list[dict])->None:
-    #     """
-    #     Function created to drop the messages from Mqtt to the local database
-    #     since we perform this operation twice a day first it try to insert the value
-    #     and in case those values are already present (since there are unique) python will
-    #     raise an error and in this case it will update those rows with the new predictions :P.
-    #     """
-    #     new,tot = 0,0
-    #     for day in predictions:
-    #         for hour in day:
-    #             try:
-    #                 query = """insert into prediction_load(date, prediction_load) VALUES(%s,%s);"""
-    #                 self.engine.execute(query, (hour, day[hour]))
-    #                 new+=1
-    #             except Exception as e:
-    #                 query = f"""update  prediction_load
-    #                             set  prediction_load={day[hour]}
-    #                             where(date='{hour}');"""
-    #                 self.engine.execute(query)
-    #                 tot+=1
-    #     print(f"Update {tot}, Added {new} --> records into prediction_load")
 
 ###################################################################################################################
 def into_the_loop_json():
