@@ -1,1 +1,1 @@
-web: sh -c 'cd [EnergyWebApp] && gunicorn EnergyDjango.wsgi'
+web: gunicorn EnergyDjango.wsgi
