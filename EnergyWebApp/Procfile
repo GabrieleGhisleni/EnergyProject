@@ -1,1 +1,1 @@
-web: gunicorn --pythonpath EnergyWebApp EnergyDjango.wsgi
+web: gunicorn EnergyWebApp.EnergyDjango.wsgi
