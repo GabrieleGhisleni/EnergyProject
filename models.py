@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import make_column_transformer
@@ -496,7 +496,7 @@ class ThermalModel():
             pre_process = make_column_transformer((OneHotEncoder(),
                                                    ["holiday", "str_month"]),
                                                   remainder='passthrough')
-            model = RandomForestRegressor(random_state=42, criterion='mse', bootstrap=True)
+            model = GradientBoostingRegressor(random_state=42)
             self.pipeline = make_pipeline(pre_process, model)
             pred, target = self.get_thermal_data()
             print(f"Training the TermalModel --> on {len(pred)} observations")
@@ -733,3 +733,5 @@ def train_all():
 if __name__ == "__main__":
     #train_all()
     send_predictions()
+    # engine =  create_engine("mysql+pymysql://admin:Energy14202122@energy.c9vvjb7yh2ou.us-east-1.rds.amazonaws.com/energy")
+    # engine.connect()

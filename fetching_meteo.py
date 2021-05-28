@@ -2,10 +2,11 @@ import requests, time, datetime, json, copy, typing,os
 from pprint import pprint
 from typing import List, Dict
 from tqdm import tqdm
+from config import OPENWEATHER_APPID
 
 class GetMeteoData():
     def __init__(self):
-        self.key = os.environ.get("APP_ID_METEO")
+        self.key = OPENWEATHER_APPID
         self.coordinates= {'Bari': {'lat': 41.1177, 'lon': 16.8512, 'region':'sud'},
                      'Bologna': {'lat': 44.4667, 'lon': 11.4333,'region':'nord'},
                      'Catanzaro': {'lat': 38.8908, 'lon': 16.5987,'region':'calabria'},

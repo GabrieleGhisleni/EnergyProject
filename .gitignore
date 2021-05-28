@@ -1,3 +1,13 @@
+### 
+
+config.py
+
+EnergyWebApp/.idea
+EnergyWebApp/.vscode
+EnergyWebApp/db.sqlite3
+
+################################################################################################################
+
 # Default ignored files
 /shelf/
 /workspace.xml
@@ -10,12 +20,10 @@
 ######################################################################################################
 
 R STUFF
-
 *.RDATA
 *.Rhistory
 *.R
 *.RDM
-
 AO.csv
 
 #########

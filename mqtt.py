@@ -37,9 +37,9 @@ class MqttManager():
             termal_prediction = Thermal.custom_predict(termal_data)
             SqlManager.preprocess_thermal_prediction_to_sql(termal_prediction,
                                                             termal_data["date"].unique())
-
-        self.client.on_message = on_message
         self.client.subscribe("Energy/prediction_energy/")
+        self.client.on_message = on_message
+
         self.client.loop_forever()
 
 ###################################################################################################################

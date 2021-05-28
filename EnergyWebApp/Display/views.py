@@ -22,13 +22,14 @@ def last_load(requests):
 
     engine = create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
     engine.connect()
-    #date = datetime.datetime.today().strftime("%Y-%m-%d")
-    date = (datetime.datetime.today()+datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    date = datetime.datetime.today().strftime("%Y-%m-%d")
+    #date = (datetime.datetime.today()+datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     query = f"""select date,generation,energy from prediction_energy 
         where cast(prediction_energy.`date` as Date) = cast('{date}' as Date);"""
-    df = pd.read_sql_query(query, engine)
+    df = pd.read_sql_query(query, engine, parse_dates=["date"])
     fig = go.Figure()
-    dates = df["date"].dt.strftime("%Y-%m-%d %H:%M").unique()
+
+    #dates = df["date"].dt.strftime("%Y-%m-%d %H:%M").unique()
 
     dates = df["date"].dt.strftime("%Y-%m-%d %H:%M").unique()
     fig.add_trace(go.Scatter(name="Load", x=dates, y=df.generation[df["energy"] == "load"], fill='tonexty',
