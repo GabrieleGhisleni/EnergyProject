@@ -1,10 +1,15 @@
 ### 
 
 config.py
-
-EnergyWebApp/.idea
-EnergyWebApp/.vscode
+EnergyWebApp/.idea/
+EnergyWebApp/.idea/inspectionProfiles/*
+EnergyWebApp/.idea/inspectionProfiles/
+EnergyWebApp/.vscode/
+EnergyWebApp/.idea/*
+EnergyWebApp/.vscode/*
 EnergyWebApp/db.sqlite3
+Files example/*
+Files example/
 
 ################################################################################################################
 
