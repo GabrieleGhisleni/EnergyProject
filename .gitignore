@@ -10,6 +10,8 @@ EnergyWebApp/.vscode/*
 EnergyWebApp/db.sqlite3
 Files example/*
 Files example/
+Files example
+*.csv
 
 ################################################################################################################
 
