@@ -1,13 +1,14 @@
 ### 
 
-config.py
-EnergyWebApp/.idea/
-EnergyWebApp/.idea/inspectionProfiles/*
-EnergyWebApp/.idea/inspectionProfiles/
-EnergyWebApp/.vscode/
-EnergyWebApp/.idea/*
-EnergyWebApp/.vscode/*
-EnergyWebApp/db.sqlite3
+/KEYS/
+/KEYS/*
+.idea/
+.idea/inspectionProfiles/*
+.idea/inspectionProfiles/
+.vscode/
+.idea/*
+.vscode/*
+db.sqlite3
 Files example/*
 Files example/
 Files example

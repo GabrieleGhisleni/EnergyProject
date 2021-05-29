@@ -733,5 +733,3 @@ def train_all():
 if __name__ == "__main__":
     #train_all()
     send_predictions()
-    # engine =  create_engine("mysql+pymysql://admin:Energy14202122@energy.c9vvjb7yh2ou.us-east-1.rds.amazonaws.com/energy")
-    # engine.connect()
