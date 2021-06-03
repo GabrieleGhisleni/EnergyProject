@@ -1,47 +1,123 @@
 import paho.mqtt.client as mqtt
 from typing import TypeVar, List
-import json, datetime
-PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
+import json, datetime, ssl, time
+import numpy as np
+import pandas as pd
 from managers_meteo import ManagerTernaSql
 from models import *
-###################################################################################################################
+from KEYS.config import (CA_ROOT_CERT_FILE, THING_CERT_FILE, THING_PRIVATE_KEY,
+                         MQTT_PORT, MQTT_KEEPALIVE_INTERVAL, MQTT_HOST)
 
 class MqttManager():
     """
     Class created to handle the interaction with the mosquitto broker.
     """
     def __init__(self):
-        self.client = mqtt.Client()
-        self.client.connect("localhost", port=1883)
+        def on_publish_custom(client, userdata, mid): print("Message Published...", mid)
 
-    def publish_prediction(self,predictions:List[dict])->None:
-        """
-        Takes as argument a list of dictionary obtained with the pre-process
-        function of the prediction of the days.
-        """
-        self.client.publish("Energy/prediction_energy/", json.dumps(predictions), qos=1, retain=True)
+        def on_message_custom(client, user_data, msg):
+            if msg.topic == "Energy/PredictionEnergy/":
+                print(f"Receving at topic {msg.topic}")
+                predictions = json.loads(msg.payload.decode())
+                SqlManager = ManagerTernaSql()
+                SqlManager.prediction_to_sql(predictions)
+                Thermal = ThermalModel()
+                termal_data = Thermal.pre_process_for_thermal(predictions)
+                termal_prediction = Thermal.custom_predict(termal_data)
+                to_send = pd.DataFrame( termal_prediction, termal_data["date"].unique())
+                MqttManager().publish_thermal(to_send)
+                time.sleep(2)
+
+            elif msg.topic == "Energy/PredictionThermal/":
+                print(f"Receving at topic {msg.topic}")
+                new_obs = pd.DataFrame.from_dict(json.loads(msg.payload))
+                SqlManager = ManagerTernaSql()
+                new_obs["date"]= new_obs.index
+                new_obs['date'] = pd.to_datetime(new_obs['date'])
+                new_obs["date"] = new_obs["date"].dt.strftime("%Y/%m/%d %H:%M:%S")
+                SqlManager.preprocess_thermal_prediction_to_sql(new_obs['0'].values,new_obs['date'])
+                time.sleep(2)
+
+            elif msg.topic == "Energy/ForecastMeteo/":
+                print(f"Receving at topic {msg.topic}")
+                df = json.loads(msg.payload)
+                new_obs = pd.DataFrame.from_dict(df)
+                hours_of_prediction = new_obs["date"].unique()
+                ts = pd.to_datetime(hours_of_prediction)
+                hours_of_prediction = ts.strftime('%Y/%m/%d %H:%M:%S').tolist()
+                "wrong --> "
+                load_tot = np.append(LoadModel().custom_predict(create_load_to_predict('today')),
+                                     LoadModel().custom_predict(create_load_to_predict('tomorrow')))
+                ""
+                hydro_prediction = HydroModel().custom_predict(new_obs)
+                geothermal_prediction = GeoThermalModel().custom_predict(new_obs)
+                wind_prediction = WindModel().custom_predict(new_obs)
+                photovoltaic_prediction = PhotovoltaicModel().custom_predict(new_obs)
+                biomass_prediction = BiomassModel().custom_predict(new_obs)
+                res = {}
+
+                for ih in range(len(hours_of_prediction)):
+                    res[hours_of_prediction[ih]] = {
+                        'hydro': hydro_prediction[ih],
+                        'geothermal': geothermal_prediction[ih],
+                        'wind': wind_prediction[ih],
+                        'photovoltaic': photovoltaic_prediction[ih],
+                        'biomass': biomass_prediction[ih],
+                        'load': load_tot[int(hours_of_prediction[ih].split(" ")[1].split(":")[0])]
+                    }
+                MqttManager().publish_prediction(res)
+                time.sleep(2)
+
+        self.mqttc = mqtt.Client()
+        self.mqttc.tls_set(CA_ROOT_CERT_FILE, certfile=THING_CERT_FILE, keyfile=THING_PRIVATE_KEY,
+                      cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLSv1_2, ciphers=None)
+
+        self.mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
+        #self.mqttc.connect('localhost', 1883)
+        self.mqttc.on_message = on_message_custom
+        self.mqttc.on_publish = on_publish_custom
+
+
+    def publish_thermal(self, predictions):
+        topic = "Energy/PredictionThermal/"
+        time.sleep(5)
+        msg = json.dumps(predictions.to_dict())
+        self.mqttc.publish(topic = topic, payload= msg,  qos=1)
+        print(f"Sending to {topic} at: ", datetime.datetime.now())
+        time.sleep(2)
+
+    def publish_prediction(self,predictions)->None:
+        topic = "Energy/PredictionEnergy/"
+        time.sleep(5)
+        msg = json.dumps(predictions)
+        self.mqttc.publish(topic = topic, payload=msg, qos=1, retain = True)
+        print(f"Sending to {topic} at: ", datetime.datetime.now())
+        time.sleep(5)
+
+
+    def publish_forecast(self, forecast)->None:
+        topic = "Energy/ForecastMeteo/"
+        msg = json.dumps(forecast.to_dict())
+        self.mqttc.publish(topic = topic, payload=msg, qos=1, retain = True)
+        print(f"Sending to {topic} at: ", datetime.datetime.now())
+        time.sleep(2)
+
+    def publish_sell_buy(self, sell_buy):
+        self.mqttc.publish("Energy/ForecastMeteo/", json.dumps(sell_buy), qos=1)
         print("update at:", datetime.datetime.now())
+        time.sleep(2)
 
-    def subscriber_load_prediction(self)->None:
-        """
-        Take the load predictions from the broker and drop it into
-        the SQL databases.
-        """
-        def on_message(client, user_data, msg):
-            predictions = json.loads(msg.payload.decode())
-            SqlManager = ManagerTernaSql()
-            SqlManager.prediction_to_sql(predictions)
-            #When receive the other prediction make the predictions about thermal!
-            Thermal = ThermalModel()
-            termal_data = Thermal.pre_process_for_thermal(predictions)
-            termal_prediction = Thermal.custom_predict(termal_data)
-            SqlManager.preprocess_thermal_prediction_to_sql(termal_prediction,
-                                                            termal_data["date"].unique())
-        self.client.subscribe("Energy/prediction_energy/")
-        self.client.on_message = on_message
+    def subscriber(self)->None:
+        print("Subscribing to all the topics!")
+        self.mqttc.subscribe("Energy/ForecastMeteo/")
+        self.mqttc.subscribe("Energy/PredictionEnergy/")
+        self.mqttc.subscribe("Energy/PredictionThermal/")
+        self.mqttc.loop_forever()
 
-        self.client.loop_forever()
+
+
+
 
 ###################################################################################################################
 if __name__ == "__main__":
-    MqttManager().subscriber_load_prediction()
+    MqttManager().subscriber()

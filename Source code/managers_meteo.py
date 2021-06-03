@@ -21,32 +21,79 @@ class ManagerTernaSql():
         """
         Given two list of MeteoData and MeteoRadiation data it update the local SQL database.
         """
-        print("Updating Meteo database")
-        cursor = self.connection.cursor()
+        print(f"Updating energy.meteo database with {len(meteos)/20} MeteoData and {len(radiations)/20} RadiationData")
+        i,o, check, n=0,0,0,1
+        cursor = self.engine
+
+        for iel in range(len(meteos)):
+            check += 1
+            if ":00" in meteos[iel].cross_join:
+                tmp = dict(date=datetime.datetime.strptime(meteos[iel].cross_join, "%d/%m/%Y %H:%M %p"),
+                   clouds=meteos[iel].clouds, pressure=meteos[iel].pressure, humidity=meteos[iel].humidity,
+                   temp=meteos[iel].temp, rain_1h=meteos[iel].rain_1h, snow_1h=meteos[iel].snow_1h,
+                   wind_deg=meteos[iel].wind_deg, wind_speed=meteos[iel].wind_speed,
+                   globalhorizontalirradiance_2=radiations[iel].globalhorizontalirradiance_2,
+                   directnormalirradiance=radiations[iel].directnormalirradiance,
+                   directnormalirradiance_2=radiations[iel].directnormalirradiance_2,
+                   diffusehorizontalirradiance_2=radiations[iel].diffusehorizontalirradiance_2,
+                   diffusehorizontalirradiance= radiations[iel].diffusehorizontalirradiance)
+                print(f'Exit tmp at {check}')
+                break
+
         query = """INSERT into energy_meteo (
         date, clouds, pressure, humidity, temp, rain_1h, snow_1h, wind_deg, wind_speed,
         globalhorizontalirradiance_2,directnormalirradiance,directnormalirradiance_2,
         diffusehorizontalirradiance,diffusehorizontalirradiance_2) VALUES 
         (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-        fix_hour = datetime.timedelta(hours=2)
-        for iel in tqdm(range(len(radiations))):
-            if ":00 " in radiations[iel].cross_join and ":00" in meteos[iel].cross_join:
-                cursor.execute(query, (
-                    str(datetime.datetime.strptime(meteos[iel].cross_join, "%d/%m/%Y %H:%M %p")-fix_hour),
-                    meteos[iel].clouds,
-                    meteos[iel].pressure,
-                    meteos[iel].humidity,
-                    meteos[iel].temp,
-                    meteos[iel].rain_1h,
-                    meteos[iel].snow_1h,
-                    meteos[iel].wind_deg,
-                    meteos[iel].wind_speed,
-                    radiations[iel].globalhorizontalirradiance_2,
-                    radiations[iel].directnormalirradiance,
-                    radiations[iel].directnormalirradiance_2,
-                    radiations[iel].diffusehorizontalirradiance,
-                    radiations[iel].diffusehorizontalirradiance_2,
-                ))
+
+        for iel in tqdm(range(check, len(radiations))):
+            if ":00" in meteos[iel].cross_join:
+                if (datetime.datetime.strptime(meteos[iel].cross_join, "%d/%m/%Y %H:%M %p")) == tmp['date']:
+                    n += 1
+                    tmp['clouds'] += meteos[iel].clouds
+                    tmp['pressure'] += meteos[iel].pressure
+                    tmp['humidity'] += meteos[iel].humidity
+                    tmp['temp'] += meteos[iel].temp
+                    tmp['rain_1h'] += meteos[iel].rain_1h
+                    tmp['snow_1h'] += meteos[iel].snow_1h
+                    tmp['wind_deg'] += meteos[iel].wind_deg
+                    tmp['wind_speed'] += meteos[iel].wind_speed
+                    tmp['directnormalirradiance'] += radiations[iel].directnormalirradiance
+                    tmp['diffusehorizontalirradiance'] += radiations[iel].diffusehorizontalirradiance
+                    tmp['directnormalirradiance_2'] += radiations[iel].directnormalirradiance_2
+                    tmp['diffusehorizontalirradiance_2'] += radiations[iel].diffusehorizontalirradiance_2
+                    tmp['globalhorizontalirradiance_2'] += radiations[iel].globalhorizontalirradiance_2
+                else:
+                    o+=1
+                    for k in tmp:
+                        if type(tmp[k])!= datetime.datetime: tmp[k]= tmp[k] / n
+                    cursor.execute(query, (
+                        tmp['date'],
+                        tmp['clouds'],
+                        tmp['pressure'],
+                        tmp['humidity'] ,
+                        tmp['temp'] ,
+                        tmp['rain_1h'],
+                        tmp['snow_1h'],
+                        tmp['wind_deg'] ,
+                        tmp['wind_speed'],
+                        tmp['directnormalirradiance'] ,
+                        tmp['diffusehorizontalirradiance'] ,
+                        tmp['directnormalirradiance_2'],
+                        tmp['diffusehorizontalirradiance_2'],
+                        tmp['globalhorizontalirradiance_2']))
+                    n=1
+                    tmp = dict(date=datetime.datetime.strptime(meteos[iel].cross_join, "%d/%m/%Y %H:%M %p"),
+                       clouds=meteos[iel].clouds, pressure=meteos[iel].pressure, humidity=meteos[iel].humidity,
+                       temp=meteos[iel].temp, rain_1h=meteos[iel].rain_1h, snow_1h=meteos[iel].snow_1h,
+                       wind_deg=meteos[iel].wind_deg, wind_speed=meteos[iel].wind_speed,
+                       globalhorizontalirradiance_2=radiations[iel].globalhorizontalirradiance_2,
+                       directnormalirradiance=radiations[iel].directnormalirradiance,
+                       directnormalirradiance_2=radiations[iel].directnormalirradiance_2,
+                       diffusehorizontalirradiance_2=radiations[iel].diffusehorizontalirradiance_2,
+                       diffusehorizontalirradiance= radiations[iel].diffusehorizontalirradiance)
+
+        print(f"Rows executed = {o}")
 
     def generation_from_terna_to_db(self, path_to_file:str, process:str='linebyline')->None:
         """
@@ -146,13 +193,12 @@ class ManagerTernaSql():
         ""
         i=0
         query = """insert into prediction_energy(date, energy, generation) VALUES(%s,%s,%s);"""
-        predictions = predictions[0]
+        predictions = predictions
         for hour in predictions:
             for source in predictions[hour]:
                 self.engine.execute(query, (hour, source, predictions[hour][source]))
                 i+=1
-        print()
-        print(f"Updating renewable generation and load --> {i} rows")
+
 
     def preprocess_thermal_prediction_to_sql(self, pred, dates: pd.Series)->None:
         """
@@ -164,8 +210,6 @@ class ManagerTernaSql():
         df.rename(columns={0:'generation'}, inplace=True)
         df.to_sql("prediction_energy",  con=self.engine,
                                          if_exists = 'append', index = False)
-        print(f"Updating thermal generation --> {len(df)} rows,"
-              f"from {dates[0]} to {dates[-1]}")
 
     def thermal_from_terna_to_db(self, paths:List[str])->None:
         """
@@ -310,13 +354,18 @@ class populating_the_sql_database:
         listu = ["Files example/load_terna/"+path for path in listu]
         ManagerTernaSql().load_from_terna_and_holiday(listu, "Files example/holiday_BACKWARD.csv")
     def energy_production(self)->None:
-        ManagerTernaSql().generation_from_terna_to_db("Files example/generation_terna/renawable_production.csv")
+        ManagerTernaSql().generation_from_terna_to_db("../Documentation/Files example/generation_terna/generation.csv")
     def energy_thermal(self)->None:
         paths = ["Files example/Energy_balance/" + i for i in os.listdir("Files example/Energy_balance")]
         #paths = ["Files example/EnergyBalance_all/" + i for i in os.listdir("Files example/EnergyBalance_all")]
         ManagerTernaSql().thermal_from_terna_to_db(paths)
     def energy_installed_capacity(self)->None:
         ManagerTernaSql().load_energy_installed_capacity("Files example/installed_capacity.csv")
+
+    def from_json_to_db(self):
+        rad = JsonManagerCurrentRadiation('../Documentation/Files example/json_meteo/storico_radiation.json').load_unprocess()
+        meteo = JsonManagerCurrentMeteo('../Documentation/Files example/json_meteo/storico_meteo.json').load_unprocess()
+        ManagerTernaSql().MeteoAndRadiationSave(radiations=rad, meteos= meteo)
 ###################################################################################################################
 if __name__ == "__main__":
-    populating_the_sql_database().energy_load()
+    populating_the_sql_database().from_json_to_db()

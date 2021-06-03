@@ -8,7 +8,11 @@ import plotly.graph_objs as go
 import datetime
 from sqlalchemy import create_engine
 import os
-
+from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect
+from .form import UserRegistrationForm
+from django.contrib.auth.decorators import login_required
 
     # cursor = connection.cursor()
     # query = """SELECT * from energy_installed_capacity"""
@@ -19,11 +23,10 @@ import os
     #return render(requests, 'Display/prediction.html', {'data':tmp})
 
 def last_load(requests):
-
     engine = create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
     engine.connect()
-    date = datetime.datetime.today().strftime("%Y-%m-%d")
-    #date = (datetime.datetime.today()+datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+    #date = datetime.datetime.today().strftime("%Y-%m-%d")
+    date = (datetime.datetime.today()+datetime.timedelta(days=1)).strftime("%Y-%m-%d")
     query = f"""select date,generation,energy from prediction_energy 
         where cast(prediction_energy.`date` as Date) = cast('{date}' as Date);"""
     df = pd.read_sql_query(query, engine, parse_dates=["date"])
@@ -62,9 +65,9 @@ def last_load(requests):
                                  tick0=0.2,
                                  tickangle=30),
                       yaxis={'title': "Generation/consumption in  GW/H"},
-                      margin={'l': 200, 'r': 200, 'b': 150, 't': 150, 'pad': 10},
+                      margin={'l': 50, 'r': 50, 'b': 50, 't': 50, 'pad': 2},
                       # paper_bgcolor='white', plot_bgcolor='white',
-                      width=1200, height=700,
+                      width=1000, height=600,
                       template="gridon",
                       paper_bgcolor='rgb(235,235,235)')
 
@@ -72,9 +75,24 @@ def last_load(requests):
                 output_type="div",include_plotlyjs=False, show_link=False, link_text="")
 
     return render(requests, "Display/prediction.html", context={'plot_div': load,
-    'probability':[0.3,0.1,1,0.4,0.5,0.7,0.1,0.2,0.1,0.2,0.4,0.7,0.4,0.5,0.34,0.9,0.4,0.1,0.7,0.5,0.70,0.50,0.1,0.5]})
+    'probability':[len(df),len(df)/7, dates[0],dates[-1],0.7,0.1,0.2,0.1,0.2,0.4,0.7,0.4,0.5,0.34,0.9,0.4,0.1,0.7,0.5,0.70,0.50,0.1,0.5]})
 
 def home(requests):
     return render(requests, 'Display/home.html', {'data':"HOME"})
+
 def about(requests):
     return render(requests, 'Display/about.html', {'data':"about"})
+
+def register(request):
+    if request.method == "POST":
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get("username")
+            messages.success(request,
+                             """Account created, from now on you will receive an email 
+                             each time the prediction  are update!""")
+            return redirect("data")
+    else:
+        form = UserRegistrationForm()
+    return render(request, 'Display/newsletter.html', {"form":form})

@@ -84,10 +84,14 @@ class MeteoRadiationData():
         This function has to be applied on a single call from the forecast radiation.
         So for each city one call.
         """
+        if ":01" in obj["cross_join"] or ":59" in obj["cross_join"]:
+            o_c = obj["cross_join"]
+            cross_join =  o_c.split(" ")[0]+" " + o_c.split(" ")[1].split(":")[0] + ":" +"00 "+ o_c.split(" ")[2]
+        else: cross_join = obj["cross_join"]
         return MeteoRadiationData(
             name=obj["name"],
             date= obj["organized_data"],
-            cross_join=obj["cross_join"],
+            cross_join= cross_join,
             region= obj["region"],
             globalhorizontalirradiance= obj["list"][0]["radiation"]["ghi"],
             directnormalirradiance= obj["list"][0]["radiation"]["dni"],
@@ -191,11 +195,15 @@ class MeteoData():
         if 'rain' in obj: rain = obj['rain']["1h"]
         if 'snow' in obj: snow=obj["snow"]['1h']
         original_dt = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(obj["dt"]))
+        if ":01" in obj["cross_join"] or ":59" in obj["cross_join"]:
+            o_c = obj["cross_join"]
+            cross_join =  o_c.split(" ")[0]+" " + o_c.split(" ")[1].split(":")[0] + ":" +"00 "+ o_c.split(" ")[2]
+        else: cross_join = obj["cross_join"]
         return MeteoData(
             name = obj["name"],
             date = original_dt,
             clouds = obj["clouds"]["all"],
-            cross_join=obj["cross_join"],
+            cross_join= cross_join,
             pressure= obj["main"]["pressure"],
             humidity= obj["main"]["humidity"],
             temp = obj["main"]["temp"],
@@ -287,28 +295,33 @@ class ForecastData():
         This function will return the forecast for the next 48 hours!
         """
         final = pd.merge(meteo_df, radiations_df[
-            ['name', 'date', 'globalhorizontalirradiance', 'directnormalirradiance',
+            ['name','date', 'globalhorizontalirradiance', 'directnormalirradiance',
              'diffusehorizontalirradiance', 'globalhorizontalirradiance_2',
              'directnormalirradiance_2', 'diffusehorizontalirradiance_2']],
                          on=["date", "name"], how='left')
 
         final.drop(columns=["cross_join"], inplace=True)
-        #final.to_csv("new_forecast_obs.csv", index=False)
-        final["date"] = pd.to_datetime(final["date"], format='%d/%m/%Y %H:%M:%S %p')
-        final["str_hour"] = final["date"].dt.strftime("%H")
-        final["str_month"] = final["date"].dt.strftime("%B")
-        final["str_month"] = final["str_month"].str.lower()
-        def AM_PM(str_hour):
-            if int(str_hour)>=13:  str_hour = str(24-13)+"PM"
-            elif int(str_hour)== 0: str_hour = "12PM"
-            elif int(str_hour) < 10:  str_hour = str_hour[-1]+"AM"
-            else:  str_hour = str_hour + "AM"
-            return str_hour
-        final["str_hour"] = final["str_hour"].apply(AM_PM)
-        #final.to_csv("to_check_forecast.csv", index=False)
-        final = final.sort_values(by="date")
-        final["date"] = final["date"].dt.strftime('%Y/%m/%d %H:%M:%S')
-        return final
+        g = final.groupby('date', as_index=False)
+        res = []
+        for name, group in (g):
+            tmp = pd.DataFrame(group.mean())
+            columns = list(tmp.index)[0:]
+            valori = list(tmp[0][0:].values)
+            df_2 = pd.DataFrame([valori], columns=columns)
+            df_2.insert(loc=0, column='date_2', value=name)
+            res.append(df_2)
+
+        grouped_forecast = pd.concat(res)
+        #grouped_forecast.drop(columns=["date"], inplace=True)
+        grouped_forecast["date_2"] = pd.to_datetime(grouped_forecast["date_2"], format='%d/%m/%Y %H:%M:%S %p')
+        grouped_forecast["str_hour"] = grouped_forecast["date_2"].dt.strftime("%H %p")
+        grouped_forecast["str_month"] = grouped_forecast["date_2"].dt.strftime("%B")
+        grouped_forecast["str_month"] = grouped_forecast["str_month"].str.lower()
+        grouped_forecast = grouped_forecast.sort_values(by="date_2")
+        grouped_forecast["date_2"] = grouped_forecast["date_2"].dt.strftime('%Y/%m/%d %H:%M:%S')
+        grouped_forecast.reset_index(inplace=True)
+        grouped_forecast.rename(columns={'date_2':'date'}, inplace=True)
+        return grouped_forecast
 
 if __name__ == "__main__":
     ""

@@ -24,10 +24,9 @@ class GeoThermalModel():
     When created the class look up in the specified path for an existing model.
     In case there isn't first fit the model with fit_model!
     """
-    def __init__(self, path:str="Models/geothermal_linear.mod"):
+    def __init__(self, path:str="../Models/geothermal_linear.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -48,30 +47,30 @@ class GeoThermalModel():
         	WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
         END as str_month,
 		CASE EXTRACT(HOUR FROM energy_meteo.date)
-			WHEN '1' THEN  '1AM'
-			WHEN '2' THEN  '2AM'
-			WHEN '3' THEN  '3AM'
-			WHEN '4' THEN  '4AM'
-			WHEN '5' THEN  '5AM'
-			WHEN '6' THEN  '6AM'
-			WHEN '7' THEN  '7AM'
-			WHEN '8' THEN  '8AM'
-			WHEN '9' THEN  '9AM'
-			WHEN '10' THEN  '10AM'
-			WHEN '11' THEN  '11AM'
-			WHEN '12' THEN  '12PM'
-			WHEN '13' THEN  '1PM'
-			WHEN '14' THEN  '2PM'
-			WHEN '15' THEN  '3PM'
-			WHEN '16' THEN  '4PM'
-			WHEN '17' THEN  '5PM'
-			WHEN '18' THEN  '6PM'
-			WHEN '19' THEN  '7PM'
-			WHEN '20' THEN  '8PM'
-			WHEN '21' THEN  '9PM'
-			WHEN '22' THEN  '10PM'
-			WHEN '23' THEN  '11PM'
-			WHEN '0' THEN  '12AM'
+			WHEN '1' THEN  '01 AM'
+			WHEN '2' THEN  '02 AM'
+			WHEN '3' THEN  '03 AM'
+			WHEN '4' THEN  '04 AM'
+			WHEN '5' THEN  '05 AM'
+			WHEN '6' THEN  '06 AM'
+			WHEN '7' THEN  '07 AM'
+			WHEN '8' THEN  '08 AM'
+			WHEN '9' THEN  '09 AM'
+			WHEN '10' THEN  '10 AM'
+			WHEN '11' THEN  '11 AM'
+			WHEN '12' THEN  '00 AM'
+			WHEN '13' THEN  '13 PM'
+			WHEN '14' THEN  '14 PM'
+			WHEN '15' THEN  '15 PM'
+			WHEN '16' THEN  '16 PM'
+			WHEN '17' THEN  '17 PM'
+			WHEN '18' THEN  '18 PM'
+			WHEN '19' THEN  '19 PM'
+			WHEN '20' THEN  '20 PM'
+			WHEN '21' THEN  '21 PM'
+			WHEN '22' THEN  '22 PM'
+			WHEN '23' THEN  '23 PM'
+			WHEN '0' THEN  '12 PM'
         END as str_hour
         FROM energy_production
         INNER JOIN energy_meteo
@@ -96,7 +95,7 @@ class GeoThermalModel():
             pred, target = self.get_geothermal_data()
             print(f"Training the GeoThermalModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
-            joblib.dump(self.pipeline, 'Models/geothermal_linear.mod')
+            joblib.dump(self.pipeline, '../Models/geothermal_linear.mod')
 
 
     def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
@@ -115,10 +114,9 @@ class BiomassModel():
     When created the class look up in the specified path for an existing model.
     In case there isn't first fit the model with fit_model!
     """
-    def __init__(self, path:str="Models/biomass_forest.mod"):
+    def __init__(self, path:str="../Models/biomass_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -139,30 +137,30 @@ class BiomassModel():
         	WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
         END as str_month,
 		CASE EXTRACT(HOUR FROM energy_meteo.date)
-			WHEN '1' THEN  '1AM'
-			WHEN '2' THEN  '2AM'
-			WHEN '3' THEN  '3AM'
-			WHEN '4' THEN  '4AM'
-			WHEN '5' THEN  '5AM'
-			WHEN '6' THEN  '6AM'
-			WHEN '7' THEN  '7AM'
-			WHEN '8' THEN  '8AM'
-			WHEN '9' THEN  '9AM'
-			WHEN '10' THEN  '10AM'
-			WHEN '11' THEN  '11AM'
-			WHEN '12' THEN  '12PM'
-			WHEN '13' THEN  '1PM'
-			WHEN '14' THEN  '2PM'
-			WHEN '15' THEN  '3PM'
-			WHEN '16' THEN  '4PM'
-			WHEN '17' THEN  '5PM'
-			WHEN '18' THEN  '6PM'
-			WHEN '19' THEN  '7PM'
-			WHEN '20' THEN  '8PM'
-			WHEN '21' THEN  '9PM'
-			WHEN '22' THEN  '10PM'
-			WHEN '23' THEN  '11PM'
-			WHEN '0' THEN  '12AM'
+			WHEN '1' THEN  '01 AM'
+			WHEN '2' THEN  '02 AM'
+			WHEN '3' THEN  '03 AM'
+			WHEN '4' THEN  '04 AM'
+			WHEN '5' THEN  '05 AM'
+			WHEN '6' THEN  '06 AM'
+			WHEN '7' THEN  '07 AM'
+			WHEN '8' THEN  '08 AM'
+			WHEN '9' THEN  '09 AM'
+			WHEN '10' THEN  '10 AM'
+			WHEN '11' THEN  '11 AM'
+			WHEN '12' THEN  '00 AM'
+			WHEN '13' THEN  '13 PM'
+			WHEN '14' THEN  '14 PM'
+			WHEN '15' THEN  '15 PM'
+			WHEN '16' THEN  '16 PM'
+			WHEN '17' THEN  '17 PM'
+			WHEN '18' THEN  '18 PM'
+			WHEN '19' THEN  '19 PM'
+			WHEN '20' THEN  '20 PM'
+			WHEN '21' THEN  '21 PM'
+			WHEN '22' THEN  '22 PM'
+			WHEN '23' THEN  '23 PM'
+			WHEN '0' THEN  '12 PM'
         END as str_hour
         FROM energy_production
         INNER JOIN energy_meteo
@@ -187,7 +185,7 @@ class BiomassModel():
             pred, target = self.get_biomass_data()
             print(f"Training the BiomassModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
-            joblib.dump(self.pipeline, 'Models/biomass_forest.mod')
+            joblib.dump(self.pipeline, '../Models/biomass_forest.mod')
 
     def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
         """
@@ -208,10 +206,9 @@ class PhotovoltaicModel():
     When created the class look up in the specified path for an existing model.
     In case there isn't first fit the model with fit_model!
     """
-    def __init__(self, path:str="Models/photovoltaic_forest.mod"):
+    def __init__(self, path:str="../Models/photovoltaic_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -233,30 +230,30 @@ class PhotovoltaicModel():
                 WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
             END as str_month,
 		    CASE EXTRACT(HOUR FROM energy_meteo.date)
-                WHEN '1' THEN  '1AM'
-                WHEN '2' THEN  '2AM'
-                WHEN '3' THEN  '3AM'
-                WHEN '4' THEN  '4AM'
-                WHEN '5' THEN  '5AM'
-                WHEN '6' THEN  '6AM'
-                WHEN '7' THEN  '7AM'
-                WHEN '8' THEN  '8AM'
-                WHEN '9' THEN  '9AM'
-                WHEN '10' THEN  '10AM'
-                WHEN '11' THEN  '11AM'
-                WHEN '12' THEN  '12PM'
-                WHEN '13' THEN  '1PM'
-                WHEN '14' THEN  '2PM'
-                WHEN '15' THEN  '3PM'
-                WHEN '16' THEN  '4PM'
-                WHEN '17' THEN  '5PM'
-                WHEN '18' THEN  '6PM'
-                WHEN '19' THEN  '7PM'
-                WHEN '20' THEN  '8PM'
-                WHEN '21' THEN  '9PM'
-                WHEN '22' THEN  '10PM'
-                WHEN '23' THEN  '11PM'
-                WHEN '0' THEN  '12AM'
+  			WHEN '1' THEN  '01 AM'
+			WHEN '2' THEN  '02 AM'
+			WHEN '3' THEN  '03 AM'
+			WHEN '4' THEN  '04 AM'
+			WHEN '5' THEN  '05 AM'
+			WHEN '6' THEN  '06 AM'
+			WHEN '7' THEN  '07 AM'
+			WHEN '8' THEN  '08 AM'
+			WHEN '9' THEN  '09 AM'
+			WHEN '10' THEN  '10 AM'
+			WHEN '11' THEN  '11 AM'
+			WHEN '12' THEN  '00 AM'
+			WHEN '13' THEN  '13 PM'
+			WHEN '14' THEN  '14 PM'
+			WHEN '15' THEN  '15 PM'
+			WHEN '16' THEN  '16 PM'
+			WHEN '17' THEN  '17 PM'
+			WHEN '18' THEN  '18 PM'
+			WHEN '19' THEN  '19 PM'
+			WHEN '20' THEN  '20 PM'
+			WHEN '21' THEN  '21 PM'
+			WHEN '22' THEN  '22 PM'
+			WHEN '23' THEN  '23 PM'
+			WHEN '0' THEN  '12 PM'
             END as str_hour
             FROM energy_production
             INNER JOIN energy_meteo
@@ -282,7 +279,7 @@ class PhotovoltaicModel():
             pred, target = self.get_photovoltaid_data()
             print(f"Training the PhotovoltaicModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
-            joblib.dump(self.pipeline, 'Models/photovoltaic_forest.mod')
+            joblib.dump(self.pipeline, '../Models/photovoltaic_forest.mod')
 
 
 
@@ -305,10 +302,9 @@ class WindModel():
     When created the class look up in the specified path for an existing model.
     In case there isn't first fit the model with fit_model!
     """
-    def __init__(self, path:str="Models/wind_forest.mod"):
+    def __init__(self, path:str="../Models/wind_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -349,7 +345,7 @@ class WindModel():
             pred, target = self.get_wind_data()
             print(f"Training the WindModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
-            joblib.dump(self.pipeline, 'Models/wind_forest.mod')
+            joblib.dump(self.pipeline, '../Models/wind_forest.mod')
 
 
     def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
@@ -370,10 +366,9 @@ class HydroModel():
     When created the class look up in the specified path for an existing model.
     In case there isn't first fit the model with fit_model!
     """
-    def __init__(self, path:str="Models/hydro_r_forest.mod"):
+    def __init__(self, path:str="../Models/hydro_r_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -388,30 +383,30 @@ class HydroModel():
         self.engine.connect()
         query = f"""SELECT energy_meteo.humidity,temp,rain_1h,directnormalirradiance,globalhorizontalirradiance_2, energy_production.generation,
         CASE EXTRACT(HOUR FROM energy_meteo.date)
-            WHEN '1' THEN  '1AM'
-            WHEN '2' THEN  '2AM'
-            WHEN '3' THEN  '3AM'
-            WHEN '4' THEN  '4AM'
-            WHEN '5' THEN  '5AM'
-            WHEN '6' THEN  '6AM'
-            WHEN '7' THEN  '7AM'
-            WHEN '8' THEN  '8AM'
-            WHEN '9' THEN  '9AM'
-            WHEN '10' THEN  '10AM'
-            WHEN '11' THEN  '11AM'
-            WHEN '12' THEN  '12PM'
-            WHEN '13' THEN  '1PM'
-            WHEN '14' THEN  '2PM'
-            WHEN '15' THEN  '3PM'
-            WHEN '16' THEN  '4PM'
-            WHEN '17' THEN  '5PM'
-            WHEN '18' THEN  '6PM'
-            WHEN '19' THEN  '7PM'
-            WHEN '20' THEN  '8PM'
-            WHEN '21' THEN  '9PM'
-            WHEN '22' THEN  '10PM'
-            WHEN '23' THEN  '11PM'
-            WHEN '0' THEN  '12AM'
+			WHEN '1' THEN  '01 AM'
+			WHEN '2' THEN  '02 AM'
+			WHEN '3' THEN  '03 AM'
+			WHEN '4' THEN  '04 AM'
+			WHEN '5' THEN  '05 AM'
+			WHEN '6' THEN  '06 AM'
+			WHEN '7' THEN  '07 AM'
+			WHEN '8' THEN  '08 AM'
+			WHEN '9' THEN  '09 AM'
+			WHEN '10' THEN  '10 AM'
+			WHEN '11' THEN  '11 AM'
+			WHEN '12' THEN  '00 AM'
+			WHEN '13' THEN  '13 PM'
+			WHEN '14' THEN  '14 PM'
+			WHEN '15' THEN  '15 PM'
+			WHEN '16' THEN  '16 PM'
+			WHEN '17' THEN  '17 PM'
+			WHEN '18' THEN  '18 PM'
+			WHEN '19' THEN  '19 PM'
+			WHEN '20' THEN  '20 PM'
+			WHEN '21' THEN  '21 PM'
+			WHEN '22' THEN  '22 PM'
+			WHEN '23' THEN  '23 PM'
+			WHEN '0' THEN  '12 PM'
         END as str_hour
         FROM energy_production
         INNER JOIN energy_meteo
@@ -435,7 +430,7 @@ class HydroModel():
             pred, target = self.get_hydro_data()
             print(f"Training the HydroModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
-            joblib.dump(self.pipeline, 'Models/hydro_r_forest.mod')
+            joblib.dump(self.pipeline, '../Models/hydro_r_forest.mod')
 
 
 
@@ -457,10 +452,9 @@ class ThermalModel():
     When created the class look up in the specified path for an existing model.
     In case there isn't first fit the model with fit_model!
     """
-    def __init__(self, path:str="Models/thermal_forest.mod"):
+    def __init__(self, path:str="../Models/thermal_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -501,13 +495,13 @@ class ThermalModel():
             pred, target = self.get_thermal_data()
             print(f"Training the TermalModel --> on {len(pred)} observations")
             self.pipeline.fit(pred, target.values.ravel())
-            joblib.dump(self.pipeline, 'Models/thermal_forest.mod')
+            joblib.dump(self.pipeline, '../Models/thermal_forest.mod')
 
 
 
     def pre_process_for_thermal(self, predictions:dict):
         tmp = []
-        predictions = predictions[0]
+        predictions = predictions
         for key in predictions:
             sum_of_rest, load = 0, 0
             holiday = check_holiday_day(key)
@@ -535,10 +529,9 @@ class LoadModel():
     When created the class look up in the specified path for an existing model.
     In case there isn't first fit the model with fit_model!
     """
-    def __init__(self, path:str="Models/load_forest.mod"):
+    def __init__(self, path:str="../Models/load_forest.mod"):
         self.engine =  create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
         if os.path.exists(path):
-            print(f"Model loaded--> {path.split('/')[-1]}")
             self.pipeline = joblib.load(path)
         else:
             print(f"Do not found an already existing model at {path}")
@@ -587,7 +580,7 @@ class LoadModel():
             print(f"Training the LoadModel --> on {len(pred)} observations")
             print("Extracted the data from sql --> Fitting")
             self.pipeline.fit(pred, target.values.ravel())
-            joblib.dump(self.pipeline, 'Models/load_forest.mod')
+            joblib.dump(self.pipeline, '../Models/load_forest.mod')
 
 
     def custom_predict(self, new_observation:PandasDataFrame)->NumpyArray:
@@ -686,7 +679,7 @@ def check_holiday_day(day_string_format):
     if day.strftime('%d-%m') in italian_holiday: holiday_today="holiday"
     return holiday_today
 
-def send_predictions():
+def prepare_forecast_to_send()->None:
     meteo_forecast = MeteoData.forecast_from_dict_to_class(
         city=GetMeteoData().fetching_forecast_meteo())
     radiation_forecast = MeteoRadiationData.forecast_from_dict_to_class(
@@ -696,29 +689,8 @@ def send_predictions():
     meteo = forecaster.update_forecast_meteo(forecast_meteo=meteo_forecast)
     rad = forecaster.update_forecast_radiation(forecast_radiations=radiation_forecast)
     new_obs = forecaster.merge_forecast(radiations_df=rad, meteo_df=meteo)
+    MqttManager().publish_forecast(new_obs)
 
-    hours_of_prediction = new_obs["date"].unique()
-
-    load_tot = np.append(LoadModel().custom_predict(create_load_to_predict('today')),
-                         LoadModel().custom_predict(create_load_to_predict('tomorrow')))
-
-    hydro_prediction = HydroModel().custom_predict(new_obs)
-    geothermal_prediction = GeoThermalModel().custom_predict(new_obs)
-    wind_prediction = WindModel().custom_predict(new_obs)
-    photovoltaic_prediction = PhotovoltaicModel().custom_predict(new_obs)
-    biomass_prediction = BiomassModel().custom_predict(new_obs)
-
-    res = {}
-    for ih in range(len(hours_of_prediction)):
-        res[hours_of_prediction[ih]] = {
-            'hydro': hydro_prediction[ih],
-            'geothermal': geothermal_prediction[ih],
-            'wind': wind_prediction[ih],
-            'photovoltaic': photovoltaic_prediction[ih],
-            'biomass': biomass_prediction[ih],
-            'load': load_tot[ih]
-        }
-    MqttManager().publish_prediction([res])
 
 def train_all():
     HydroModel().custom_fit_model()
@@ -732,5 +704,5 @@ def train_all():
 ###################################################################################################################
 if __name__ == "__main__":
     #train_all()
-    send_predictions()
+    prepare_forecast_to_send()
     ####
