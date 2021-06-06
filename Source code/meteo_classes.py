@@ -319,7 +319,7 @@ class ForecastData():
         grouped_forecast["str_month"] = grouped_forecast["str_month"].str.lower()
         grouped_forecast = grouped_forecast.sort_values(by="date_2")
         grouped_forecast["date_2"] = grouped_forecast["date_2"].dt.strftime('%Y/%m/%d %H:%M:%S')
-        grouped_forecast.reset_index(inplace=True)
+        grouped_forecast.reset_index(inplace=True, drop=True)
         grouped_forecast.rename(columns={'date_2':'date'}, inplace=True)
         return grouped_forecast
 

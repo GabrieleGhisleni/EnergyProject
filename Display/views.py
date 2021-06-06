@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from .form import UserRegistrationForm
 from django.contrib.auth.decorators import login_required
+from KEYS.config import RDS_USER, RDS_PSW,RDS_HOST
 
     # cursor = connection.cursor()
     # query = """SELECT * from energy_installed_capacity"""
@@ -23,7 +24,7 @@ from django.contrib.auth.decorators import login_required
     #return render(requests, 'Display/prediction.html', {'data':tmp})
 
 def last_load(requests):
-    engine = create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+    engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
     engine.connect()
     #date = datetime.datetime.today().strftime("%Y-%m-%d")
     date = (datetime.datetime.today()+datetime.timedelta(days=1)).strftime("%Y-%m-%d")

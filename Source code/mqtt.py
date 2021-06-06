@@ -26,7 +26,9 @@ class MqttManager():
                 termal_prediction = Thermal.custom_predict(termal_data)
                 to_send = pd.DataFrame( termal_prediction, termal_data["date"].unique())
                 MqttManager().publish_thermal(to_send)
-                time.sleep(2)
+
+
+
 
             elif msg.topic == "Energy/PredictionThermal/":
                 print(f"Receving at topic {msg.topic}")
@@ -36,7 +38,8 @@ class MqttManager():
                 new_obs['date'] = pd.to_datetime(new_obs['date'])
                 new_obs["date"] = new_obs["date"].dt.strftime("%Y/%m/%d %H:%M:%S")
                 SqlManager.preprocess_thermal_prediction_to_sql(new_obs['0'].values,new_obs['date'])
-                time.sleep(2)
+                print("Done")
+
 
             elif msg.topic == "Energy/ForecastMeteo/":
                 print(f"Receving at topic {msg.topic}")
@@ -45,10 +48,8 @@ class MqttManager():
                 hours_of_prediction = new_obs["date"].unique()
                 ts = pd.to_datetime(hours_of_prediction)
                 hours_of_prediction = ts.strftime('%Y/%m/%d %H:%M:%S').tolist()
-                "wrong --> "
-                load_tot = np.append(LoadModel().custom_predict(create_load_to_predict('today')),
-                                     LoadModel().custom_predict(create_load_to_predict('tomorrow')))
-                ""
+                load_to_predict= create_load_to_predict(hours_of_prediction)
+                load_tot = LoadModel().custom_predict(load_to_predict)
                 hydro_prediction = HydroModel().custom_predict(new_obs)
                 geothermal_prediction = GeoThermalModel().custom_predict(new_obs)
                 wind_prediction = WindModel().custom_predict(new_obs)
@@ -66,46 +67,51 @@ class MqttManager():
                         'load': load_tot[int(hours_of_prediction[ih].split(" ")[1].split(":")[0])]
                     }
                 MqttManager().publish_prediction(res)
-                time.sleep(2)
 
         self.mqttc = mqtt.Client()
-        self.mqttc.tls_set(CA_ROOT_CERT_FILE, certfile=THING_CERT_FILE, keyfile=THING_PRIVATE_KEY,
-                      cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLSv1_2, ciphers=None)
+        self.mqttc.connect('localhost', 1883)
+        #
+        # self.mqttc.tls_set(CA_ROOT_CERT_FILE, certfile=THING_CERT_FILE, keyfile=THING_PRIVATE_KEY,
+        #                    cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLSv1_2, ciphers=None)
+        # self.mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
 
-        self.mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
-        #self.mqttc.connect('localhost', 1883)
+
         self.mqttc.on_message = on_message_custom
         self.mqttc.on_publish = on_publish_custom
+
+        # remember if use aws remove retain = True or it wont work.
 
 
     def publish_thermal(self, predictions):
         topic = "Energy/PredictionThermal/"
-        time.sleep(5)
         msg = json.dumps(predictions.to_dict())
-        self.mqttc.publish(topic = topic, payload= msg,  qos=1)
+        time.sleep(10)
+        self.mqttc.publish(topic = topic, payload= msg,  qos=1, retain = True)
+        time.sleep(10)
         print(f"Sending to {topic} at: ", datetime.datetime.now())
-        time.sleep(2)
+
+
 
     def publish_prediction(self,predictions)->None:
         topic = "Energy/PredictionEnergy/"
-        time.sleep(5)
         msg = json.dumps(predictions)
-        self.mqttc.publish(topic = topic, payload=msg, qos=1, retain = True)
+        time.sleep(10)
+        self.mqttc.publish(topic = topic, payload= msg,  qos=1, retain = True)
+        time.sleep(10)
         print(f"Sending to {topic} at: ", datetime.datetime.now())
-        time.sleep(5)
+
+
 
 
     def publish_forecast(self, forecast)->None:
         topic = "Energy/ForecastMeteo/"
         msg = json.dumps(forecast.to_dict())
-        self.mqttc.publish(topic = topic, payload=msg, qos=1, retain = True)
+        time.sleep(10)
+        self.mqttc.publish(topic = topic, payload= msg,  qos=1, retain = True)
+        time.sleep(10)
         print(f"Sending to {topic} at: ", datetime.datetime.now())
-        time.sleep(2)
 
-    def publish_sell_buy(self, sell_buy):
-        self.mqttc.publish("Energy/ForecastMeteo/", json.dumps(sell_buy), qos=1)
-        print("update at:", datetime.datetime.now())
-        time.sleep(2)
+
 
     def subscriber(self)->None:
         print("Subscribing to all the topics!")

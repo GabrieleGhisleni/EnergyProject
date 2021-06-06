@@ -7,6 +7,7 @@ from meteo_classes import *
 import pandas as pd
 import mysql.connector as sql
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
+from KEYS.config import RDS_USER,RDS_PSW,RDS_HOST
 
 ###################################################################################################################
 class ManagerTernaSql():
@@ -14,7 +15,7 @@ class ManagerTernaSql():
     class created to handle the file transfer from Terna to our databases.
     """
     def __init__(self):
-        self.engine = create_engine("mysql+pymysql://root:{}@localhost/energy".format(os.environ.get("SQL")))
+        self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         self.engine.connect()
 
     def MeteoAndRadiationSave(self, meteos:List[MeteoData], radiations:List[MeteoRadiationData])->None:
@@ -112,13 +113,13 @@ class ManagerTernaSql():
                         obs.fieldnames = field
                         print("Start process and updating energy_generation table!")
                         for row in tqdm(obs):
-                            query = """INSERT into energy_production (date, energy_source, generation) VALUES (%s,%s,%s)"""
+                            query = """INSERT into energy_generation (date, energy_source, generation) VALUES (%s,%s,%s)"""
                             self.engine.execute(query, (row["date"],row["energy_source"], row["generation"]))
                 else:
                     df = pd.read_csv(path_to_file)
                     df.rename(columns={'Date': "date", 'Energy Source': 'energy_source',
                                        'Renewable Generation [GWh]': 'generation'},inplace=True)
-                    df.to_sql('energy_production', con=self.engine, if_exists='append', index=False)
+                    df.to_sql('energy_generation', con=self.engine, if_exists='append', index=False)
             elif path_to_file.endswith(".xlsx"):
                 print("to implement yet, pass a csv instead")
             else:
@@ -145,6 +146,7 @@ class ManagerTernaSql():
                         current = current[current["Bidding zone"] == "Italy"]
                         current.drop(columns=["Forecast Total load [MW]", "Bidding zone"], inplace=True)
                         tmp = pd.to_datetime(current["Date"], format="%d/%m/%Y %H:%M:%S %p")
+                        current = current[current['Date'].dt.strftime("%M") == '00']
                         current["cross_date"] = tmp.dt.strftime("%Y-%m-%d")
                         current["Date"] = current["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
                         current = current.merge(holiday, how="inner", on="cross_date")
@@ -189,15 +191,21 @@ class ManagerTernaSql():
         """
         return (pd.read_sql_query(query, self.engine))
 
-    def prediction_to_sql(self, predictions:List[Dict]):
+    def prediction_to_sql(self, predictions:Dict):
         ""
         i=0
         query = """insert into prediction_energy(date, energy, generation) VALUES(%s,%s,%s);"""
         predictions = predictions
-        for hour in predictions:
-            for source in predictions[hour]:
-                self.engine.execute(query, (hour, source, predictions[hour][source]))
-                i+=1
+        df = pd.DataFrame.from_dict(predictions, orient='index')
+        df.reset_index(inplace=True, drop = False)
+        df.rename(columns={'index':'date'}, inplace=True)
+        for source in df.columns:
+            if str(source) != 'date' and str(source) != 'index':
+                tmp = df[['date', source]].copy()
+                tmp['energy']= source
+                tmp.rename(columns={source:'generation'}, inplace=True)
+                tmp.to_sql("prediction_energy",  con=self.engine,
+                                         if_exists = 'append', index = False)
 
 
     def preprocess_thermal_prediction_to_sql(self, pred, dates: pd.Series)->None:
@@ -350,18 +358,17 @@ class populating_the_sql_database:
     to populate all the SQL tables.
     """
     def energy_load(self)->None:
-        listu = os.listdir("Files example/load_terna")
-        listu = ["Files example/load_terna/"+path for path in listu]
-        ManagerTernaSql().load_from_terna_and_holiday(listu, "Files example/holiday_BACKWARD.csv")
+        listu = os.listdir("../Documentation/Files example/load_terna")
+        listu = ["../Documentation/Files example/load_terna/"+path for path in listu]
+        ManagerTernaSql().load_from_terna_and_holiday(listu, "../Documentation/Files example/holiday_BACKWARD.csv")
     def energy_production(self)->None:
-        ManagerTernaSql().generation_from_terna_to_db("../Documentation/Files example/generation_terna/generation.csv")
+        ManagerTernaSql().generation_from_terna_to_db("../Documentation/Files example/generation_terna/generation_2.csv", "asd")
     def energy_thermal(self)->None:
         paths = ["Files example/Energy_balance/" + i for i in os.listdir("Files example/Energy_balance")]
         #paths = ["Files example/EnergyBalance_all/" + i for i in os.listdir("Files example/EnergyBalance_all")]
         ManagerTernaSql().thermal_from_terna_to_db(paths)
     def energy_installed_capacity(self)->None:
         ManagerTernaSql().load_energy_installed_capacity("Files example/installed_capacity.csv")
-
     def from_json_to_db(self):
         rad = JsonManagerCurrentRadiation('../Documentation/Files example/json_meteo/storico_radiation.json').load_unprocess()
         meteo = JsonManagerCurrentMeteo('../Documentation/Files example/json_meteo/storico_meteo.json').load_unprocess()
