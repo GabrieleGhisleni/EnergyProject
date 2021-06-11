@@ -9,7 +9,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('about/', views.about, name='about'),
     path('register/', views.register, name="register"),
-    path('api-auth/', views.DownloadCenter, name='api')
+    path('api-auth/', views.Energy_Full_Rest_API, name='api') #include('rest_framework.urls', namespace='rest_framework'))
 ]
 
 if settings.DEBUG:

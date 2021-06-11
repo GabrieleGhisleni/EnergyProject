@@ -14,7 +14,6 @@ class MqttManager():
     """
     def __init__(self):
         def on_publish_custom(client, userdata, mid): print("Message Published...", mid)
-
         def on_message_custom(client, user_data, msg):
             if msg.topic == "Energy/PredictionEnergy/":
                 print(f"Receving at topic {msg.topic}")
@@ -24,11 +23,9 @@ class MqttManager():
                 Thermal = ThermalModel()
                 termal_data = Thermal.pre_process_for_thermal(predictions)
                 termal_prediction = Thermal.custom_predict(termal_data)
+                print(termal_prediction)
                 to_send = pd.DataFrame( termal_prediction, termal_data["date"].unique())
                 MqttManager().publish_thermal(to_send)
-
-
-
 
             elif msg.topic == "Energy/PredictionThermal/":
                 print(f"Receving at topic {msg.topic}")
@@ -39,7 +36,7 @@ class MqttManager():
                 new_obs["date"] = new_obs["date"].dt.strftime("%Y/%m/%d %H:%M:%S")
                 SqlManager.preprocess_thermal_prediction_to_sql(new_obs['0'].values,new_obs['date'])
                 print("Done")
-
+                time.sleep(15)
 
             elif msg.topic == "Energy/ForecastMeteo/":
                 print(f"Receving at topic {msg.topic}")
@@ -56,7 +53,6 @@ class MqttManager():
                 photovoltaic_prediction = PhotovoltaicModel().custom_predict(new_obs)
                 biomass_prediction = BiomassModel().custom_predict(new_obs)
                 res = {}
-
                 for ih in range(len(hours_of_prediction)):
                     res[hours_of_prediction[ih]] = {
                         'hydro': hydro_prediction[ih],
@@ -64,8 +60,8 @@ class MqttManager():
                         'wind': wind_prediction[ih],
                         'photovoltaic': photovoltaic_prediction[ih],
                         'biomass': biomass_prediction[ih],
-                        'load': load_tot[int(hours_of_prediction[ih].split(" ")[1].split(":")[0])]
-                    }
+                        'load': load_tot[ih] }
+                #pprint(res, indent=2,width=2)
                 MqttManager().publish_prediction(res)
 
         self.mqttc = mqtt.Client()
@@ -75,12 +71,9 @@ class MqttManager():
         #                    cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLSv1_2, ciphers=None)
         # self.mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
 
-
         self.mqttc.on_message = on_message_custom
         self.mqttc.on_publish = on_publish_custom
-
         # remember if use aws remove retain = True or it wont work.
-
 
     def publish_thermal(self, predictions):
         topic = "Energy/PredictionThermal/"

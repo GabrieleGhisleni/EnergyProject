@@ -58,8 +58,8 @@ ROOT_URLCONF = 'EnergyDjango.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        #'DIRS': ["C:/Users/DELL/Desktop/UniTn/BigData/EnergyProject/Display/templates/Display"],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -71,6 +71,13 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer'],
+    'SEARCH_PARAM': ['energy','date']
+}
 
 WSGI_APPLICATION = 'EnergyDjango.wsgi.application'
 

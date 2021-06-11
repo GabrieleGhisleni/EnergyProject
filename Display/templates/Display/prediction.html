@@ -1,17 +1,17 @@
 {% extends "Display/base.html" %}
 {% block content %}
 <div>
-  <h2 style="font-family: 'Poppins', sans-serif;text-align: left;margin:30px;">Today's Prediction:</h2>
+  <h2 style="font-family: 'Poppins', sans-serif;text-align: left;margin:30px;">{{day}}'s Prediction:</h2>
   <div class="container">
   <div class="row justify-content-md-center">
   {% for p in probability %}
-  <div class="col-lg-1">
-    {% if p < 0.3 %}
+  <div class="col-lg-1 " style="margin: 0px;padding: 1px">
+    {% if -2 < p and p < 2 %}
         <p style="background-color:rgba(144,230,150,0.6);text-align: center;"> {{p}} </p>
-    {% elif p > 0.7%}  
-      <p style="background-color:rgba(255,36,0,0.5);text-align: center;"> {{p}} </p>
-    {% else %}
+    {% elif -5 < p and p < 5 %}
       <p style="background-color:rgb(255,244,79);text-align: center;"> {{p}} </p>
+    {% else %}
+      <p style="background-color:rgba(255,36,0,0.5);text-align: center;"> {{p}} </p>
     {% endif%}
   </div>  
   {% endfor %}

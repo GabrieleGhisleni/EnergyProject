@@ -46,7 +46,6 @@ class ManagerTernaSql():
         globalhorizontalirradiance_2,directnormalirradiance,directnormalirradiance_2,
         diffusehorizontalirradiance,diffusehorizontalirradiance_2) VALUES 
         (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-
         for iel in tqdm(range(check, len(radiations))):
             if ":00" in meteos[iel].cross_join:
                 if (datetime.datetime.strptime(meteos[iel].cross_join, "%d/%m/%Y %H:%M %p")) == tmp['date']:
@@ -375,4 +374,33 @@ class populating_the_sql_database:
         ManagerTernaSql().MeteoAndRadiationSave(radiations=rad, meteos= meteo)
 ###################################################################################################################
 if __name__ == "__main__":
-    populating_the_sql_database().from_json_to_db()
+    ""
+    # engine = ManagerTernaSql().engine
+    # def prediction_to_sql(predictions:Dict):
+    #     i=0
+    #     print(datetime.datetime.now())
+    #     query = """insert into prediction_energy(date, energy, generation) VALUES(%s,%s,%s);"""
+    #     predictions = predictions
+    #     df = pd.DataFrame.from_dict(predictions, orient='index')
+    #     df.reset_index(inplace=True, drop = False)
+    #     df.rename(columns={'index':'date'}, inplace=True)
+    #     df['date'] = pd.to_datetime(df['date'])
+    #     query_last_obs = """SELECT `date` FROM energy.prediction_energy order by `date` desc limit 0,1;"""
+    #     try: last_date_in_db = pd.read_sql_query(query_last_obs, con=engine).iloc[0,0]
+    #     except: last_date_in_db = datetime.datetime.today()-datetime.timedelta(days=1)
+    #     for source in df.columns:
+    #         if str(source) != 'date' and str(source) != 'index':
+    #             tmp = df[['date', source]].copy()
+    #             tmp['energy']= source
+    #             tmp.rename(columns={source:'generation'}, inplace=True)
+    #             to_update = tmp[tmp['date'] < last_date_in_db]
+    #             to_insert = tmp[tmp['date'] > last_date_in_db]
+    #             to_insert.to_sql("prediction_energy",  con=engine,
+    #                                      if_exists = 'append', index = False)
+    #             for i,r in to_update.iterrows():
+    #                 updating_query = f"""
+    #                 UPDATE energy.prediction_energy
+    #                 SET `date` = '{r['date']}', energy = '{r['energy']}', generation ='{r['generation']}'
+    #                 WHERE `date` = '{r['date']}';"""
+    #                 engine.execute(updating_query)
+    #     print(datetime.datetime.now())
