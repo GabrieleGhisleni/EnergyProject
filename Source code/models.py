@@ -160,39 +160,15 @@ class BiomassModel():
         return self.pipeline.predict(new_obs)
 
 ###################################################################################################################
-class Net(T.nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.hid1 = T.nn.Linear(5, 50)
-        self.hid2 = T.nn.Linear(50, 10)
-        self.hid4 = T.nn.Linear(10, 5)
-        self.oupt = T.nn.Linear(5, 1)
-
-    def forward(self, x):
-        z = T.relu(self.hid1(x))
-        z = T.relu(self.hid2(z))
-        z = T.relu(self.hid4(z))
-        z = self.oupt(z)
-        return z
 
 class DataLoader(Dataset):
-    def __init__(self, src_file):
+    def __init__(self, train_x, train_y):
         device = T.device("cuda" if T.cuda.is_available() else "cpu")
-        all_xy = src_file
-        tmp_x = all_xy.loc[:, ["directnormalirradiance", "diffusehorizontalirradiance",
-                               "globalhorizontalirradiance_2", "directnormalirradiance_2",
-                               "diffusehorizontalirradiance_2"]]
-
-        tmp_y = all_xy.loc[:, ["generation"]].values.reshape(-1, 1)
-        self.x_data = T.tensor(tmp_x.values, dtype=T.float32).to(device)
-        self.y_data = T.tensor(tmp_y, dtype=T.float32).to(device)
-
+        self.x_data = T.tensor(train_x.values, dtype=T.float32).to(device)
+        self.y_data = T.tensor(train_y, dtype=T.float32).to(device)
     def __len__(self):  return len(self.x_data)
+    def __getitem__(self, idx): return ( self.x_data[idx, :], self.y_data[idx, :])
 
-    def __getitem__(self, idx):
-        preds = self.x_data[idx, :]
-        price = self.y_data[idx, :]
-        return (preds, price)
 
 class PhotovoltaicModel():
     """
@@ -202,45 +178,57 @@ class PhotovoltaicModel():
     def __init__(self, path:str="../Models/photovoltaic_forest.mod", model='forest'):
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         self.device = T.device("cuda" if T.cuda.is_available() else "cpu")
+        if model == "NN": self.model = T.nn.Sequential(
+                            T.nn.Linear(5, 20), T.nn.ReLU(),
+                            T.nn.Linear(20, 20), T.nn.ReLU(), T.nn.Dropout(p=0.2),
+                            #T.nn.Linear(50, 20), T.nn.ReLU(), T.nn.Dropout(p=0.2),
+                            T.nn.Linear(20, 1))
         if os.path.exists(path):
             if model == 'forest': self.pipeline = joblib.load(path)
-            else:
-                self.model = Net()
-                self.model.load_state_dict(T.load(path)["load_state_dict"])
-        else: print(f"Do not found an already existing model at {path}")
+            else:self.model.load_state_dict(T.load(path)["load_state_dict"])
+        else:  print(f"Do not found an already existing model at {path}")
         self.model_used = model
 
-    def train(self, net, train_ds, bacht_size=24, epochs=500, lrn_rate=0.0001):
-        bacht_size = bacht_size
+    def train(self, model, train_ds, test_x, test_y,bacht_size=48, epochs=1000, lrn_rate=0.001):
+        def evaluate_model(model, x_test, y_test):
+            model.eval()  # Explicitly set to evaluate mode
+            # Predict on Train and Validation Datasets
+            pred = model(test_x)
+            loss_test = T.nn.MSELoss()
+            loss_ = loss_test(pred, test_y)
+            model.train()
+            return loss_,len(test_x)
+
+
+        bacht_size, epochs, ep_log_interval, best =  (bacht_size , epochs, 50, np.inf)
         train_ldr = T.utils.data.DataLoader(train_ds, batch_size=bacht_size, shuffle=True)
-        net.to(self.device)
-        epochs = epochs
-        ep_log_interval = 50
-        lrn_rate = lrn_rate
+        model.to(self.device)
+        test_x = T.tensor(test_x.values, dtype=T.float32)
+        test_y  = T.tensor(test_y , dtype=T.float32)
+
+
         loss_func = T.nn.MSELoss()
-        optimizer = T.optim.Adam(net.parameters(), lr=lrn_rate)
-        print("\nbat_size = %3d " % bacht_size)
-        print("loss = " + str(loss_func))
-        print("optimizer = Adam")
-        print("max_epochs = %3d " % epochs)
-        print("lrn_rate = %0.4f " % lrn_rate)
-        print("\nStarting training with saved checkpoints")
-        net.train()
-        for epoch in tqdm(range(0, epochs), position=0, leave=True):
+        optimizer = T.optim.Adam(model.parameters(),
+                                 lr=lrn_rate, weight_decay=0.1)
+        model.train()
+
+        for epoch in (range(0, epochs)):
             epoch_loss = 0
             for (batch_idx, batch) in enumerate(train_ldr):
                 (X, Y) = batch  # (predictors, targets)
                 optimizer.zero_grad()  # prepare gradients
-                oupt = net(X)  # predicted prices
+                oupt = model(X)  # predicted prices
                 loss_val = loss_func(oupt, Y)  # avg per item in batch
                 epoch_loss += loss_val.item()  # accumulate avgs
                 loss_val.backward()  # compute gradients
                 optimizer.step()  # update wts
             if epoch % ep_log_interval == 0:
-                print("epoch = %4d   loss = %0.4f" % (epoch, epoch_loss))
-                T.save({'epoch': epoch,
-                    'load_state_dict': net.state_dict(),
-                    'optimizer_state': optimizer.state_dict()}, "../Models/photovoltaic_NN.tth")
+                test_loss, len_test = evaluate_model(model, x_test=test_x, y_test=test_y)
+                print(f"""epoch={epoch}, trainig loss = {epoch_loss}, test_loss {test_loss} on {len_test}""")
+                if test_loss < best:
+                    best = test_loss
+                    T.save({'epoch': epoch,'load_state_dict': model.state_dict(), 'optimizer_state': optimizer.state_dict()},
+                        "../Models/photovoltaic_NN.tth")
         print("Done")
 
     def get_photovoltaic_data(self):
@@ -271,14 +259,21 @@ class PhotovoltaicModel():
         """
         It took all the database and trains the model!
         """
-        print()
         if self.model_used == 'NN':
             input_result = input('''This is a Neural Network, if you have not a GPU it will take a lot of time are you sure to train? [yes/no]''')
             if input_result.lower() == 'yes' or input_result.lower() == "y":
-                model = Net()
                 data = self.get_photovoltaic_data()
-                torch_dataset = DataLoader(data)
-                self.train(model, train_ds=torch_dataset, bacht_size=24, epochs=10000, lrn_rate=0.0001)
+                features = data.loc[:, ["directnormalirradiance", "diffusehorizontalirradiance",
+                                       "globalhorizontalirradiance_2", "directnormalirradiance_2",
+                                       "diffusehorizontalirradiance_2"]]
+                target = data.loc[:, ["generation"]].values.reshape(-1, 1)
+                train_dataset = DataLoader(train_x = features[:78], train_y = target[:-78])
+                test_x, test_y = features[-78:], target[-78:]
+                self.train(self.model,
+                           train_ds=train_dataset,
+                           test_x = test_x, test_y = test_y,
+                           bacht_size=24,  epochs=5000,
+                           lrn_rate=0.01)
         else:
             model = BaggingRegressor(random_state=42, bootstrap=True)
             self.pipeline = model
@@ -570,8 +565,6 @@ class LoadModel():
         plt.title(f"Results of the prediction for {data}:")
         plt.show()
 
-###################################################################################################################
-
 def create_load_to_predict(dates:List[str])->PandasDataFrame:
     """
     Auxiliary function to get the requested data.
@@ -617,7 +610,7 @@ def check_holiday_day(day_string_format):
     if day.strftime('%d-%m') in italian_holiday: holiday_today="holiday"
     return holiday_today
 
-def prepare_forecast_to_send()->None:
+def prepare_forecast_to_send(broker = 'Localhost')->None:
     meteo_forecast = MeteoData.forecast_from_dict_to_class(
         city=GetMeteoData().fetching_forecast_meteo())
     radiation_forecast = MeteoRadiationData.forecast_from_dict_to_class(
@@ -626,7 +619,7 @@ def prepare_forecast_to_send()->None:
     meteo = forecaster.update_forecast_meteo(forecast_meteo=meteo_forecast)
     rad = forecaster.update_forecast_radiation(forecast_radiations=radiation_forecast)
     new_obs = forecaster.merge_forecast(radiations_df=rad, meteo_df=meteo)
-    MqttManager().publish_forecast(new_obs)
+    MqttManager(broker).publish_forecast(new_obs)
 
 def train_all(model = 'all'):
     if model == 'all':
@@ -642,9 +635,9 @@ def train_all(model = 'all'):
     elif model == 'thermal': ThermalModel().custom_fit_model()
     elif model == 'geothermal': GeoThermalModel().custom_fit_model()
     elif model == 'biomass': BiomassModel().custom_fit_model()
-    elif model == 'photovoltaic': PhotovoltaicModel().custom_fit_model()
+    elif model == 'photovoltaic': PhotovoltaicModel(model='NN',  path='../Models/photovoltaic_NN.tth').custom_fit_model()
 
 ###################################################################################################################
 if __name__ == "__main__":
-    #train_all()
+    #train_all(model='photovoltaic')
     prepare_forecast_to_send()

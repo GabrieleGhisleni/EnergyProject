@@ -32,9 +32,6 @@ def today_pred(requests):
     order by idprediction_energy desc limit 0,168;"""
     df = pd.read_sql_query(query, engine, parse_dates=["date"])
     fig = go.Figure()
-
-    #dates = df["date"].dt.strftime("%Y-%m-%d %H:%M").unique()
-
     dates = df["date"].dt.strftime("%Y-%m-%d %H:%M").unique()
     fig.add_trace(go.Scatter(name="Load", x=dates, y=df.generation[df["energy"] == "load"], fill='tonexty',
                              mode='lines+markers',marker=dict(color='red',  size=5,
@@ -78,7 +75,21 @@ def today_pred(requests):
                       paper_bgcolor='rgb(245,245,245)')
 
     load = plot({'data': fig}, output_type="div",include_plotlyjs=False, show_link=False, link_text="")
-    context = dict(plot_div=load, day='Today', probability=[1,2])
+    # uqdate = len(df.date.unique())
+    # if uqdate < 24: df = df.iloc[-(uqdate * 7):]
+    # df = df.sort_values(by='date')
+    # not_load = df[df['energy'] != 'load']
+    # g,res = not_load.groupby('date', as_index=False),[]
+    # for name, group in (g):
+    #     tmp = pd.DataFrame(group.sum())
+    #     columns = list(tmp.index)[0:]
+    #     valori = list(tmp[0][0:].values)
+    #     df_2 = pd.DataFrame([valori], columns=columns)
+    #     df_2.insert(loc=0, column='date', value=name)
+    #     res.append(df_2)
+    # final_sources = pd.concat(res)
+    #diff = (df[df['energy']=='load'].generation).values - (final_sources.generation).values
+    context = dict(plot_div=load, day='Today', probability=['to', 'be', 'implemented','yet'])
     return render(requests, "Display/prediction.html", context)
 
 def tomorrow_pred(requests):
@@ -133,7 +144,9 @@ def tomorrow_pred(requests):
                       template="gridon",
                       paper_bgcolor='rgb(245,245,245)')
     load = plot({'data': fig},  output_type="div",include_plotlyjs=False, show_link=False, link_text="")
-    g,res = df[df['energy']!='load'].groupby('date', as_index=False),[]
+    df = df.sort_values(by='date')
+    not_load = df[df['energy'] != 'load']
+    g,res = not_load.groupby('date', as_index=False),[]
     for name, group in (g):
         tmp = pd.DataFrame(group.sum())
         columns = list(tmp.index)[0:]
@@ -142,7 +155,7 @@ def tomorrow_pred(requests):
         df_2.insert(loc=0, column='date', value=name)
         res.append(df_2)
     final_sources = pd.concat(res)
-    diff = (df.generation[df['energy'] == 'load'].values - final_sources['generation'].values)
+    diff = (df[df['energy']=='load'].generation).values - (final_sources.generation).values
     context = dict(plot_div=load, day='Tomorrow', probability=[np.round(diffi,2) for diffi in diff])
     return render(requests, "Display/prediction.html", context)
 
@@ -221,8 +234,10 @@ def Energy_Full_Rest_API(requests):
     if not date and energy_source:
         query = query + f" and (cast(prediction_energy.`date` as Date) = cast('{today}' as Date))"
     if not date and not energy_source:
-        query = f"""select date,generation,energy from energy.prediction_energy
-                  where cast(prediction_energy.`date` as Date) = cast('{today}' as Date)"""
+        # query = f"""select date,generation,energy from energy.prediction_energy
+        #           where cast(prediction_energy.`date` as Date) = cast('{today}' as Date)"""
+        return Response({'energy': '[load,wind,hydro,photovoltaic,biomass,thermal, geothermal]',
+                         'date': 'format %Y-%m-%d'}, status=status.HTTP_200_OK)
     df = pd.read_sql_query(query, engine, parse_dates=["date"])
     df.sort_values(['date'], inplace=True)
     print(query)
