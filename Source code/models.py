@@ -26,6 +26,7 @@ from managers_meteo import *
 from meteo_classes import *
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 NumpyArray = TypeVar("numpy.ndarray")
+import argparse
 
 ###################################################################################################################
 class GeoThermalModel():
@@ -610,18 +611,7 @@ def check_holiday_day(day_string_format):
     if day.strftime('%d-%m') in italian_holiday: holiday_today="holiday"
     return holiday_today
 
-def prepare_forecast_to_send(broker = 'Localhost')->None:
-    meteo_forecast = MeteoData.forecast_from_dict_to_class(
-        city=GetMeteoData().fetching_forecast_meteo())
-    radiation_forecast = MeteoRadiationData.forecast_from_dict_to_class(
-        city=GetMeteoData().fetching_forecast_solar_radiation())
-    forecaster = ForecastData()
-    meteo = forecaster.update_forecast_meteo(forecast_meteo=meteo_forecast)
-    rad = forecaster.update_forecast_radiation(forecast_radiations=radiation_forecast)
-    new_obs = forecaster.merge_forecast(radiations_df=rad, meteo_df=meteo)
-    MqttManager(broker).publish_forecast(new_obs)
-
-def train_all(model = 'all'):
+def train(model = 'all', sun=False):
     if model == 'all':
         PhotovoltaicModel().custom_fit_model()
         HydroModel().custom_fit_model()
@@ -629,15 +619,31 @@ def train_all(model = 'all'):
         ThermalModel().custom_fit_model()
         BiomassModel().custom_fit_model()
         GeoThermalModel().custom_fit_model()
-    elif model == 'wind': WindModel().custom_fit_model()
-    elif model == 'hydro': HydroModel().custom_fit_model()
-    elif model == 'load': LoadModel().custom_fit_model()
-    elif model == 'thermal': ThermalModel().custom_fit_model()
-    elif model == 'geothermal': GeoThermalModel().custom_fit_model()
-    elif model == 'biomass': BiomassModel().custom_fit_model()
-    elif model == 'photovoltaic': PhotovoltaicModel(model='NN',  path='../Models/photovoltaic_NN.tth').custom_fit_model()
+    else:
+        if model == 'wind': WindModel().custom_fit_model()
+        elif model == 'hydro': HydroModel().custom_fit_model()
+        elif model == 'load':  LoadModel().custom_fit_model()
+        elif model == 'thermal':  ThermalModel().custom_fit_model()
+        elif model == 'geothermal':   GeoThermalModel().custom_fit_model()
+        elif model == 'biomass':  BiomassModel().custom_fit_model()
+        elif model == 'photovoltaic':
+            if not sun: PhotovoltaicModel().custom_fit_model()
+            else: PhotovoltaicModel(model='NN', path='../Models/photovoltaic_NN.tth').custom_fit_model()
+
 
 ###################################################################################################################
+
+def main():
+    parser = argparse.ArgumentParser(description='Predictive Models', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-m', '--model_to_train', default='all', choices=['all',"wind","hydro", "load","thermal", "geothermal","biomass","photovoltaic"],
+                        help= """ Pick the model that you want to train! All the trained models will be defaults, selected
+                             by us during the data exploration. if you want to train the photovoltaic model with a 
+                             feed forward neural network pass the extra argument 'nn' """)
+    parser.add_argument('-nn', '--neuralnetwork_for_photovoltaic', action='store_true', help='pass if you want to train the photovoltaic model with a NN with the -m argument')
+
+    parse = parser.parse_args()
+    if parse.model_to_train not in ['all',"wind","hydro", "load","thermal", "geothermal","biomass","photovoltaic"]:print(f"Model not found"), exit()
+    else: train(parse.model_to_train, parse.neuralnetwork_for_photovoltaic)
+
 if __name__ == "__main__":
-    #train_all(model='photovoltaic')
-    prepare_forecast_to_send()
+    main()

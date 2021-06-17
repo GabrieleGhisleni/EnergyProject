@@ -1,8 +1,10 @@
-import requests, time, datetime, json, copy, typing,os
+import requests, time, datetime, json, copy, typing,os, argparse
 from pprint import pprint
 from typing import List, Dict
 from tqdm import tqdm
 from KEYS.config import OPEN_WEATHER_APPID
+from meteo_classes import *
+from mqtt import  MqttManager
 
 class GetMeteoData():
     def __init__(self):
@@ -43,7 +45,6 @@ class GetMeteoData():
         so the function return a list of dictionary, each dictionary is a registration\
         for a particular capoluogo
         """
-
         res = []
         regions = self.dictionary
         cross_join_detail = datetime.datetime.now().strftime("%d/%m/%Y %H:%M %p")
@@ -53,20 +54,15 @@ class GetMeteoData():
                 try:
                     url = f"https://api.openweathermap.org/data/2.5/weather?appid={self.key}&units=metric&q={capoluogo},it"
                     response = requests.request("GET", url)
-                    if not response.ok:
-                        print ("Something wrong with the respunsus ok API" + str(response) + "at " + capoluogo)
-                        pass
+                    if not response.ok: print ("Something wrong with the respunsus ok API" + str(response) + "at " + capoluogo)
                     else:
                         tmp = response.json()
-                        if not current_time:
-                            current_time = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(tmp["dt"]))
+                        if not current_time: current_time = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(tmp["dt"]))
                         tmp["region"] = regione
                         tmp["organized_data"] = current_time
                         tmp["cross_join"] = cross_join_detail
                         res.append(tmp)
-                except Exception as e:  # done so the program won't crash if something go wrong.
-                    print("\n --> Fatal error with the requests connection <--")
-                    print(str(e))
+                except Exception as e: print("\n --> Fatal error with the requests connection <--", str(e))
         return res
 
     def find_coordinate(self)->Dict:
@@ -93,21 +89,16 @@ class GetMeteoData():
             try:
                 url = f"http://api.openweathermap.org/data/2.5/solar_radiation?lat={coordinates[citta]['lat']}&lon={coordinates[citta]['lon']}&appid={self.key}"
                 response = requests.request("GET", url)
-                if not response.ok:
-                    print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
-                    pass
+                if not response.ok: print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
                 else:
                     tmp = response.json()
                     tmp["cross_join"] = cross_join_detail
-                    if not current_time:
-                        current_time= time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(tmp["list"][0]["dt"]))
+                    if not current_time: current_time= time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(tmp["list"][0]["dt"]))
                     tmp["organized_data"] = current_time
                     tmp["name"] = citta
                     tmp["region"] = coordinates[citta]["region"]
                     res.append(tmp)
-            except Exception as e:  # done so the program won't crash if something go wrong.
-                print("\n --> Fatal error with the requests connection <--")
-                print(str(e))
+            except Exception as e:  print("\n --> Fatal error with the requests connection <--", str(e))
         return res
 
     def fetching_forecast_meteo(self)->List[Dict]:
@@ -123,19 +114,14 @@ class GetMeteoData():
             try:
                 url = f"https://api.openweathermap.org/data/2.5/onecall?lat={coordinates[citta]['lat']}&lon={coordinates[citta]['lon']}&exclude=minutely,current,daily,alerts&appid={self.key}"
                 response = requests.request("GET", url)
-                if not response.ok:
-                    print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
-                    pass
+                if not response.ok: print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
                 else:
                     tmp = response.json()
                     tmp["region"] = coordinates[citta]["region"]
                     tmp["name"] = citta
-                    for hour in tmp["hourly"]:
-                        hour["orario"] = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(hour["dt"]))
+                    for hour in tmp["hourly"]: hour["orario"] = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(hour["dt"]))
                     res.append(tmp)
-            except Exception as e:  # done so the program won't crash if something go wrong.
-                print("\n --> Fatal error with the requests connection <--")
-                print(str(e))
+            except Exception as e: print("\n --> Fatal error with the requests connection <--",str(e))
         return res
 
     def fetching_forecast_solar_radiation(self)->List[Dict]:
@@ -151,20 +137,34 @@ class GetMeteoData():
             try:
                 url = f"http://api.openweathermap.org/data/2.5/solar_radiation/forecast?lat={coordinates[citta]['lat']}&lon={coordinates[citta]['lon']}&appid={self.key}"
                 response = requests.request("GET", url)
-                if not response.ok:
-                    print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
-                    pass
+                if not response.ok:print("Something wrong with the respunsus ok API" + str(response) + "at " + citta)
                 else:
                     tmp = response.json()
                     tmp["name"] = citta
                     tmp["region"] = coordinates[citta]["region"]
-                    for dict in tmp["list"]:
-                        dict["date"] = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(dict["dt"]))
+                    for dict in tmp["list"]: dict["date"] = time.strftime("%d/%m/%Y %H:%M:%S %p", time.localtime(dict["dt"]))
                     res.append(tmp)
-            except Exception as e:  # done so the program won't crash if something go wrong.
-                print("\n --> Fatal error with the requests connection <--")
-                print(str(e))
+            except Exception as e: print("\n --> Fatal error with the requests connection <--",str(e))
         return res
 
+def prepare_forecast_to_send(broker = 'localhost')->None:
+    print(f"Sending forecast to predict at broker {broker}")
+    meteo_forecast = MeteoData.forecast_from_dict_to_class(
+        city=GetMeteoData().fetching_forecast_meteo())
+    radiation_forecast = MeteoRadiationData.forecast_from_dict_to_class(
+        city=GetMeteoData().fetching_forecast_solar_radiation())
+    forecaster = ForecastData()
+    meteo = forecaster.update_forecast_meteo(forecast_meteo=meteo_forecast)
+    rad = forecaster.update_forecast_radiation(forecast_radiations=radiation_forecast)
+    new_obs = forecaster.merge_forecast(radiations_df=rad, meteo_df=meteo)
+    MqttManager(broker).publish_forecast(new_obs)
+
+def main():
+    arg_parser = argparse.ArgumentParser(description="Forecast collector!")
+    arg_parser.add_argument("-b", "--broker", required = True, type=str,  help="MQTT Broker", choices = ['localhost', 'aws'])
+    args = arg_parser.parse_args()
+    if args.broker not in ['localhost','aws']: print(f"Not valid broker - {args.broker}"),exit()
+    prepare_forecast_to_send(broker=args.broker)
+
 if __name__ == "__main__":
-    "fine"
+    main()

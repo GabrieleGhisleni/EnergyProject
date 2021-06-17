@@ -3,7 +3,7 @@ from typing import List, Optional, Type
 from tqdm import tqdm
 import typing, json, time
 import pandas as pd
-###################################################################################################################
+
 
 class MeteoRadiationData():
     """
@@ -57,8 +57,6 @@ class MeteoRadiationData():
             'directnormalirradiance_2': self.directnormalirradiance_2,
             'diffusehorizontalirradiance_2':self.diffusehorizontalirradiance_2,
         })
-
-
 
     @staticmethod
     def current_from_preprocess_dict_to_class(obj:dict):
@@ -125,10 +123,9 @@ class MeteoRadiationData():
                     diffusehorizontalirradiance_2=hour["radiation"]["ghi_cs"],
                 ))
             tmp.append(res)
-
         return tmp
 
-###################################################################################################################
+
 class MeteoData():
     """
     class created to handle the meteo data!
@@ -264,7 +261,7 @@ class MeteoData():
             tmp.append(res)
         return tmp
 
-###################################################################################################################
+
 class ForecastData():
     def update_forecast_radiation(self, forecast_radiations:List[MeteoRadiationData]):
         """
@@ -299,7 +296,6 @@ class ForecastData():
              'diffusehorizontalirradiance', 'globalhorizontalirradiance_2',
              'directnormalirradiance_2', 'diffusehorizontalirradiance_2']],
                          on=["date", "name"], how='left')
-
         final.drop(columns=["cross_join"], inplace=True)
         g = final.groupby('date', as_index=False)
         res = []
@@ -310,7 +306,6 @@ class ForecastData():
             df_2 = pd.DataFrame([valori], columns=columns)
             df_2.insert(loc=0, column='date_2', value=name)
             res.append(df_2)
-
         grouped_forecast = pd.concat(res)
         #grouped_forecast.drop(columns=["date"], inplace=True)
         grouped_forecast["date_2"] = pd.to_datetime(grouped_forecast["date_2"], format='%d/%m/%Y %H:%M:%S %p')
@@ -323,5 +318,3 @@ class ForecastData():
         grouped_forecast.rename(columns={'date_2':'date'}, inplace=True)
         return grouped_forecast
 
-if __name__ == "__main__":
-    ""

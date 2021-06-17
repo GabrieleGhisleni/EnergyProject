@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-import json, time, datetime,os, csv, datetime
+import json, time, datetime,os, csv, datetime,argparse
 from tqdm import tqdm
 from typing import List, TypeVar
 from fetching_meteo import *
@@ -8,6 +8,8 @@ import pandas as pd
 import mysql.connector as sql
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 from KEYS.config import RDS_USER,RDS_PSW,RDS_HOST
+
+
 
 ###################################################################################################################
 class ManagerTernaSql():
@@ -25,7 +27,6 @@ class ManagerTernaSql():
         print(f"Updating energy.meteo database with {len(meteos)/20} MeteoData and {len(radiations)/20} RadiationData")
         i,o, check, n=0,0,0,1
         cursor = self.engine
-
         for iel in range(len(meteos)):
             check += 1
             if ":00" in meteos[iel].cross_join:
@@ -92,7 +93,6 @@ class ManagerTernaSql():
                        directnormalirradiance_2=radiations[iel].directnormalirradiance_2,
                        diffusehorizontalirradiance_2=radiations[iel].diffusehorizontalirradiance_2,
                        diffusehorizontalirradiance= radiations[iel].diffusehorizontalirradiance)
-
         print(f"Rows executed = {o}")
 
     def generation_from_terna_to_db(self, path_to_file:str, process:str='linebyline')->None:
@@ -119,12 +119,9 @@ class ManagerTernaSql():
                     df.rename(columns={'Date': "date", 'Energy Source': 'energy_source',
                                        'Renewable Generation [GWh]': 'generation'},inplace=True)
                     df.to_sql('energy_generation', con=self.engine, if_exists='append', index=False)
-            elif path_to_file.endswith(".xlsx"):
-                print("to implement yet, pass a csv instead")
-            else:
-                print(f".{path_to_file.split('.')[1]} is not a valid format!" )
-        else:
-            print(f"{path_to_file} is not a valid path.")
+            elif path_to_file.endswith(".xlsx"):  print("to implement yet, pass a csv instead")
+            else: print(f".{path_to_file.split('.')[1]} is not a valid format!" )
+        else: print(f"{path_to_file} is not a valid path.")
 
     def load_from_terna_and_holiday(self, paths_to_file:List[str], path_to_holiday:str)->None:
         """
@@ -157,10 +154,8 @@ class ManagerTernaSql():
                     else:
                         extension = path.split('.')[1]
                         print(f".{extension} is not a valid format!")
-                else:
-                    print(f"{path} is not a valid load path!")
-        else:
-            print(f"{path_to_holiday} is not a valid holiday path!")
+                else: print(f"{path} is not a valid load path!")
+        else: print(f"{path_to_holiday} is not a valid holiday path!")
         print(f"Update {tot} rows")
 
     def load_energy_installed_capacity(self, path:str)->None:
@@ -350,7 +345,7 @@ class JsonManagerCurrentRadiation():
                 json.dump([MeteoRadiationData.current_from_class_to_dict(obj) for obj in update], file, indent=4)
         else:
             self.first_update(radiations)
-###################################################################################################################
+
 class populating_the_sql_database:
     """
     Following the already prepared folder inside the git, launch this function
@@ -372,35 +367,40 @@ class populating_the_sql_database:
         rad = JsonManagerCurrentRadiation('../Documentation/Files example/json_meteo/storico_radiation.json').load_unprocess()
         meteo = JsonManagerCurrentMeteo('../Documentation/Files example/json_meteo/storico_meteo.json').load_unprocess()
         ManagerTernaSql().MeteoAndRadiationSave(radiations=rad, meteos= meteo)
-###################################################################################################################
+
+
+def main():
+    arg_parser = argparse.ArgumentParser(description="Data Collector Meteo")
+    arg_parser.add_argument("-r", "--rate", default='auto', choices = ['crontab','auto'],
+                            help="Rate of the collection, if type 'auto' it will deal the best option for collecting data, otherwhise it just" \
+                                 "collect the data and finish so is possible to deal with crontab options")
+    args = arg_parser.parse_args()
+    if args.rate == 'auto':
+        now = datetime.datetime.now()
+        if not(now.strftime("%M").endswith("00")):
+            print("i'll start at the :00 of the next hour!")
+        while True:
+            now = datetime.datetime.now()
+            if now.strftime("%M").endswith("00"):
+                print(f'Uploading MySQL database at {now}')
+                mysql = ManagerTernaSql()
+                radiations = GetMeteoData().fetching_current_solar_radiation()
+                radiations = [MeteoRadiationData.current_from_original_dict_to_class(rad) for rad in radiations]
+                meteos = GetMeteoData().fetching_current_meteo_json()
+                meteos = [MeteoData.current_from_original_dict_to_class(meteo) for meteo in meteos]
+                mysql.MeteoAndRadiationSave(meteos, radiations)
+                print("Updated")
+    elif args.rate =='crontab':
+        now = datetime.datetime.now()
+        print(f'Uploading MySQL database at {now}')
+        mysql = ManagerTernaSql()
+        radiations = GetMeteoData().fetching_current_solar_radiation()
+        radiations = [MeteoRadiationData.current_from_original_dict_to_class(rad) for rad in radiations]
+        meteos = GetMeteoData().fetching_current_meteo_json()
+        meteos = [MeteoData.current_from_original_dict_to_class(meteo) for meteo in meteos]
+        mysql.MeteoAndRadiationSave(meteos, radiations)
+        print("Updated")
+    else: print(f"Not valid broker - {args.broker}"),exit()
+
 if __name__ == "__main__":
-    ""
-    # engine = ManagerTernaSql().engine
-    # def prediction_to_sql(predictions:Dict):
-    #     i=0
-    #     print(datetime.datetime.now())
-    #     query = """insert into prediction_energy(date, energy, generation) VALUES(%s,%s,%s);"""
-    #     predictions = predictions
-    #     df = pd.DataFrame.from_dict(predictions, orient='index')
-    #     df.reset_index(inplace=True, drop = False)
-    #     df.rename(columns={'index':'date'}, inplace=True)
-    #     df['date'] = pd.to_datetime(df['date'])
-    #     query_last_obs = """SELECT `date` FROM energy.prediction_energy order by `date` desc limit 0,1;"""
-    #     try: last_date_in_db = pd.read_sql_query(query_last_obs, con=engine).iloc[0,0]
-    #     except: last_date_in_db = datetime.datetime.today()-datetime.timedelta(days=1)
-    #     for source in df.columns:
-    #         if str(source) != 'date' and str(source) != 'index':
-    #             tmp = df[['date', source]].copy()
-    #             tmp['energy']= source
-    #             tmp.rename(columns={source:'generation'}, inplace=True)
-    #             to_update = tmp[tmp['date'] < last_date_in_db]
-    #             to_insert = tmp[tmp['date'] > last_date_in_db]
-    #             to_insert.to_sql("prediction_energy",  con=engine,
-    #                                      if_exists = 'append', index = False)
-    #             for i,r in to_update.iterrows():
-    #                 updating_query = f"""
-    #                 UPDATE energy.prediction_energy
-    #                 SET `date` = '{r['date']}', energy = '{r['energy']}', generation ='{r['generation']}'
-    #                 WHERE `date` = '{r['date']}';"""
-    #                 engine.execute(updating_query)
-    #     print(datetime.datetime.now())
+    main()
