@@ -1,34 +1,28 @@
-import datetime
+import datetime, time, joblib, os, argparse
 import pandas as pd
 import numpy as np
-import time
-import torch.nn.functional as F
-from torch.utils.data import Dataset
-import torch as T
+import matplotlib.pyplot as plt
+import datetime as dt
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import make_column_transformer
-from sklearn.tree import DecisionTreeRegressor
-#from sklearn.compose import make_column_selector ! check
-from sklearn.pipeline import make_pipeline
-from sqlalchemy import create_engine
 from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
 from sklearn.ensemble import BaggingRegressor
-import joblib, os
-import numpy as np
-import pandas as pd
-import datetime as dt
-import matplotlib.pyplot as plt
+from sqlalchemy import create_engine
 from typing import TypeVar, Tuple,List
-from mqtt import *
-from managers_meteo import *
-from meteo_classes import *
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 NumpyArray = TypeVar("numpy.ndarray")
-import argparse
+from KEYS.config import *
+from meteo_classes import *
+from mqtt import *
 
-###################################################################################################################
+# import torch.nn.functional as F
+# from torch.utils.data import Dataset
+# import torch as T
+
+
 class GeoThermalModel():
     """
     When created the class look up in the specified path for an existing model.
@@ -37,6 +31,7 @@ class GeoThermalModel():
     def __init__(self, path:str="../Models/geothermal_linear.mod"):
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         if os.path.exists(path): self.pipeline = joblib.load(path)
+        elif os.path.exists("Models/geothermal_linear.mod"): self.pipeline = joblib.load("Models/geothermal_linear.mod")
         else: print(f"Do not found an already existing model at {path}")
 
     def get_geothermal_data(self):
@@ -82,7 +77,8 @@ class GeoThermalModel():
         pred, target = self.get_geothermal_data()
         print(f"Training the GeoThermalModel --> on {len(pred)} observations")
         self.pipeline.fit(pred, target.values.ravel())
-        joblib.dump(self.pipeline, '../Models/geothermal_linear.mod')
+        try: joblib.dump(self.pipeline, '../Models/geothermal_linear.mod')
+        except: joblib.dump(self.pipeline, 'Models/geothermal_linear.mod')
 
     def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
         """
@@ -103,6 +99,7 @@ class BiomassModel():
     def __init__(self, path:str="../Models/biomass_forest.mod"):
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         if os.path.exists(path): self.pipeline = joblib.load(path)
+        elif os.path.exists("Models/biomass_forest.mod"): self.pipeline = joblib.load("Models/biomass_forest.mod")
         else: print(f"Do not found an already existing model at {path}")
 
     def get_biomass_data(self):
@@ -148,7 +145,8 @@ class BiomassModel():
         pred, target = self.get_biomass_data()
         print(f"Training the BiomassModel --> on {len(pred)} observations")
         self.pipeline.fit(pred, target.values.ravel())
-        joblib.dump(self.pipeline, '../Models/biomass_forest.mod')
+        try: joblib.dump(self.pipeline, '../Models/biomass_forest.mod')
+        except: joblib.dump(self.pipeline, 'Models/biomass_forest.mod')
 
     def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
         """
@@ -162,13 +160,13 @@ class BiomassModel():
 
 ###################################################################################################################
 
-class DataLoader(Dataset):
-    def __init__(self, train_x, train_y):
-        device = T.device("cuda" if T.cuda.is_available() else "cpu")
-        self.x_data = T.tensor(train_x.values, dtype=T.float32).to(device)
-        self.y_data = T.tensor(train_y, dtype=T.float32).to(device)
-    def __len__(self):  return len(self.x_data)
-    def __getitem__(self, idx): return ( self.x_data[idx, :], self.y_data[idx, :])
+# class DataLoader(Dataset):
+#     def __init__(self, train_x, train_y):
+#         device = T.device("cuda" if T.cuda.is_available() else "cpu")
+#         self.x_data = T.tensor(train_x.values, dtype=T.float32).to(device)
+#         self.y_data = T.tensor(train_y, dtype=T.float32).to(device)
+#     def __len__(self):  return len(self.x_data)
+#     def __getitem__(self, idx): return ( self.x_data[idx, :], self.y_data[idx, :])
 
 
 class PhotovoltaicModel():
@@ -178,59 +176,53 @@ class PhotovoltaicModel():
     """
     def __init__(self, path:str="../Models/photovoltaic_forest.mod", model='forest'):
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
-        self.device = T.device("cuda" if T.cuda.is_available() else "cpu")
-        if model == "NN": self.model = T.nn.Sequential(
-                            T.nn.Linear(5, 20), T.nn.ReLU(),
-                            T.nn.Linear(20, 20), T.nn.ReLU(), T.nn.Dropout(p=0.2),
-                            #T.nn.Linear(50, 20), T.nn.ReLU(), T.nn.Dropout(p=0.2),
-                            T.nn.Linear(20, 1))
-        if os.path.exists(path):
-            if model == 'forest': self.pipeline = joblib.load(path)
-            else:self.model.load_state_dict(T.load(path)["load_state_dict"])
+        # self.device = T.device("cuda" if T.cuda.is_available() else "cpu")
+        # if model == "NN": self.model = T.nn.Sequential(
+        #                     T.nn.Linear(5, 20), T.nn.ReLU(),
+        #                     T.nn.Linear(20, 20), T.nn.ReLU(), T.nn.Dropout(p=0.2),
+        #                     #T.nn.Linear(50, 20), T.nn.ReLU(), T.nn.Dropout(p=0.2),
+        #                     T.nn.Linear(20, 1))
+        if os.path.exists(path): self.pipeline = joblib.load(path)
+            #else:self.model.load_state_dict(T.load(path)["load_state_dict"])
+        elif os.path.exists("Models/photovoltaic_forest.mod"): self.pipeline = joblib.load("Models/photovoltaic_forest.mod")
         else:  print(f"Do not found an already existing model at {path}")
         self.model_used = model
-
-    def train(self, model, train_ds, test_x, test_y,bacht_size=48, epochs=1000, lrn_rate=0.001):
-        def evaluate_model(model, x_test, y_test):
-            model.eval()  # Explicitly set to evaluate mode
-            # Predict on Train and Validation Datasets
-            pred = model(test_x)
-            loss_test = T.nn.MSELoss()
-            loss_ = loss_test(pred, test_y)
-            model.train()
-            return loss_,len(test_x)
-
-
-        bacht_size, epochs, ep_log_interval, best =  (bacht_size , epochs, 50, np.inf)
-        train_ldr = T.utils.data.DataLoader(train_ds, batch_size=bacht_size, shuffle=True)
-        model.to(self.device)
-        test_x = T.tensor(test_x.values, dtype=T.float32)
-        test_y  = T.tensor(test_y , dtype=T.float32)
-
-
-        loss_func = T.nn.MSELoss()
-        optimizer = T.optim.Adam(model.parameters(),
-                                 lr=lrn_rate, weight_decay=0.1)
-        model.train()
-
-        for epoch in (range(0, epochs)):
-            epoch_loss = 0
-            for (batch_idx, batch) in enumerate(train_ldr):
-                (X, Y) = batch  # (predictors, targets)
-                optimizer.zero_grad()  # prepare gradients
-                oupt = model(X)  # predicted prices
-                loss_val = loss_func(oupt, Y)  # avg per item in batch
-                epoch_loss += loss_val.item()  # accumulate avgs
-                loss_val.backward()  # compute gradients
-                optimizer.step()  # update wts
-            if epoch % ep_log_interval == 0:
-                test_loss, len_test = evaluate_model(model, x_test=test_x, y_test=test_y)
-                print(f"""epoch={epoch}, trainig loss = {epoch_loss}, test_loss {test_loss} on {len_test}""")
-                if test_loss < best:
-                    best = test_loss
-                    T.save({'epoch': epoch,'load_state_dict': model.state_dict(), 'optimizer_state': optimizer.state_dict()},
-                        "../Models/photovoltaic_NN.tth")
-        print("Done")
+    # def train(self, model, train_ds, test_x, test_y,bacht_size=48, epochs=1000, lrn_rate=0.001):
+    #     def evaluate_model(model, x_test, y_test):
+    #         model.eval()  # Explicitly set to evaluate mode
+    #         # Predict on Train and Validation Datasets
+    #         pred = model(test_x)
+    #         loss_test = T.nn.MSELoss()
+    #         loss_ = loss_test(pred, test_y)
+    #         model.train()
+    #         return loss_,len(test_x)
+    #     bacht_size, epochs, ep_log_interval, best =  (bacht_size , epochs, 50, np.inf)
+    #     train_ldr = T.utils.data.DataLoader(train_ds, batch_size=bacht_size, shuffle=True)
+    #     model.to(self.device)
+    #     test_x = T.tensor(test_x.values, dtype=T.float32)
+    #     test_y  = T.tensor(test_y , dtype=T.float32)
+    #     loss_func = T.nn.MSELoss()
+    #     optimizer = T.optim.Adam(model.parameters(),
+    #                              lr=lrn_rate, weight_decay=0.1)
+    #     model.train()
+    #     for epoch in (range(0, epochs)):
+    #         epoch_loss = 0
+    #         for (batch_idx, batch) in enumerate(train_ldr):
+    #             (X, Y) = batch  # (predictors, targets)
+    #             optimizer.zero_grad()  # prepare gradients
+    #             oupt = model(X)  # predicted prices
+    #             loss_val = loss_func(oupt, Y)  # avg per item in batch
+    #             epoch_loss += loss_val.item()  # accumulate avgs
+    #             loss_val.backward()  # compute gradients
+    #             optimizer.step()  # update wts
+    #         if epoch % ep_log_interval == 0:
+    #             test_loss, len_test = evaluate_model(model, x_test=test_x, y_test=test_y)
+    #             print(f"""epoch={epoch}, trainig loss = {epoch_loss}, test_loss {test_loss} on {len_test}""")
+    #             if test_loss < best:
+    #                 best = test_loss
+    #                 T.save({'epoch': epoch,'load_state_dict': model.state_dict(), 'optimizer_state': optimizer.state_dict()},
+    #                     "../Models/photovoltaic_NN.tth")
+    #     print("Done")
 
     def get_photovoltaic_data(self):
         """
@@ -260,28 +252,28 @@ class PhotovoltaicModel():
         """
         It took all the database and trains the model!
         """
-        if self.model_used == 'NN':
-            input_result = input('''This is a Neural Network, if you have not a GPU it will take a lot of time are you sure to train? [yes/no]''')
-            if input_result.lower() == 'yes' or input_result.lower() == "y":
-                data = self.get_photovoltaic_data()
-                features = data.loc[:, ["directnormalirradiance", "diffusehorizontalirradiance",
-                                       "globalhorizontalirradiance_2", "directnormalirradiance_2",
-                                       "diffusehorizontalirradiance_2"]]
-                target = data.loc[:, ["generation"]].values.reshape(-1, 1)
-                train_dataset = DataLoader(train_x = features[:78], train_y = target[:-78])
-                test_x, test_y = features[-78:], target[-78:]
-                self.train(self.model,
-                           train_ds=train_dataset,
-                           test_x = test_x, test_y = test_y,
-                           bacht_size=24,  epochs=5000,
-                           lrn_rate=0.01)
-        else:
-            model = BaggingRegressor(random_state=42, bootstrap=True)
-            self.pipeline = model
-            pred, target = self.get_photovoltaic_data()
-            print(f"Training the Photovoltainc --> on {len(pred)} observations")
-            self.pipeline.fit(pred, target.values.ravel())
-            joblib.dump(self.pipeline, '../Models/photovoltaic_forest.mod')
+        # if self.model_used == 'NN':
+        #     input_result = input('''This is a Neural Network, if you have not a GPU it will take a lot of time are you sure to train? [yes/no]''')
+        #     if input_result.lower() == 'yes' or input_result.lower() == "y":
+        #         data = self.get_photovoltaic_data()
+        #         features = data.loc[:, ["directnormalirradiance", "diffusehorizontalirradiance",
+        #                                "globalhorizontalirradiance_2", "directnormalirradiance_2",
+        #                                "diffusehorizontalirradiance_2"]]
+        #         target = data.loc[:, ["generation"]].values.reshape(-1, 1)
+        #         train_dataset = DataLoader(train_x = features[:78], train_y = target[:-78])
+        #         test_x, test_y = features[-78:], target[-78:]
+        #         self.train(self.model,
+        #                    train_ds=train_dataset,
+        #                    test_x = test_x, test_y = test_y,
+        #                    bacht_size=24,  epochs=5000,
+        #                    lrn_rate=0.01)
+        model = BaggingRegressor(random_state=42, bootstrap=True)
+        self.pipeline = model
+        pred, target = self.get_photovoltaic_data()
+        print(f"Training the Photovoltainc --> on {len(pred)} observations")
+        self.pipeline.fit(pred, target.values.ravel())
+        try: joblib.dump(self.pipeline, '../Models/photovoltaic_forest.mod')
+        except: joblib.dump(self.pipeline, 'Models/photovoltaic_forest.mod')
 
     def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
         """
@@ -292,17 +284,16 @@ class PhotovoltaicModel():
         new_obs = new_observation[["directnormalirradiance", "diffusehorizontalirradiance",
                                    "globalhorizontalirradiance_2","directnormalirradiance_2",
                                     "diffusehorizontalirradiance_2"]]
-
-        if self.model_used == "NN":
-            res = []
-            for i, row in new_obs.iterrows():
-                tensor_row = T.tensor(row.values, dtype=T.float32).to(self.device)
-                with T.no_grad():
-                    pred = self.model(tensor_row)
-                    pred_p = abs(pred.to(self.device).tolist()[0])
-                    res.append(np.round(pred_p,4))
-            return res
-        else: return self.pipeline.predict(new_obs)
+        # if self.model_used == "NN":
+        #     res = []
+        #     for i, row in new_obs.iterrows():
+        #         tensor_row = T.tensor(row.values, dtype=T.float32).to(self.device)
+        #         with T.no_grad():
+        #             pred = self.model(tensor_row)
+        #             pred_p = abs(pred.to(self.device).tolist()[0])
+        #             res.append(np.round(pred_p,4))
+        #     return res
+        return self.pipeline.predict(new_obs)
 ###################################################################################################################
 
 class WindModel():
@@ -313,6 +304,7 @@ class WindModel():
     def __init__(self, path:str="../Models/wind_forest.mod"):
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         if os.path.exists(path):  self.pipeline = joblib.load(path)
+        elif os.path.exists("Models/wind_forest.mod"): self.pipeline = joblib.load("Models/wind_forest.mod")
         else: print(f"Do not found an already existing model at {path}")
 
     def get_wind_data(self):
@@ -348,7 +340,8 @@ class WindModel():
         pred, target = self.get_wind_data()
         print(f"Training the WindModel --> on {len(pred)} observations")
         self.pipeline.fit(pred, target.values.ravel())
-        joblib.dump(self.pipeline, '../Models/wind_forest.mod')
+        try: joblib.dump(self.pipeline, '../Models/wind_forest.mod')
+        except: joblib.dump(self.pipeline, 'Models/wind_forest.mod')
 
 
     def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
@@ -370,6 +363,7 @@ class HydroModel():
     def __init__(self, path:str="../Models/hydro_r_forest.mod"):
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         if os.path.exists(path):  self.pipeline = joblib.load(path)
+        elif os.path.exists("Models/hydro_r_forest.mod"): self.pipeline = joblib.load("Models/hydro_r_forest.mod")
         else: print(f"Do not found an already existing model at {path}")
 
     def get_hydro_data(self):
@@ -408,7 +402,8 @@ class HydroModel():
         pred, target = self.get_hydro_data()
         print(f"Training the HydroModel --> on {len(pred)} observations")
         self.pipeline.fit(pred, target.values.ravel())
-        joblib.dump(self.pipeline, '../Models/hydro_r_forest.mod')
+        try: joblib.dump(self.pipeline, '../Models/hydro_r_forest.mod')
+        except: joblib.dump(self.pipeline, 'Models/hydro_r_forest.mod')
 
     def custom_predict(self, new_observation: PandasDataFrame) -> NumpyArray:
         """
@@ -430,6 +425,7 @@ class ThermalModel():
     def __init__(self, path:str="../Models/thermal_forest.mod"):
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         if os.path.exists(path):  self.pipeline = joblib.load(path)
+        elif os.path.exists('Models/thermal_forest.mod'): self.pipeline = joblib.load("Models/thermal_forest.mod")
         else: print(f"Do not found an already existing model at {path}")
 
     def get_thermal_data(self):
@@ -473,19 +469,21 @@ class ThermalModel():
         pred, target = self.get_thermal_data()
         print(f"Training the TermalModel --> on {len(pred)} observations")
         self.pipeline.fit(pred, target.values.ravel())
-        joblib.dump(self.pipeline, '../Models/thermal_forest.mod')
+        try: joblib.dump(self.pipeline, '../Models/thermal_forest.mod')
+        except: joblib.dump(self.pipeline, 'Models/thermal_forest.mod')
 
-    def pre_process_for_thermal(self, predictions:dict):
+    def pre_process_for_thermal(self, predictions:dict, loads):
         tmp = []
         predictions = predictions
         for key in predictions:
-            sum_of_rest, load = 0, 0
-            holiday = check_holiday_day(key)
-            str_month = datetime.datetime.strptime(key, "%Y/%m/%d %H:%M:%S").strftime("%B").lower()
-            for energy in predictions[key]:
-                if energy == 'load':  load = predictions[key][energy]
-                else: sum_of_rest += predictions[key][energy]
-            tmp.append([holiday, sum_of_rest, load, str_month, key])
+            try:
+                sum_of_rest, load = 0, 0
+                holiday = check_holiday_day(key)
+                str_month = datetime.datetime.strptime(key, "%Y/%m/%d %H:%M:%S").strftime("%B").lower()
+                for energy in predictions[key]: sum_of_rest += predictions[key][energy]
+                load = loads['generation'][key]
+                tmp.append([holiday, sum_of_rest, load, str_month, key])
+            except: print(f'pass one row ')
         return (pd.DataFrame(tmp).rename(columns={0: 'holiday', 1: 'Sum_of_rest_GW', 2: 'total_load', 3: 'str_month', 4: 'date'}))
 
     def custom_predict(self,new_observation) -> NumpyArray:
@@ -502,6 +500,7 @@ class LoadModel():
     def __init__(self, path:str="../Models/load_forest.mod"):
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         if os.path.exists(path):  self.pipeline = joblib.load(path)
+        elif os.path.exists("Models/load_forest.mod"): self.pipeline = joblib.load("Models/load_forest.mod")
         else: print(f"Do not found an already existing model at {path}")
 
     def __get_training_data(self, table_name="energy_load")->List[PandasDataFrame]:
@@ -541,7 +540,8 @@ class LoadModel():
         pred, target = self.__get_training_data()
         print(f"Training the LoadModel --> on {len(pred)} observations")
         self.pipeline.fit(pred, target.values.ravel())
-        joblib.dump(self.pipeline, '../Models/load_forest.mod')
+        try: joblib.dump(self.pipeline, '../Models/load_forest.mod')
+        except: joblib.dump(self.pipeline, 'Models/load_forest.mod')
 
     def custom_predict(self, new_observation:PandasDataFrame)->NumpyArray:
         """
@@ -566,7 +566,7 @@ class LoadModel():
         plt.title(f"Results of the prediction for {data}:")
         plt.show()
 
-def create_load_to_predict(dates:List[str])->PandasDataFrame:
+def create_load_to_predict_old(dates:List[str])->PandasDataFrame:
     """
     Auxiliary function to get the requested data.
     Given the date which could be 'today', 'tomorrow' or a date in
@@ -602,8 +602,10 @@ def check_holiday_day(day_string_format):
               '2042-7-04', '2021-5-04', '2040-2-04', '2024-01-04', '2025-21-04', '2029-2-04',
               '2038-26-04', '2027-29-03', '2044-18-04', '2033-18-04', '2031-14-04', '2023-10-04',
               '2050-11-04', '2048-6-04', '2022-18-04', '2047-15-04', '2043-30-03', '2026-6-04'}
-
-    day = datetime.datetime.strptime(day_string_format, "%Y/%m/%d %H:%M:%S")
+    try: day = datetime.datetime.strptime(day_string_format, "%Y/%m/%d %H:%M:%S")
+    except: pass
+    try: day = datetime.datetime.strptime(day_string_format, "%Y/%m/%d")
+    except: pass
     holiday_today = 'no'
     if day.strftime('%A')=="Sunday": holiday_today = "sunday"
     if day.strftime('%A')=="Saturday": holiday_today = "saturday"
@@ -630,20 +632,69 @@ def train(model = 'all', sun=False):
             if not sun: PhotovoltaicModel().custom_fit_model()
             else: PhotovoltaicModel(model='NN', path='../Models/photovoltaic_NN.tth').custom_fit_model()
 
+def prepare_load_to_predict(days=3):
+    now = dt.datetime.now().strftime("%H")
+    today = dt.datetime.now().strftime(("%Y/%m/%d"))
+    month = dt.datetime.now().strftime(("%B")).lower()
+    preds,i = [], 0
+    for iel in range(23, int(now)-1, -1):
+        preds.append([check_holiday_day(today), f"{today} {iel if iel > 9 else '0'+str(iel)}:00:00", str(iel), month ])
+    today = (dt.datetime.now()+dt.timedelta(days=1))
+    today_s = today.strftime('%Y/%m/%d')
+    month=  dt.datetime.now().strftime(("%B")).lower()
+    while len(preds) < (days*24):
+        preds.append([check_holiday_day(today_s), f"{today_s} {i if i > 9 else '0' + str(i)}:00:00", str(i), month])
+        i+=1
+        if i == 24:
+            month = dt.datetime.now().strftime(("%B")).lower()
+            today_s = (today+dt.timedelta(days=1)).strftime("%Y/%m/%d")
+            today = today+dt.timedelta(days=1)
+            i=0
+    df = pd.DataFrame(preds)
+    df.rename(columns={0: "holiday", 1: "date", 2: "str_hour", 3: "str_month"}, inplace=True)
+    df['date']= pd.to_datetime(df['date'])
+    df.sort_values(by='date', inplace =True)
+    return df, df['date'].dt.strftime("%Y-%m-%d %H:%M:%S")
+
+def fetch_load_predictions(dates):
+    query = f"""select date, generation from energy.prediction_energy where 
+                 energy = 'load' and
+                 ( cast(prediction_energy.`date` as Date) BETWEEN
+                cast('{dates[0]}' as Date)  and cast('{dates[-1]}' as Date))
+                order by idprediction_energy desc """
+    df = ((ManagerTernaSql().query_from_sql_to_pandas(query)))
+    df.sort_values(by=['date'], inplace=True)
+    df['date']= df['date'].dt.strftime("%Y/%m/%d %H:%M:%S")
+    df.set_index(df['date'], inplace=True)
+    df.drop(columns=['date'], inplace=True)
+    return df.to_dict()
+
+def predict_load(broker):
+    print(f"Sending load prediction! at {broker}")
+    load_to_predict, dates = prepare_load_to_predict()
+    load_tot = LoadModel().custom_predict(load_to_predict)
+    res = {}
+    for iday in range(len(dates)): res[dates[iday]] = dict(load=load_tot[iday])
+    MqttManager(broker=broker).publish_load(res)
 
 ###################################################################################################################
 
 def main():
     parser = argparse.ArgumentParser(description='Predictive Models', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-m', '--model_to_train', default='all', choices=['all',"wind","hydro", "load","thermal", "geothermal","biomass","photovoltaic"],
+    parser.add_argument('-m', '--model_to_train', default=None, choices=['all',"wind","hydro", "load","thermal", "geothermal","biomass","photovoltaic"],
                         help= """ Pick the model that you want to train! All the trained models will be defaults, selected
                              by us during the data exploration. if you want to train the photovoltaic model with a 
                              feed forward neural network pass the extra argument 'nn' """)
     parser.add_argument('-nn', '--neuralnetwork_for_photovoltaic', action='store_true', help='pass if you want to train the photovoltaic model with a NN with the -m argument')
+    parser.add_argument('-l', '--sendload', default=True, type=bool, help="Create the load prediction and send it to MQTT" )
+    parser.add_argument('-b', '--broker', default = 'localhost', choices=['localhost', 'aws'])
 
     parse = parser.parse_args()
-    if parse.model_to_train not in ['all',"wind","hydro", "load","thermal", "geothermal","biomass","photovoltaic"]:print(f"Model not found"), exit()
-    else: train(parse.model_to_train, parse.neuralnetwork_for_photovoltaic)
+    if parse.model_to_train and parse.model_to_train not in ['all',"wind","hydro", "load","thermal", "geothermal","biomass","photovoltaic"]:print(f"Model not found"), exit()
+    elif parse.model_to_train: train(parse.model_to_train, parse.neuralnetwork_for_photovoltaic)
+    else: predict_load(parse.broker)
+
 
 if __name__ == "__main__":
     main()
+

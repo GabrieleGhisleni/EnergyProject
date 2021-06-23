@@ -42,7 +42,7 @@ SQLAlchemy==1.4.13
 sqlparse==0.4.1
 textwrap3==0.9.2
 threadpoolctl==2.1.0
-torch==1.8.1
+# torch==1.8.1
 tqdm==4.60.0
 typing-extensions==3.10.0.0
 tzlocal==2.1

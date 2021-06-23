@@ -3,6 +3,7 @@ from pprint import pprint
 from typing import List, Dict
 from tqdm import tqdm
 from KEYS.config import OPEN_WEATHER_APPID
+
 from meteo_classes import *
 from mqtt import  MqttManager
 
@@ -110,7 +111,7 @@ class GetMeteoData():
         """
         coordinates = self.coordinates
         res = []
-        for citta in tqdm(coordinates):
+        for citta in (coordinates):
             try:
                 url = f"https://api.openweathermap.org/data/2.5/onecall?lat={coordinates[citta]['lat']}&lon={coordinates[citta]['lon']}&exclude=minutely,current,daily,alerts&appid={self.key}"
                 response = requests.request("GET", url)
@@ -133,7 +134,7 @@ class GetMeteoData():
         """
         coordinates = self.coordinates
         res = []
-        for citta in tqdm(coordinates):
+        for citta in (coordinates):
             try:
                 url = f"http://api.openweathermap.org/data/2.5/solar_radiation/forecast?lat={coordinates[citta]['lat']}&lon={coordinates[citta]['lon']}&appid={self.key}"
                 response = requests.request("GET", url)

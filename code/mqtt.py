@@ -5,6 +5,9 @@ import json, ssl, time, argparse
 import numpy as np
 import pandas as pd
 import datetime as dt
+from models import *
+from managers_meteo import *
+
 from KEYS.config import (CA_ROOT_CERT_FILE, THING_CERT_FILE, THING_PRIVATE_KEY,
                          MQTT_PORT, MQTT_KEEPALIVE_INTERVAL, MQTT_HOST)
 
@@ -14,6 +17,11 @@ class MqttManager():
     """
     def __init__(self, broker = 'localhost'):
         self.broker = broker if broker.lower() == 'localhost' else 'AWS-IoT-Core'
+
+        def on_connect(client, userdata, flags, rc):
+            if rc == 0: print("connected OK Returned code=", rc)
+            else: print("Bad connection Returned code= ", rc)
+
         def on_message_custom(client, user_data, msg):
             if msg.topic == "Energy/PredictionEnergy/":
                 print(f"Receving at {self.broker}/{msg.topic}")
@@ -21,10 +29,18 @@ class MqttManager():
                 SqlManager = ManagerTernaSql()
                 SqlManager.prediction_to_sql(predictions)
                 Thermal = ThermalModel()
-                termal_data = Thermal.pre_process_for_thermal(predictions)
+                loads = fetch_load_predictions(list(predictions.keys()))
+                termal_data = Thermal.pre_process_for_thermal(predictions, loads)
                 termal_prediction = Thermal.custom_predict(termal_data)
                 to_send = pd.DataFrame( termal_prediction, termal_data["date"].unique())
                 MqttManager(broker).publish_thermal(to_send)
+
+            elif msg.topic == "Energy/Load/":
+                print(f"Receving at {self.broker}/{msg.topic}")
+                predictions = json.loads(msg.payload.decode())
+                SqlManager = ManagerTernaSql()
+                SqlManager.prediction_to_sql(predictions)
+
             elif msg.topic == "Energy/PredictionThermal/":
                 print(f"Receving at {self.broker}/{msg.topic}")
                 new_obs = pd.DataFrame.from_dict(json.loads(msg.payload))
@@ -43,8 +59,6 @@ class MqttManager():
                 hours_of_prediction = new_obs["date"].unique()
                 ts = pd.to_datetime(hours_of_prediction)
                 hours_of_prediction = ts.strftime('%Y/%m/%d %H:%M:%S').tolist()
-                load_to_predict= create_load_to_predict(hours_of_prediction)
-                load_tot = LoadModel().custom_predict(load_to_predict)
                 hydro_prediction = HydroModel().custom_predict(new_obs)
                 geothermal_prediction = GeoThermalModel().custom_predict(new_obs)
                 wind_prediction = WindModel().custom_predict(new_obs)
@@ -58,18 +72,17 @@ class MqttManager():
                         'geothermal': geothermal_prediction[ih],
                         'wind': wind_prediction[ih],
                         'photovoltaic': photovoltaic_prediction[ih],
-                        'biomass': biomass_prediction[ih],
-                        'load': load_tot[ih] }
-                #pprint(res, indent=2,width=2)
+                        'biomass': biomass_prediction[ih],}
                 MqttManager(broker).publish_prediction(res)
         self.mqttc = mqtt.Client()
+        self.mqttc.on_connect = on_connect
 
         if self.broker == 'localhost':  self.mqttc.connect('localhost', 1883)
         else:
-            print(f"Connecting to AWS IoT Core")
             self.mqttc.tls_set(CA_ROOT_CERT_FILE, certfile=THING_CERT_FILE, keyfile=THING_PRIVATE_KEY,
                                cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLSv1_2, ciphers=None)
             self.mqttc.connect(MQTT_HOST, MQTT_PORT, MQTT_KEEPALIVE_INTERVAL)
+            print(f"Connecting to AWS IoT Core")
 
         self.mqttc.on_message = on_message_custom
         self.sleeps = 0 if self.broker == 'localhost' else 10
@@ -100,35 +113,52 @@ class MqttManager():
         self.mqttc.publish(topic = topic, payload= msg,  qos=1, retain = self.retain)
         time.sleep(self.sleeps)
 
+    def publish_load(self, load)->None:
+        topic = "Energy/Load/"
+        print(f"Sending to {self.broker}/{topic} at: {time_()}")
+        msg = json.dumps(load)
+        time.sleep(self.sleeps)
+        self.mqttc.publish(topic = topic, payload= msg,  qos=1, retain = self.retain)
+        time.sleep(self.sleeps)
+
     def subscriber(self, topic='all')->None:
         if topic == 'all':
             print(f"Subscribing to all the topics --> Broker = {self.broker}")
+            time.sleep(self.sleeps)
+            self.mqttc.subscribe("Energy/Load/")
             self.mqttc.subscribe("Energy/ForecastMeteo/")
             self.mqttc.subscribe("Energy/PredictionEnergy/")
             self.mqttc.subscribe("Energy/PredictionThermal/")
             print(f"Waiting for messages!")
             self.mqttc.loop_forever()
-
         elif topic == 'forecast':
+            time.sleep(self.sleeps)
             print(f"Subscribing to {topic} --> Broker = {self.broker}")
             self.mqttc.subscribe("Energy/ForecastMeteo/")
             self.mqttc.loop_forever()
         elif topic == 'energy':
+            time.sleep(self.sleeps+2)
             print(f"Subscribing to {topic} --> Broker = {self.broker}")
             self.mqttc.subscribe("Energy/PredictionEnergy/")
             self.mqttc.loop_forever()
         elif topic == 'thermal':
+            time.sleep(self.sleeps)
             print(f"Subscribing to {topic} --> Broker = {self.broker}")
             self.mqttc.subscribe("Energy/PredictionThermal/")
             self.mqttc.loop_forever()
-        else: print(f'{topic} is an invalid choice! pick among [forecast, energy, thermal, all]')
+        elif topic == 'load':
+            time.sleep(self.sleeps)
+            print(f"Subscribing to {topic} --> Broker = {self.broker}")
+            self.mqttc.subscribe("Energy/Load/")
+            self.mqttc.loop_forever()
+        else: print(f'{topic} is an invalid choice! pick among [forecast, energy, thermal, all, load]')
 
 def time_(): return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def main():
     arg_parse = argparse.ArgumentParser(description="MQTT Manager!")
     arg_parse.add_argument('-b', '--broker', default = 'localhost', choices=['localhost', 'aws'])
-    arg_parse.add_argument('-t', '--topic', default='all', choices=['forecast', 'energy', 'thermal', 'all'],
+    arg_parse.add_argument('-t', '--topic', required=True, choices=['forecast', 'energy', 'thermal', 'load', 'all'],
                            help="""
                            Since we made this project as decoupled as possible here you can basically assign 
                            each step of the processing pipeline to a different 'machine' specifying the topic in which \
@@ -139,7 +169,7 @@ def main():
                            cannot use retain option.""")
     args = arg_parse.parse_args()
     if args.broker != 'localhost' and args.broker != 'aws': print(f"Not valid broker - {args.broker}"),exit()
-    if args.topic not in ['all','thermal','energy','forecast']: print(f"Not valid topic - {args.topic}"), exit()
+    if args.topic not in ['all','load','thermal','energy','forecast']: print(f"Not valid topic - {args.topic}"), exit()
     MqttManager(broker=args.broker).subscriber(topic=args.topic)
 
 if __name__ == "__main__":

@@ -1,13 +1,14 @@
 from sqlalchemy import create_engine
 import json, time, datetime,os, csv, datetime,argparse
 from tqdm import tqdm
-from typing import List, TypeVar
-from fetching_meteo import *
-from meteo_classes import *
+from typing import List, TypeVar, Dict
 import pandas as pd
 import mysql.connector as sql
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 from KEYS.config import RDS_USER,RDS_PSW,RDS_HOST
+
+#from fetching_meteo import *
+from meteo_classes import *
 
 
 
@@ -20,7 +21,7 @@ class ManagerTernaSql():
         self.engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
         self.engine.connect()
 
-    def MeteoAndRadiationSave(self, meteos:List[MeteoData], radiations:List[MeteoRadiationData])->None:
+    def save_current_meteo_rad(self, meteos:List[MeteoData], radiations:List[MeteoRadiationData])->None:
         """
         Given two list of MeteoData and MeteoRadiation data it update the local SQL database.
         """
@@ -366,7 +367,7 @@ class populating_the_sql_database:
     def from_json_to_db(self):
         rad = JsonManagerCurrentRadiation('../Documentation/Files example/json_meteo/storico_radiation.json').load_unprocess()
         meteo = JsonManagerCurrentMeteo('../Documentation/Files example/json_meteo/storico_meteo.json').load_unprocess()
-        ManagerTernaSql().MeteoAndRadiationSave(radiations=rad, meteos= meteo)
+        ManagerTernaSql().save_current_meteo_rad(radiations=rad, meteos= meteo)
 
 
 def main():
@@ -388,7 +389,7 @@ def main():
                 radiations = [MeteoRadiationData.current_from_original_dict_to_class(rad) for rad in radiations]
                 meteos = GetMeteoData().fetching_current_meteo_json()
                 meteos = [MeteoData.current_from_original_dict_to_class(meteo) for meteo in meteos]
-                mysql.MeteoAndRadiationSave(meteos, radiations)
+                mysql.save_current_meteo_rad(meteos, radiations)
                 print("Updated")
     elif args.rate =='crontab':
         now = datetime.datetime.now()
@@ -398,9 +399,10 @@ def main():
         radiations = [MeteoRadiationData.current_from_original_dict_to_class(rad) for rad in radiations]
         meteos = GetMeteoData().fetching_current_meteo_json()
         meteos = [MeteoData.current_from_original_dict_to_class(meteo) for meteo in meteos]
-        mysql.MeteoAndRadiationSave(meteos, radiations)
+        mysql.save_current_meteo_rad(meteos, radiations)
         print("Updated")
     else: print(f"Not valid broker - {args.broker}"),exit()
 
 if __name__ == "__main__":
+    from fetching_meteo import *
     main()
