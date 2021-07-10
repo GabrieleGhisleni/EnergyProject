@@ -1,0 +1,225 @@
+version: '3.9'
+services:
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+    - '6379:6379'
+    logging:
+      driver: "none"
+
+  mqtt:
+    image: eclipse-mosquitto
+    container_name: mqtt
+    volumes:
+    - ./Volumes/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    ports:
+    - "1883:1883"
+    logging:
+      driver: "none"
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    volumes:
+    - ./Volumes/mysql:/var/lib/mysql
+    env_file:
+      - energy.env
+    ports:
+    - 3307:3306
+    logging:
+      driver: "none"
+
+  web_app:
+    image: eenergy:latest
+    tty: false
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    container_name: energyDjango
+    env_file:
+      - energy.env
+    depends_on:
+      - redis
+    ports:
+    - "8000:8000"
+    logging:
+      driver: "none"
+
+  load_receiver:
+    image: eenergy:latest
+    container_name: load_receiver
+    command:  bash -c "python -u Code/c_mqtt.py --broker localhost --topic load"
+    depends_on:
+      - redis
+      - mqtt
+      - mysql
+    env_file:
+      - energy.env
+
+  forecast_meteo_receiver:
+    image: eenergy:latest
+    container_name:  forecast_meteo_receiver
+    command: bash -c "python -u Code/c_mqtt.py --broker localhost --topic forecast"
+    depends_on:
+      - redis
+      - mqtt
+      - mysql
+    env_file:
+      - energy.env
+
+  energy_receiver:
+    image: eenergy:latest
+    container_name: energy_receiver
+    command:  bash -c "python -u Code/c_mqtt.py --broker localhost --topic energy"
+    depends_on:
+      - redis
+      - mqtt
+      - mysql
+    env_file:
+      - energy.env
+
+  thermal_receiver:
+    image: eenergy:latest
+    container_name: thermal_receiver
+    command:  bash -c "python -u Code/c_mqtt.py --broker localhost --topic thermal"
+    depends_on:
+      - redis
+      - mqtt
+      - mysql
+    env_file:
+      - energy.env
+
+  storico_receiver:
+    image: eenergy:latest
+    container_name: storico_receiver
+    command:  bash -c "python -u Code/c_mqtt.py --broker localhost --topic storico"
+    depends_on:
+      - mqtt
+      - mysql
+    env_file:
+      - energy.env
+
+  forecast_meteo_sender:
+    image: eenergy:latest
+    container_name: forecast_meteo_sender
+    command:  bash -c "python Code/collector.py --broker localhost"
+    depends_on:
+      - redis
+      - mqtt
+      - mysql
+      - load_sender
+    env_file:
+      - energy.env
+
+  load_sender:
+    image: eenergy:latest
+    container_name: load_sender
+    command:  bash -c "python Code/models_manager.py --sendload True --broker localhost"
+    depends_on:
+      - redis
+      - mqtt
+      - mysql
+      - load_receiver
+    env_file:
+      - energy.env
+    logging:
+      driver: "none"
+
+  storico_sender:
+    image: eenergy:latest
+    container_name: storico_sender
+    command: bash -c "sleep 5 && python Code/dbs.py --broker localhost --rate crontab "
+    depends_on:
+      - mysql
+      - storico_receiver
+    env_file:
+      - energy.env
+
+#  trasnfer_service:
+#    image: eenergy:latest
+#    container_name: trasnfer_service
+#    command: bash -c "sleep 45 && python Code/dbs.py --create_tables True --partially_populate True --file_paths Documentation/Files_from_terna"
+#    depends_on:
+#      - mysql
+#    env_file:
+#      - energy.env
+
+##########################################################ààà
+# Check in are correct (chain of dependence)
+#load_receiver:
+#    image: eenergy:latest
+#    container_name: load_receiver
+#    command:  bash -c "python -u Code/c_mqtt.py --broker localhost --topic load"
+#    depends_on:
+#      - forecast_meteo_receiver
+#    env_file:
+#      - energy.env
+#
+#  forecast_meteo_receiver:
+#    image: eenergy:latest
+#    container_name:  forecast_meteo_receiver
+#    command: bash -c "python -u Code/c_mqtt.py --broker localhost --topic forecast"
+#    depends_on:
+#      - redis
+#      - mqtt
+#      - mysql
+#    env_file:
+#      - energy.env
+#
+#  energy_receiver:
+#    image: eenergy:latest
+#    container_name: energy_receiver
+#    command:  bash -c "python -u Code/c_mqtt.py --broker localhost --topic energy"
+#    depends_on:
+#      - forecast_meteo_receiver
+#    env_file:
+#      - energy.env
+#
+#  thermal_receiver:
+#    image: eenergy:latest
+#    container_name: thermal_receiver
+#    command:  bash -c "python -u Code/c_mqtt.py --broker localhost --topic thermal"
+#    depends_on:
+#      - energy_receiver
+#    env_file:
+#      - energy.env
+#
+#  storico_receiver:
+#    image: eenergy:latest
+#    container_name: storico_receiver
+#    command:  bash -c "python -u Code/c_mqtt.py --broker localhost --topic storico"
+#    env_file:
+#      - energy.env
+#    depends_on:
+#      - redis
+#      - mqtt
+#      - mysql
+#
+#  forecast_meteo_sender:
+#    image: eenergy:latest
+#    container_name: forecast_meteo_sender
+#    command:  bash -c "python Code/collector.py --broker localhost"
+#    depends_on:
+#      - forecast_meteo_receiver
+#    env_file:
+#      - energy.env
+#
+#  load_sender:
+#    image: eenergy:latest
+#    container_name: load_sender
+#    command:  bash -c "python Code/models_manager.py --sendload True --broker localhost"
+#    depends_on:
+#      - load_receiver
+#    env_file:
+#      - energy.env
+#
+#  storico_sender:
+#    image: eenergy:latest
+#    container_name: storico_sender
+#    command: bash -c "sleep 5 && python Code/dbs.py --broker localhost --rate crontab "
+#    depends_on:
+#      - storico_receiver
+#    env_file:
+#      - energy.env
+
+
+

@@ -12,7 +12,6 @@ from django.shortcuts import render
 from django.db.models import Q
 import pandas as pd
 from plotly.offline import plot
-import plotly.graph_objs as go
 import datetime,json,os
 from sqlalchemy import create_engine
 from django.shortcuts import render
@@ -20,147 +19,90 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from .form import UserRegistrationForm
 from django.contrib.auth.decorators import login_required
-from KEYS.config import RDS_USER, RDS_PSW,RDS_HOST
 import numpy as np
+import datetime as dt
+from plotly.offline import plot
+import plotly.graph_objs as go
+import Code.meteo_managers as dbs
+
+def make_plot(dates, load, thermal, wind, hydro, photovoltaic, geothermal, biomass):
+    fig = go.Figure()
+    marker_load = dict(color='red', size=5, line=dict(color='red', width=2))
+    fig.add_trace(go.Scatter(name="Load", x=dates, y=load, fill='tonexty', mode='lines+markers', marker=marker_load))
+    fig.add_trace(go.Scatter(name="Thermal", x=dates, y=thermal, fill='tozeroy', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Photovoltaic", x=dates, y=photovoltaic, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Hydro", x=dates, y=hydro, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Wind", x=dates, y=wind, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Biomass", x=dates, y=biomass, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Geothermal", x=dates, y=geothermal, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    x_ticks = [date.split(" ")[1][:5] for date in dates]
+
+    title = f"""<b>Load ~ Renewable productions and Thermal on the date: {dates[0].split(" ")[0]}</b>"""
+    title_dict = dict(size=18, family='Bold-Courier', color='crimson')
+    legend_dict = dict(orientation="h", yanchor="middle", y=1.01, xanchor="right", x=1.01)
+    xaxis_dict = dict(title="Hours", tickmode='array', tickvals=dates, ticktext=x_ticks, tick0=0.2, tickangle=30, dtick=0.5)
+    yaxis_dict = dict(title="Generation/consumption in  GW/H", range=[0, 65], showgrid=True)
+    margin_dict = dict(l=75, r=50, b=75, t=100, pad=7.5)
+
+    fig.update_layout(title=title, title_font=title_dict, legend=legend_dict,
+                      xaxis=xaxis_dict, yaxis=yaxis_dict, margin=margin_dict, width=1000, height=600,
+                      template="gridon", paper_bgcolor='rgb(245,245,245)')
+
+    load = plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
+    return load
+
+def make_empty_plot():
+    fig = go.Figure()
+    fig.add_annotation(x=-1, y=25,text="No Data to Display Yet",
+                       font=dict(family="sans serif",size=35,color="crimson"),
+                       showarrow=False, yshift=10)
+    x,y = [-1],[0]
+    for source in ['Load', 'Thermal', 'Photovoltaic', 'Hydro', 'Wind', 'Biomass','Geothermal']:
+        fig.add_trace(go.Scatter (name=source,x=x, y=y,mode='lines'))
+    title = f"""<b>Load ~ Renewable productions and Thermal</b>"""
+    title_dict = dict(size=18, family='Bold-Courier', color='crimson')
+    legend_dict = dict(orientation="h", yanchor="middle", y=1.01, xanchor="right", x=1.01)
+    xaxis_dict = dict(title="Hours", tickmode='array', tick0=0.2, tickangle=30, dtick=0.5, showgrid=False)
+    yaxis_dict = dict(title="Generation/consumption in  GW/H", range=[0, 60], showgrid=False)
+    margin_dict = dict(l=75, r=50, b=75, t=100, pad=7.5)
+    fig.update_layout(title=title, title_font=title_dict, legend=legend_dict,
+                      xaxis=xaxis_dict, yaxis=yaxis_dict, margin=margin_dict, width=800, height=600,
+                      template="gridon", paper_bgcolor='rgb(245,245,245)')
+    load = plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
+    return load
+
+def difference(load, thermal, wind, hydro, photovoltaic, geothermal, biomass):
+    summation = np.array(wind) + np.array(thermal) + np.array(hydro) + np.array(photovoltaic) +np.array(geothermal) + np.array(biomass)
+    difference = (np.array(load) - summation).tolist()
+    return [round(i,2) for i in difference]
+
+def get_data(day='today'):
+    redis = dbs.RedisDB()
+    data = redis.get_data(day=day)
+    return data
 
 def today_pred(requests):
-    engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
-    engine.connect()
-    today = (datetime.datetime.today()).strftime("%Y-%m-%d")
-    query = f"""select date,generation,energy from prediction_energy 
-    where cast(prediction_energy.`date` as Date) = cast('{today}' as Date)
-    order by idprediction_energy desc limit 0,168;"""
-    df = pd.read_sql_query(query, engine, parse_dates=["date"])
-    fig = go.Figure()
-    dates = df["date"].dt.strftime("%Y-%m-%d %H:%M").unique()
-    fig.add_trace(go.Scatter(name="Load", x=dates, y=df.generation[df["energy"] == "load"], fill='tonexty',
-                             mode='lines+markers',marker=dict(color='red',  size=5,
-                                 line=dict( color='red',width=2 ),)))  # fill down to xaxis
-    fig.add_trace(go.Scatter(name="Thermal", x=dates, y=df.generation[df["energy"] == "thermal"], fill='tozeroy',
-                             stackgroup='one', hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(
-        go.Scatter(name="Photovoltaic", x=dates, y=df.generation[df["energy"] == "photovoltaic"], fill='tonexty',
-                   stackgroup='one', hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(
-        go.Scatter(name="Hydro", x=dates, y=df.generation[df["energy"] == "hydro"], fill='tonexty', stackgroup='one',
-                   hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(
-        go.Scatter(name="Wind", x=dates, y=df.generation[df["energy"] == "wind"], fill='tonexty', stackgroup='one',
-                   hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(go.Scatter(name="Biomass", x=dates, y=df.generation[df["energy"] == "biomass"], fill='tonexty',
-                             stackgroup='one', hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(go.Scatter(name="Geothermal", x=dates, y=df.generation[df["energy"] == "geothermal"], fill='tonexty',
-                             stackgroup='one', hoverinfo='x+y'))  # fill to trace0 y
-
-    x_ticks = [(date.split(" "))[1] for date in dates]
-    fig.update_layout(title="<b>Load ~ Renewable productions and Thermal on the date: " + dates[0].split(" ")[0]+"</b>",
-                      title_font=dict(size=18, family='Bold-Courier', color='crimson'),
-                      legend=dict(orientation="h", yanchor="middle", y=1.01, xanchor="right", x=1.01),
-                      # bgcolor="#B9D9EB"), #bordercolor="Black", borderwidth=2),
-                      xaxis=dict(title="Hours",
-                                 tickmode='array',
-                                 tickvals=dates,
-                                 ticktext=x_ticks,
-                                 tick0=0.2,
-                                 tickangle=30,
-                                 dtick=0.5,
-                                 showgrid=False),
-                      yaxis= dict(title="Generation/consumption in  GW/H",
-                                  range= [0,50],
-                                  showgrid= False   ),
-                      margin={'l': 75, 'r': 50, 'b': 75, 't': 100, 'pad': 7.5},
-                      # paper_bgcolor='white', plot_bgcolor='white',
-                      width=1000, height=600,
-                      template="gridon",
-                      paper_bgcolor='rgb(245,245,245)')
-
-    load = plot({'data': fig}, output_type="div",include_plotlyjs=False, show_link=False, link_text="")
-    # uqdate = len(df.date.unique())
-    # if uqdate < 24: df = df.iloc[-(uqdate * 7):]
-    # df = df.sort_values(by='date')
-    # not_load = df[df['energy'] != 'load']
-    # g,res = not_load.groupby('date', as_index=False),[]
-    # for name, group in (g):
-    #     tmp = pd.DataFrame(group.sum())
-    #     columns = list(tmp.index)[0:]
-    #     valori = list(tmp[0][0:].values)
-    #     df_2 = pd.DataFrame([valori], columns=columns)
-    #     df_2.insert(loc=0, column='date', value=name)
-    #     res.append(df_2)
-    # final_sources = pd.concat(res)
-    #diff = (df[df['energy']=='load'].generation).values - (final_sources.generation).values
-    context = dict(plot_div=load, day='Today', probability=['to', 'be', 'implemented','yet'])
-    return render(requests, "Display/prediction.html", context)
+    data=get_data('today')
+    if data['load'] == []:  return render(requests, "Display/prediction.html", context = dict(plot_div=  make_empty_plot(), day='Today', probability=[]))
+    else:
+        fig = make_plot(dates=data["dates"], load=data["load"], thermal=data["thermal"], wind=data["wind"], hydro=data["hydro"],
+                    photovoltaic=data["photovoltaic"], geothermal=data["geothermal"], biomass=data["biomass"])
+        differences = difference(data['load'], data["thermal"], data["wind"], data["hydro"], data["photovoltaic"], data["geothermal"], data["biomass"])
+        context = dict(plot_div=fig, day='Today', probability=differences)
+        return render(requests, "Display/prediction.html", context)
 
 def tomorrow_pred(requests):
-    engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
-    engine.connect()
-    tomorrow = (datetime.datetime.today()+datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-    date = (datetime.datetime.today()+datetime.timedelta(days=2)).strftime("%Y-%m-%d")
-    query = f"""select date,generation,energy from prediction_energy 
-    where cast(prediction_energy.`date` as Date) = cast('{tomorrow}' as Date)
-    order by idprediction_energy desc limit 0,168;"""
-    df = pd.read_sql_query(query, engine, parse_dates=["date"])
-    fig = go.Figure()
-    dates = df["date"].dt.strftime("%Y-%m-%d %H:%M").unique()
-    fig.add_trace(go.Scatter(name="Load", x=dates, y=df.generation[df["energy"] == "load"], fill='tonexty',
-                             mode='lines+markers',marker=dict(color='red',  size=5,
-                                 line=dict( color='red',width=2 ),)))  # fill down to xaxis
-    fig.add_trace(go.Scatter(name="Thermal", x=dates, y=df.generation[df["energy"] == "thermal"], fill='tozeroy',
-                             stackgroup='one', hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(
-        go.Scatter(name="Photovoltaic", x=dates, y=df.generation[df["energy"] == "photovoltaic"], fill='tonexty',
-                   stackgroup='one', hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(
-        go.Scatter(name="Hydro", x=dates, y=df.generation[df["energy"] == "hydro"], fill='tonexty', stackgroup='one',
-                   hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(
-        go.Scatter(name="Wind", x=dates, y=df.generation[df["energy"] == "wind"], fill='tonexty', stackgroup='one',
-                   hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(go.Scatter(name="Biomass", x=dates, y=df.generation[df["energy"] == "biomass"], fill='tonexty',
-                             stackgroup='one', hoverinfo='x+y'))  # fill to trace0 y
-    fig.add_trace(go.Scatter(name="Geothermal", x=dates, y=df.generation[df["energy"] == "geothermal"], fill='tonexty',
-                             stackgroup='one', hoverinfo='x+y'))  # fill to trace0 y
+    data=get_data(day='tomorrow')
+    if data['load'] == []:  return render(requests, "Display/prediction.html", context = dict(plot_div=  make_empty_plot(), day='Today', probability=[]))
+    else:
+        fig = make_plot(dates=data["dates"], load=data["load"], thermal=data["thermal"], wind=data["wind"], hydro=data["hydro"],
+                        photovoltaic=data["photovoltaic"], geothermal=data["geothermal"], biomass=data["biomass"])
+        differences = difference(data['load'], data["thermal"], data["wind"], data["hydro"], data["photovoltaic"], data["geothermal"], data["biomass"])
+        context = dict(plot_div=fig, day='Tomorrow', probability=differences)
+        return render(requests, "Display/prediction.html", context)
 
-    x_ticks = [(date.split(" "))[1] for date in dates]
-    fig.update_layout(title="<b>Load ~ Renewable productions and Thermal on the date: " + dates[0].split(" ")[0]+"</b>",
-                      title_font=dict(size=18, family='Bold-Courier', color='black'),
-                      legend=dict(orientation="h", yanchor="middle", y=1.01, xanchor="right", x=1.01),
-                      # bgcolor="#B9D9EB"), #bordercolor="Black", borderwidth=2),
-                      xaxis=dict(title="Hours",
-                                 tickmode='array',
-                                 tickvals=dates,
-                                 ticktext=x_ticks,
-                                 tick0=0.2,
-                                 tickangle=30,
-                                 dtick=0.5,
-                                 showgrid=False),
-                      yaxis= dict(title="Generation/consumption in  GW/H",
-                                  range= [0,50],
-                                  showgrid= False   ),
-                      margin={'l': 75, 'r': 50, 'b': 75, 't': 100, 'pad': 7.5},
-                      # paper_bgcolor='white', plot_bgcolor='white',
-                      width=1000, height=600,
-                      template="gridon",
-                      paper_bgcolor='rgb(245,245,245)')
-    load = plot({'data': fig},  output_type="div",include_plotlyjs=False, show_link=False, link_text="")
-    df = df.sort_values(by='date')
-    not_load = df[df['energy'] != 'load']
-    g,res = not_load.groupby('date', as_index=False),[]
-    for name, group in (g):
-        tmp = pd.DataFrame(group.sum())
-        columns = list(tmp.index)[0:]
-        valori = list(tmp[0][0:].values)
-        df_2 = pd.DataFrame([valori], columns=columns)
-        df_2.insert(loc=0, column='date', value=name)
-        res.append(df_2)
-    final_sources = pd.concat(res)
-    diff = (df[df['energy']=='load'].generation).values - (final_sources.generation).values
-    context = dict(plot_div=load, day='Tomorrow', probability=[np.round(diffi,2) for diffi in diff])
-    return render(requests, "Display/prediction.html", context)
 
 @api_view(['GET'])
-#@renderer_classes([JSONRenderer])
 def Energy_Full_Rest_API(requests):
     """
     We allow to retrive our prediction according to the data and according to the type of energy that you are interested in.
@@ -181,8 +123,7 @@ def Energy_Full_Rest_API(requests):
 
     To come back to the website click on the navbar brand 'Energy Project - HOME'.
     """
-    engine = create_engine(f"mysql+pymysql://{RDS_USER}:{RDS_PSW}@{RDS_HOST}/energy")
-    engine.connect()
+    db = dbs.MySqlDB()
     date = requests.query_params.get('date')
     energy_source = requests.query_params.get('energy')
     for params in requests.query_params:
@@ -238,9 +179,8 @@ def Energy_Full_Rest_API(requests):
         #           where cast(prediction_energy.`date` as Date) = cast('{today}' as Date)"""
         return Response({'energy': '[load,wind,hydro,photovoltaic,biomass,thermal, geothermal]',
                          'date': 'format %Y-%m-%d'}, status=status.HTTP_200_OK)
-    df = pd.read_sql_query(query, engine, parse_dates=["date"])
+    df = db.query_from_sql_to_pandas(query, dates='date')
     df.sort_values(['date'], inplace=True)
-    print(query)
     return Response(df.to_dict(), status=status.HTTP_200_OK)
 
 
@@ -260,6 +200,5 @@ def register(request):
                              """Account created, from now on you will receive an email 
                              each time the prediction  are update!""")
             return redirect("data")
-    else:
-        form = UserRegistrationForm()
+    else:  form = UserRegistrationForm()
     return render(request, 'Display/newsletter.html', {"form":form})

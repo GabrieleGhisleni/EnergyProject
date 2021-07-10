@@ -1,25 +1,14 @@
-### 
-
-/Source code/KEYS/*
-/Source code/KEYS/
-/KEYS/
-/KEYS/*
-/Models/
-/Models/*
+#####################################################################################################
+staticfiles/
+Documentation/API Documentation/
+Documentation/Evaluation of the models/
+############################################################################################################à
 .idea/
-.idea/inspectionProfiles/*
 .idea/inspectionProfiles/
 .vscode/
-.idea/*
 .vscode/*
 db.sqlite3
-Files example/*
-Files example/
-Files example
-*.csv
-
 ################################################################################################################
-
 # Default ignored files
 /shelf/
 /workspace.xml
@@ -28,18 +17,13 @@ Files example
 /dataSources.local.xml
 # Editor-based HTTP Client requests
 /httpRequests/
-
 ######################################################################################################
-
 R STUFF
 *.RDATA
 *.Rhistory
 *.R
 *.RDM
-AO.csv
-
 #########
-
 ## JetBrains ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
