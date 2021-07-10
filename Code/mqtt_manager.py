@@ -4,34 +4,34 @@ from Code.models_manager import *
 import Code.meteo_managers as dbs
 
 class MqttManager:
-    """
-    Class created to handle the interaction with the mosquitto broker.
-    """
     def __init__(self, broker: str = 'localhost', path_models: str = 'Models/'):
-        self.broker = broker if broker.lower() == 'localhost' else 'AWS-IoT-Core'
-        self.path_model = path_models
-        self.redis = dbs.RedisDB()
-        self.mysql = dbs.MySqlDB()
-
         def on_connect(client, userdata, flags, rc):
             if rc == 0: print(f"Connection OK! Waiting for messages!")
             else: print("Bad connection Returned code = ", rc)
 
         def on_message_custom(client, user_data, msg):
-            if msg.topic == "Energy/PredictionEnergy/":
+            if msg.topic == "Energy/Load/":
+                print(f"Receiving at {self.broker}/{msg.topic}")
+                predictions = json.loads(msg.payload.decode())
+                self.mysql.prediction_to_sql(predictions)
+                self.redis.set_load(predictions)
+            elif msg.topic == "Energy/Storico/":
+                print(f"Receiving at {self.broker}/{msg.topic}")
+                msg = json.loads(msg.payload)
+                meteos = pd.DataFrame.from_dict(msg)
+                self.mysql.save_current_meteo(meteos)
+            elif msg.topic == "Energy/ForecastMeteo/":
+                print(f"Receving at {self.broker}/{msg.topic}")
+                raw_msg = json.loads(msg.payload)
+                res = process_forecast_mqtt(msg=raw_msg, path=self.path_model)
+                self.publish(data=res, is_dict=False, topic="Energy/PredictionEnergy/")
+            elif msg.topic == "Energy/PredictionEnergy/":
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 predictions = json.loads(msg.payload.decode())
                 self.mysql.prediction_to_sql(predictions)
                 self.redis.set_energy(predictions)
                 res = process_thermal_mqtt(predictions, self.path_model)
                 self.publish(data=res, is_dict=True, topic="Energy/PredictionThermal/")
-
-            elif msg.topic == "Energy/Load/":
-                print(f"Receiving at {self.broker}/{msg.topic}")
-                predictions = json.loads(msg.payload.decode())
-                self.mysql.prediction_to_sql(predictions)
-                self.redis.set_load(predictions)
-
             elif msg.topic == "Energy/PredictionThermal/":
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 raw_msg = json.loads(msg.payload)
@@ -39,20 +39,11 @@ class MqttManager:
                 self.mysql.preprocess_thermal_prediction_to_sql(values, dates)
                 self.redis.set_thermal(values, dates)
                 print("Done! - Check the data on  http://127.0.0.1:8000/today-prediction/ ")
-                time.sleep(15)
 
-            elif msg.topic == "Energy/Storico/":
-                print(f"Receiving at {self.broker}/{msg.topic}")
-                msg = json.loads(msg.payload)
-                meteos = pd.DataFrame.from_dict(msg)
-                self.mysql.save_current_meteo(meteos)
-
-            elif msg.topic == "Energy/ForecastMeteo/":
-                print(f"Receving at {self.broker}/{msg.topic}")
-                raw_msg = json.loads(msg.payload)
-                res = process_forecast_mqtt(msg=raw_msg, path=self.path_model)
-                self.publish(data=res, is_dict=False, topic="Energy/PredictionEnergy/")
-
+        self.broker = broker if broker.lower() == 'localhost' else 'AWS-IoT-Core'
+        self.path_model = path_models
+        self.redis = dbs.RedisDB()
+        self.mysql = dbs.MySqlDB()
         self.mqttc = mqtt.Client()
         self.mqttc.on_connect = on_connect
 
@@ -60,14 +51,14 @@ class MqttManager:
             mqtt_local = os.environ.get('MQTT_HOST_LOCAL')
             local_port = os.getenv('MQTT_LOCAL_PORT', 1883)
             self.mqttc.connect(mqtt_local, local_port)
+            print(f"Connecting to Localhost")
         else:
             ca_root = os.environ.get('CA_ROOT_CERT_FILE')
             cert = os.environ.get('THING_CERT_FILE')
             private = os.environ.get('THING_PRIVATE_KEY')
-            aws_host = os.environ.get('MQTT_HOST')
-            aws_port = os.getenv('MQTT_AWS_PORT', 8883)
-            self.mqttc.tls_set(ca_root, certfile=cert, keyfile=private,
-                               cert_reqs=ssl.CERT_REQUIRED, tls_version=ssl.PROTOCOL_TLSv1_2, ciphers=None)
+            aws_host, aws_port = os.environ.get('MQTT_HOST'), os.getenv('MQTT_AWS_PORT', 8883)
+            cert_req, prot = ssl.CERT_REQUIRED, ssl.PROTOCOL_TLSv1_2
+            self.mqttc.tls_set(ca_certs=ca_root, certfile=cert, keyfile=private, cert_reqs=cert_req, tls_version=prot)
             self.mqttc.connect(aws_host, aws_port, 60)
             print(f"Connecting to AWS IoT Core")
 

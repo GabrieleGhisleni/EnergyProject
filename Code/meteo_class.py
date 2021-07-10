@@ -6,7 +6,12 @@ from pandas import DataFrame as PandasDataFrame
 
 class MeteoData:
     """
-    class created to handle the meteo data!
+    Class created to deal the raw data coming from the API
+    It requires some parameters that are all found inside
+    the response of the API. Since it could be the case that
+    rain or snow is not present we preventively set it to 0.
+    We also create a cross_join attribute that will be used
+    to merge those data with the generation data from Terna.
     """
     def __init__(self, date, name, clouds, pressure, humidity, temp,
                  wind_deg, wind_speed, rain_1h=0, snow_1h=0, cross_join=None):
@@ -40,6 +45,9 @@ class MeteoData:
         return str(self.from_class_to_dict())
 
     def from_class_to_dict(self) -> dict:
+        """
+        Take an object and return a well defined dictionary.
+        """
         return({
             'name': self.name,
             'date': self.date,
@@ -57,8 +65,8 @@ class MeteoData:
     @staticmethod
     def current_from_original_dict_to_class(obj: dict, rain: int = 0, snow: int = 0) -> MeteoData:
         """
-        This function has to be applied on a single call from the current data.
-        So for each city one call and it will return an object MeteoCurrentData.
+        It takes the dictionary as it arrives from the current meteo API
+        it turns it into an object of the class MeteoData.
         """
         if 'rain' in obj: rain = obj['rain']["1h"]
         if 'snow' in obj: snow = obj["snow"]['1h']
@@ -83,8 +91,8 @@ class MeteoData:
     @staticmethod
     def current_from_preprocess_dict_to_class(obj: dict, rain: int = 0, snow: int = 0) -> MeteoData:
         """
-        This function has to be applied on a single call from the current data.
-        So for each city one call and it will return an object MeteoCurrentData.
+        It takes the dictionary that as already been processed
+        and turns it again into an object of the class MeteoData.
         """
         if 'rain' in obj: rain = obj['rain_1h']
         if 'snow' in obj: snow = obj["snow_1h"]
@@ -104,10 +112,9 @@ class MeteoData:
     @staticmethod
     def forecast_from_dict_to_class(city: List[dict], rain: int = 0, snow: int = 0) -> List[List[MeteoData]]:
         """
-        obj is the forecast meteo for one city!
-        This function has to be applied on a single call from the forecast meteo.
-        So for each city one call and it will return a list of is_dict, each is_dict will have
-        the forecast meteo for that city and the next 48 hour.
+        It takes the raw data from the Forecast API call, which are encoded
+        as a list of dictionary (one list represent one city, containing 48 obs)
+        and return a list of list of MeteoData.
         """
         tmp = []
         for obj in city:
@@ -132,8 +139,13 @@ class MeteoData:
             tmp.append(res)
         return tmp
 
-class ForecastData:
-    def update_forecast_meteo(self, forecast_meteo: List[List[MeteoData]]) -> PandasDataFrame:
+    @staticmethod
+    def update_forecast_meteo(forecast_meteo: List[List[MeteoData]]) -> PandasDataFrame:
+        """
+        Helper functions that takes the preprocess forecast meteo as
+        a list of list of MeteoData and prepare a PandasDataFrame to
+        be passed in the next steps of the pipelines.
+        """
         res = []
         for city in forecast_meteo:
             for hour in city:

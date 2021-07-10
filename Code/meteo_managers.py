@@ -86,8 +86,8 @@ class MySqlDB:
         self.engine = sqlalchemy.create_engine(f"mysql+pymysql://{mysql_user}:{mysql_psw}@{mysql_host}/energy")
         self.engine.connect()
 
-    def get_training_data(self, source: str) -> Tuple[PandasDataFrame, PandasSeries]:
-        query = """SELECT energy_meteo.clouds, pressure, humidity, temp, rain_1h, snow_1h, wind_deg, wind_speed, energy_generation.generation,
+    def get_training_data(self, source: str, aug: str = 'yes') -> Tuple[PandasDataFrame, PandasSeries]:
+        query = f"""SELECT energy_meteo.clouds, pressure, humidity, temp, rain_1h, snow_1h, wind_deg, wind_speed, energy_generation.generation,
                     CASE EXTRACT(HOUR FROM energy_meteo.date)
                         WHEN '1' THEN  '01 AM'	WHEN '2' THEN  '02 AM' WHEN '3' THEN  '03 AM' WHEN '4' THEN  '04 AM'
                         WHEN '5' THEN  '05 AM' WHEN '6' THEN  '06 AM' WHEN '7' THEN  '07 AM' WHEN '8' THEN  '08 AM'
@@ -104,17 +104,20 @@ class MySqlDB:
                     FROM energy_generation
                     INNER JOIN energy_meteo
                     ON energy_meteo.date = energy_generation.date
-                    where energy_generation.energy_source = '{}';""".format(source)
+                    where energy_generation.energy_source = '{source}';"""
 
         df = self.query_from_sql_to_pandas(query=query)
-
-        july_ = df[df['str_month'] == 'june'].copy()
-        aug_ = df[df['str_month'] == 'june'].copy()
-        july_['str_month'] = july_.str_month.apply(lambda x: 'july')
-        aug_['str_month'] = aug_.str_month.apply(lambda x: 'august')
-        df = df.append(july_, ignore_index=True)
-        df = df.append(aug_, ignore_index=True)
-
+        if aug == 'yes':
+            actual_month = dt.datetime.now().strftime("%B").lower()
+            monthinteger = (dt.datetime.now().month) + 1
+            month = dt.date(1, monthinteger, 1).strftime('%B').lower()
+            month_plus_one = df[df['str_month'] == 'june' ].copy()
+            month_plus_one['str_month'] = month_plus_one.str_month.apply(lambda x: month)
+            df = df.append(month_plus_one, ignore_index=True)
+            monthinteger = (dt.datetime.now().month)
+            month_plus_one = df[df['str_month'] == 'june' ].copy()
+            month_plus_one['str_month'] = month_plus_one.str_month.apply(lambda x: 'july')
+            df = df.append(month_plus_one, ignore_index=True)
         predictors = df.drop('generation', axis=1)
         target = df.loc[:, ['generation']]
         return predictors, target

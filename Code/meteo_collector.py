@@ -6,27 +6,26 @@ import Code.mqtt_manager as c_mqtt
 class GetMeteoData:
     def __init__(self):
         self.key = os.environ.get('OPEN_WEATHER_APPID')
-        self.it_regions = {
-                        'Bari': {'lat': 41.1177, 'lon': 16.8512},
-                        'Bologna': {'lat': 44.4667, 'lon': 11.4333},
-                        'Catanzaro': {'lat': 38.8908, 'lon': 16.5987},
-                        'Firenze': {'lat': 43.7667, 'lon': 11.25},
-                        "L'Aquila": {'lat': 42.365, 'lon': 13.3935},
-                        'Milano': {'lat': 45.4643, 'lon': 9.1895},
-                        'Naples': {'lat': 40.8333, 'lon': 14.25},
-                        'Potenza': {'lat': 40.6443, 'lon': 15.8086},
-                        'Palermo': {'lat': 37.8167, 'lon': 13.5833},
-                        'Turin': {'lat': 45.1333, 'lon': 7.3667},
-                        'Ancona': {'lat': 43.55, 'lon': 13.1667},
-                        'Campobasso': {'lat': 41.6333, 'lon': 14.5833},
-                        'Genova': {'lat': 44.5, 'lon': 9.0667},
-                        'Perugia': {'lat': 43.05, 'lon': 12.55},
-                        'Rome': {'lat': 41.8947, 'lon': 12.4839},
-                        'Sardinia': {'lat': 40, 'lon': 9},
-                        'Trento': {'lat': 46.0679, 'lon': 11.1211},
-                        'Trieste': {'lat': 45.6486, 'lon': 13.78},
-                        "Valle d'Aosta": {'lat': 45.7667, 'lon': 7.4167},
-                        'Venice': {'lat': 45.4386, 'lon': 12.3267}}
+        self.it_regions = {'Bari': {'lat': 41.1177, 'lon': 16.8512},
+                           'Bologna': {'lat': 44.4667, 'lon': 11.4333},
+                           'Catanzaro': {'lat': 38.8908, 'lon': 16.5987},
+                           'Firenze': {'lat': 43.7667, 'lon': 11.25},
+                           "L'Aquila": {'lat': 42.365, 'lon': 13.3935},
+                           'Milano': {'lat': 45.4643, 'lon': 9.1895},
+                           'Naples': {'lat': 40.8333, 'lon': 14.25},
+                           'Potenza': {'lat': 40.6443, 'lon': 15.8086},
+                           'Palermo': {'lat': 37.8167, 'lon': 13.5833},
+                           'Turin': {'lat': 45.1333, 'lon': 7.3667},
+                           'Ancona': {'lat': 43.55, 'lon': 13.1667},
+                           'Campobasso': {'lat': 41.6333, 'lon': 14.5833},
+                           'Genova': {'lat': 44.5, 'lon': 9.0667},
+                           'Perugia': {'lat': 43.05, 'lon': 12.55},
+                           'Rome': {'lat': 41.8947, 'lon': 12.4839},
+                           'Sardinia': {'lat': 40, 'lon': 9},
+                           'Trento': {'lat': 46.0679, 'lon': 11.1211},
+                           'Trieste': {'lat': 45.6486, 'lon': 13.78},
+                           "Valle d'Aosta": {'lat': 45.7667, 'lon': 7.4167},
+                           'Venice': {'lat': 45.4386, 'lon': 12.3267}}
 
     def fetching_current_meteo_json(self) -> List[dict]:
         """
@@ -80,7 +79,7 @@ def prepare_forecast_to_send(broker: str = 'localhost') -> None:
     print(f"Sending raw forecast meteo data at MQTT-{broker}")
     predictions_raw = GetMeteoData().fetching_forecast_meteo()
     meteo_forecast = meteo_class.MeteoData.forecast_from_dict_to_class(city=predictions_raw)
-    meteos_df = meteo_class.ForecastData().update_forecast_meteo(forecast_meteo=meteo_forecast)
+    meteos_df = meteo_class.MeteoData.update_forecast_meteo(forecast_meteo=meteo_forecast)
     c_mqtt.MqttManager(broker).publish(data=meteos_df, is_dict=True, topic="Energy/ForecastMeteo/")
 
 def main():

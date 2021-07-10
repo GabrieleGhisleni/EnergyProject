@@ -15,19 +15,18 @@ import Code.meteo_managers as dbs
 
 class EnergyModels:
     """
-    Skeleton Model class for all the renewable models!
+    Skeleton class used for all the energy models, included thermal and load.
     """
-
     def __init__(self):
         self.cat_variable = ['str_hour', 'str_month']
 
-    def custom_fit_model(self) -> None:
+    def custom_fit_model(self, aug: str = 'yes') -> None:
         encoder = (OneHotEncoder(), self.cat_variable)
         pre_process = make_column_transformer(encoder, remainder='passthrough')
         sql_manager = dbs.MySqlDB()
         if self.source == 'thermal': pred, target = sql_manager.get_training_thermal_data()
         elif self.source == 'load': pred, target = sql_manager.get_training_load_data()
-        else: pred, target = sql_manager.get_training_data(self.source)
+        else: pred, target = sql_manager.get_training_data(self.source, aug=aug)
         self.pipeline = make_pipeline(pre_process, self.model)
         self.pipeline.fit(pred, target.values.ravel())
         joblib.dump(self.pipeline, self.path)
@@ -41,7 +40,7 @@ class HydroModel(EnergyModels):
     def __init__(self, path: str = '../Models/'):
         super(HydroModel, self).__init__()
         self.path, self.source = f"{path}hydro.mod", 'hydro'
-        self.model = RandomForestRegressor(n_estimators=300, criterion='mse', bootstrap=True)
+        self.model = RandomForestRegressor(n_estimators=100, criterion='mse', bootstrap=True)
         if os.path.exists(self.path): self.pipeline = joblib.load(self.path)
         else: print(f"Do not found an already existing model at {self.path}")
 
@@ -59,7 +58,7 @@ class WindModel(EnergyModels):
     def __init__(self, path: str = '../Models/'):
         super(WindModel, self).__init__()
         self.path, self.source = f"{path}wind.mod", 'wind'
-        self.model = RandomForestRegressor(n_estimators=300, criterion='mse', bootstrap=True)
+        self.model = RandomForestRegressor(n_estimators=100, criterion='mse', bootstrap=True)
         if os.path.exists(self.path): self.pipeline = joblib.load(self.path)
         else: print(f"Do not found an already existing model at {self.path}")
 
@@ -77,14 +76,15 @@ class BiomassModel(EnergyModels):
     def __init__(self, path: str = '../Models/'):
         super(BiomassModel, self).__init__()
         self.path, self.source = f"{path}biomass.mod", 'biomass'
-        self.model = RandomForestRegressor(n_estimators=300, criterion='mse', bootstrap=True)
+        self.model = RandomForestRegressor(n_estimators=100, criterion='mse', bootstrap=True)
         if os.path.exists(self.path): self.pipeline = joblib.load(self.path)
         else: print(f"Do not found an already existing model at {self.path}")
+
 
 class LoadModel(EnergyModels):
     def __init__(self, path: str = '../Models/'):
         self.path, self.source = f"{path}load.mod", 'load'
-        self.model = BaggingRegressor(n_estimators=100, bootstrap=True)
+        self.model = BaggingRegressor(n_estimators=50, bootstrap=True)
         self.cat_variable = ["holiday", "str_hour", "str_month"]
         if os.path.exists(self.path): self.pipeline = joblib.load(self.path)
         else: print(f"Do not found an already existing model at {self.path}")
@@ -93,7 +93,7 @@ class LoadModel(EnergyModels):
 class ThermalModel(EnergyModels):
     def __init__(self, path: str = '../Models/'):
         self.path, self.source = f"{path}thermal.mod", 'thermal'
-        self.model = BaggingRegressor(n_estimators=300, bootstrap=True)
+        self.model = BaggingRegressor(n_estimators=30, bootstrap=True)
         self.cat_variable = ["holiday", "str_month"]
         if os.path.exists(self.path): self.pipeline = joblib.load(self.path)
         else: print(f"Do not found an already existing model at {self.path}")
@@ -112,7 +112,7 @@ class ThermalModel(EnergyModels):
         return pd.DataFrame(tmp).rename(columns=colnames)
 
 
-def train(model: str = 'all', path: str = "../Models/") -> None:
+def train_models(model: str = 'all', path: str = "../Models/", aug: str = 'yes') -> None:
     tmp = dict(wind=WindModel(path),
                hydro=HydroModel(path),
                geothermal=GeoThermalModel(path),
@@ -120,8 +120,8 @@ def train(model: str = 'all', path: str = "../Models/") -> None:
                photovoltaic=PhotoVoltaicModel(path),
                thermal=ThermalModel(path),
                load=LoadModel(path))
-    if model == 'all': [tmp[model].custom_fit_model() for model in tmp]
-    else: tmp[model].custom_fit_model()
+    if model == 'all': [tmp[model].custom_fit_model(aug=aug) for model in tmp]
+    else: tmp[model].custom_fit_model(aug=aug)
 
 def process_forecast_mqtt(msg: dict, path: str) -> dict:
     new_obs = pd.DataFrame.from_dict(msg)
@@ -171,10 +171,12 @@ def main():
     parser.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
     parser.add_argument('-r', '--rate', default='auto', help="""Frequencies express in hours, if do not specified will use the best rate found up to now""")
     parser.add_argument('-p', '--path', default='Models/', help="""Path to find the models""")
+    parser.add_argument('-a', '--aug', default='yes', help="""Slightly increase artificially the number of obs to avoid problems
+                                                                when train the model near the end of the month""")
     parse = parser.parse_args()
     topic_available = ['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]
     if parse.model_to_train and parse.model_to_train not in topic_available: print(f"Model not found"), exit()
-    elif parse.model_to_train: train(model=parse.model_to_train, path=parse.path)
+    elif parse.model_to_train: train_models(model=parse.model_to_train, path=parse.path)
     else:
         if parse.rate == 'auto': waiting_time = 60 * 60 * 12  # each 12 hours (do not depend on meteo)
         elif type(parse.rate) != int: raise ValueError('Required INT')
