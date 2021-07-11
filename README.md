@@ -14,9 +14,9 @@ Italy. All the code in this [Git repository], where you can also find the [Docke
 
 | Argument | Description |
 | --------------|---------------|
-| [How to run the application](https://github.com/GabrieleGhisleni/EnergyProject#how-to-run-the-application) | Description of how run the application using our dbs and brokers.|
+| [How to run the application](#how-to-run-the-application) | Description of how run the application using our dbs and brokers.|
 | [Arguments available](#arguments-available) | Brief description of the argument that can passed to the docker-compose.yml|
-| [Change the services](https://github.com/GabrieleGhisleni/EnergyProject#change-the-services) | Guide to change from our dbs and brokers to yours.|  
+| [Change the services](#change-the-services) | Guide to change from our dbs and brokers to yours.|  
 
 
 Where in the first paragraph we will show how to run the application for the very first time using our dbs and our 
@@ -219,6 +219,8 @@ C:\..\your_fresh_directory> `docker-compose up`
 Follow the printing statement and at the end click on the hyper link displayed!
 When the process is ended you will see displayed this:
 
+![Alt text](Display/media/done.jpg?raw=true)
+
 
 Clink on the hyper link:
 
@@ -226,7 +228,9 @@ Clink on the hyper link:
 
 This will open you browser directly to your localhost where yui will find the application running! you can have a look 
 at the functionalities as the today, tomorrow prediction, the browserable API (the description of how 
-to use that is in that page) and the rest of the application.
+to use that is in that page) and the rest of the application:
+
+![Alt text](Display/media/appp.jpg?raw=true)
 
 ## Arguments available
 
@@ -296,7 +300,8 @@ and an argument --aug that is used to introduce some observation of the next mon
 > 1. Change MySql Database
 
 To change that you have to modify the docker-compose.yml mysql and energy.env as follows and inserting 
-into the the brackets `< >` the data that you want to use.
+into the the brackets `< >` the data that you want to use. **make sure that the folder mysql is still empty
+otherwhise delete all the elements before starting this procedure**
 
 ```shell
 ## docker-compose.yml
