@@ -219,8 +219,7 @@ C:\..\your_fresh_directory> `docker-compose up`
 Follow the printing statement and at the end click on the hyper link displayed!
 When the process is ended you will see displayed this:
 
-![Alt text](Display/media/done.jpg?raw=true)
-
+![Image](../blob/master/Display/media/done.JPG)
 
 Clink on the hyper link:
 
@@ -230,7 +229,7 @@ This will open you browser directly to your localhost where yui will find the ap
 at the functionalities as the today, tomorrow prediction, the browserable API (the description of how 
 to use that is in that page) and the rest of the application:
 
-![Alt text](Display/media/appp.jpg?raw=true)
+![Image](../blob/master/Display/media/appp.JPG)
 
 ## Arguments available
 
