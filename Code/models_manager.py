@@ -23,7 +23,7 @@ class EnergyModels:
     def custom_fit_model(self, aug: str = 'yes') -> None:
         encoder = (OneHotEncoder(), self.cat_variable)
         pre_process = make_column_transformer(encoder, remainder='passthrough')
-        sql_manager = dbs.MySqlDB()
+        sql_manager = dbs.MySqlModels()
         if self.source == 'thermal': pred, target = sql_manager.get_training_thermal_data()
         elif self.source == 'load': pred, target = sql_manager.get_training_load_data()
         else: pred, target = sql_manager.get_training_data(self.source, aug=aug)

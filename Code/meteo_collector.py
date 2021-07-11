@@ -76,6 +76,10 @@ class GetMeteoData:
         return res
 
 def prepare_forecast_to_send(broker: str = 'localhost') -> None:
+    """
+    Fetch the raw forecast API data, process it using the proper
+    class and then send it to the mqtt broker for the next steps.
+    """
     print(f"Sending raw forecast meteo data at MQTT-{broker}")
     predictions_raw = GetMeteoData().fetching_forecast_meteo()
     meteo_forecast = meteo_class.MeteoData.forecast_from_dict_to_class(city=predictions_raw)

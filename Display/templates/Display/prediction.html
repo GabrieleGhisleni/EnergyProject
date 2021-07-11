@@ -1,7 +1,7 @@
 {% extends "Display/base.html" %}
 {% block content %}
 <div>
-  <h2 style="font-family: 'Poppins', sans-serif;text-align: left;margin:30px;">{{day}}'s Prediction:</h2>
+  <h2 style="font-family: 'Poppins', sans-serif;text-align: left;margin:30px;"><strong>{{day}}'s Prediction {{ day_s }}</strong></h2>
   <div class="container">
   <div class="row justify-content-md-center">
   {% for p in probability %}

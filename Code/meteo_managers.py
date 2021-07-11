@@ -86,6 +86,44 @@ class MySqlDB:
         self.engine = sqlalchemy.create_engine(f"mysql+pymysql://{mysql_user}:{mysql_psw}@{mysql_host}/energy")
         self.engine.connect()
 
+    def save_current_meteo(self, meteos: PandasDataFrame) -> None:
+        print(f"Updating energy.meteo!")
+        meteos.to_sql("energy_meteo", con=self.engine, if_exists='append', index=False)
+
+    def prediction_to_sql(self, predictions: dict) -> None:
+        predictions = predictions
+        df = pd.DataFrame.from_dict(predictions, orient='index')
+        df.reset_index(inplace=True, drop=False)
+        df.rename(columns={'index': 'date'}, inplace=True)
+        res = []
+        for source in df.columns:
+            if str(source) != 'date' and str(source) != 'index':
+                tmp = df[['date', source]].copy()
+                tmp['energy'] = source
+                tmp.rename(columns={source: 'generation'}, inplace=True)
+                res.append(tmp)
+        (pd.concat(res)).to_sql("prediction_energy",  con=self.engine, if_exists='append', index=False)
+
+    def query_from_sql_to_pandas(self, query: str, dates: str = False) -> PandasDataFrame:
+        """
+        Fancy function that given a query it return the result as
+        a Pandas DataFrame, if the query return none the data frame
+        will be empty
+        """
+        if dates: return pd.read_sql_query(query, self.engine, parse_dates=[dates])
+        else: return pd.read_sql_query(query, self.engine)
+
+    def preprocess_thermal_prediction_to_sql(self, pred: NumpyArray, dates: NumpyArray) -> None:
+        df = pd.DataFrame(pred, dates)
+        df["date"] = df.index
+        df["energy"] = "thermal"
+        df.rename(columns={0: 'generation'}, inplace=True)
+        df.to_sql("prediction_energy",  con=self.engine, if_exists='append', index=False)
+
+class MySqlModels(MySqlDB):
+    def __init__(self):
+        super().__init__()
+
     def get_training_data(self, source: str, aug: str = 'yes') -> Tuple[PandasDataFrame, PandasSeries]:
         query = f"""SELECT energy_meteo.clouds, pressure, humidity, temp, rain_1h, snow_1h, wind_deg, wind_speed, energy_generation.generation,
                     CASE EXTRACT(HOUR FROM energy_meteo.date)
@@ -164,39 +202,6 @@ class MySqlDB:
         target = df.loc[:, ['total_load']]
         return predictors, target
 
-    def save_current_meteo(self, meteos: PandasDataFrame) -> None:
-        print(f"Updating energy.meteo!")
-        meteos.to_sql("energy_meteo", con=self.engine, if_exists='append', index=False)
-
-    def prediction_to_sql(self, predictions: dict) -> None:
-        predictions = predictions
-        df = pd.DataFrame.from_dict(predictions, orient='index')
-        df.reset_index(inplace=True, drop=False)
-        df.rename(columns={'index': 'date'}, inplace=True)
-        res = []
-        for source in df.columns:
-            if str(source) != 'date' and str(source) != 'index':
-                tmp = df[['date', source]].copy()
-                tmp['energy'] = source
-                tmp.rename(columns={source: 'generation'}, inplace=True)
-                res.append(tmp)
-        (pd.concat(res)).to_sql("prediction_energy",  con=self.engine, if_exists='append', index=False)
-
-    def query_from_sql_to_pandas(self, query: str, dates: str = False) -> PandasDataFrame:
-        """
-        Fancy function that given a query it return the result as
-        a Pandas DataFrame, if the query return none the data frame
-        will be empty
-        """
-        if dates: return pd.read_sql_query(query, self.engine, parse_dates=[dates])
-        else: return pd.read_sql_query(query, self.engine)
-
-    def preprocess_thermal_prediction_to_sql(self, pred: NumpyArray, dates: NumpyArray) -> None:
-        df = pd.DataFrame(pred, dates)
-        df["date"] = df.index
-        df["energy"] = "thermal"
-        df.rename(columns={0: 'generation'}, inplace=True)
-        df.to_sql("prediction_energy",  con=self.engine, if_exists='append', index=False)
 
 class MySqlTransfer(MySqlDB):
     def __init__(self, path_folder: str = 'Documentation/Files_from_terna'):
@@ -227,13 +232,14 @@ class MySqlTransfer(MySqlDB):
                 if index != -1: print(f" {query.split(' ')[2]} Failed because of {str(e)[:index].strip()}")
                 else: print(f" {query.split(' ')[2]} Failed because of {e}")
 
-    def generation_from_terna(self) -> None:
+    def generation_from_terna(self, external_path: List[str] = None) -> None:
         paths = f"{self.path_folder}/generation/"
         print(f"Updating Generation to the new DB")
         paths = [paths + i for i in os.listdir(paths)]
+        if external_path: paths.extend(external_path)
         out = []
         for path in paths:
-            if not os.path.exists(path): print(f"{path} is not a valid path!")
+            if not os.path.exists(path) and 'http' not in path : print(f"{path} is not a valid path!")
             else:
                 try:
                     df = pd.read_csv(path)
@@ -256,7 +262,7 @@ class MySqlTransfer(MySqlDB):
             print(f"Finished updating Generation")
         else: print('We are not able to load the files')
 
-    def load_from_terna(self) -> None:
+    def load_from_terna(self, external_path: List[str] = None) -> None:
         """
         Function that given a list of .xlsx file obtained from the Terna Download Center
         it preprocess the data, add the socio-economic predictor refered to the holidays
@@ -265,25 +271,30 @@ class MySqlTransfer(MySqlDB):
         paths = f"{self.path_folder}/load/"
         print(f"Updating Load to the new DB")
         paths_to_file = [paths+i for i in os.listdir(paths)]
+        if external_path: paths_to_file.extend(external_path)
         holiday = HolidayDetector().create_backward_calendar()
         for path in paths_to_file:
-            if os.path.exists(path):
-                if path.endswith('.xlsx'):
-                    current = pd.read_excel(path, skiprows=[1], header=[1])
-                    current = current[current["Bidding zone"] == "Italy"]
-                    current.drop(columns=["Forecast Total load [MW]", "Bidding zone"], inplace=True)
-                    tmp = pd.to_datetime(current["Date"], format="%d/%m/%Y %H:%M:%S %p")
-                    current = current[current['Date'].dt.strftime("%M") == '00']
-                    current["cross_date"] = tmp.dt.strftime("%Y-%m-%d")
-                    current["Date"] = current["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
-                    current = current.merge(holiday, how="inner", on="cross_date")
-                    current.drop(columns=["cross_date"], inplace=True)
-                    current.rename(columns={'Total Load [MW]': "total_load", 'Date': 'date', 'Holiday': 'holiday'}, inplace=True)
-                    current["total_load"] = current["total_load"]/1000
-                    current.to_sql('energy_load', con=self.engine, if_exists='append', index=False)
+            if os.path.exists(path) or 'http' in path :
+                if path.endswith('.xlsx'): current = pd.read_excel(path, skiprows=[1], header=[1])
+                elif path.endswith('.csv'): current = pd.read_csv(path)
                 else:
                     extension = path.split('.')[1]
                     print(f".{extension} is not a valid format!")
+                    continue
+                current = current[current["Bidding zone"] == "Italy"]
+                current.drop(columns=["Forecast Total load [MW]", "Bidding zone"], inplace=True)
+                try: current["Date"] = pd.to_datetime(current["Date"], format="%d/%m/%Y %H:%M:%S %p")
+                except Exception: pass
+                try: current["Date"] = pd.to_datetime(current["Date"], format="%Y/%m/%d %H:%M:%S")
+                except Exception: pass
+                current = current.loc[current['Date'].dt.strftime("%M") == '00', :]
+                current["cross_date"] = current["Date"].dt.strftime("%Y-%m-%d")
+                current["Date"] = current["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
+                current = current.merge(holiday, how="inner", on="cross_date")
+                current.drop(columns=["cross_date"], inplace=True)
+                current.rename(columns={'Total Load [MW]': "total_load", 'Date': 'date', 'Holiday': 'holiday'}, inplace=True)
+                current["total_load"] = current["total_load"]/1000
+                current.to_sql('energy_load', con=self.engine, if_exists='append', index=False)
             else: print(f"{path} is not a valid load path!")
         print(f"Finished updating Load")
 
@@ -299,6 +310,7 @@ class MySqlTransfer(MySqlDB):
         print(f"Updating MeteoData to the new DB")
         meteo = JsonManagerCurrentMeteo(path).load_unprocess()
         self.save_meteo_to_db_from_json(meteos=meteo)
+
 
 class JsonManagerCurrentMeteo:
     """
@@ -364,6 +376,10 @@ class HolidayDetector:
             return f"{str(_day)}-{_month}"
 
     def create_backward_calendar(self) -> PandasDataFrame:
+        """
+        Create a calendar of the past 5 years spotting all the holidays,
+        saturdays and sundays.
+        """
         def check_day(day):
             if day == 'Saturday': return 'saturday'
             elif day == 'Sunday': return 'sunday'
@@ -392,6 +408,9 @@ class HolidayDetector:
         return df
 
     def check_holiday_day(self, day_string_format: str) -> str:
+        """
+        Check if the day is a saturday, a sunday or an holiday.
+        """
         year, day = dt.datetime.now().year, day_string_format
         easter_day = self.easter_day(year)
         easter_day_plus_one = self.easter_plus_one(easter_day)
@@ -432,7 +451,12 @@ class HolidayDetector:
         df.sort_values(by='date', inplace=True)
         return df, df['date'].dt.strftime("%Y-%m-%d %H:%M:%S")
 
+
 def shrink_mean(data: List[dict]) -> PandasDataFrame:
+    """
+    It takes the 20 dictionary of preprocess MeteoData and it shrink it
+    to the mean, so to have one value representing the italian weather.
+    """
     df = pd.DataFrame(data)
     res = df.groupby('cross_join').mean().reset_index()
     res["cross_join"] = pd.to_datetime(res["cross_join"], format='%d/%m/%Y %H:%M %p')
@@ -441,7 +465,7 @@ def shrink_mean(data: List[dict]) -> PandasDataFrame:
     res.rename(columns={'cross_join': 'date'}, inplace=True)
     return res
 
-def collecting_storico(rate: str = 'auto', broker: str = 'localhost') -> None:
+def collecting_storico(rate = 'auto', broker: str = 'localhost') -> None:
     if rate == 'auto':
         while True:
             now = datetime.datetime.now()
@@ -467,6 +491,8 @@ def main():
     arg_parser = argparse.ArgumentParser(description="Data Collector Meteo")
     arg_parser.add_argument('-c', '--create_tables', default=False, type=bool)
     arg_parser.add_argument('-p', '--partially_populate', default=False, type=bool)
+    arg_parser.add_argument('-el', '--external_load_path', default=[], type=list[str])
+    arg_parser.add_argument('-eg', '--external_generation_path', default=[], type=list[str])
     arg_parser.add_argument('-f', '--file_paths', required=False, default=None)
     arg_parser.add_argument("-r", "--rate", default='auto', choices=['crontab', 'auto'],
                             help="""Rate of the collection, if type 'auto' it will deal the best option for collecting data, otherwhise it just
@@ -478,8 +504,10 @@ def main():
         transfer = MySqlTransfer() if not args.file_paths else MySqlTransfer(args.file_paths)
         transfer.create_tables()
         if args.partially_populate:
-            transfer.load_from_terna()
-            transfer.generation_from_terna()
+            if args.external_load_path: transfer.load_from_terna(args.external_load_path)
+            else: transfer.load_from_terna()
+            if args.external_generation_path: transfer.generation_from_terna(args.external_generation_path)
+            else: transfer.generation_from_terna()
             transfer.from_json_to_db()
     else: collecting_storico(rate=args.rate, broker=args.broker)
 
