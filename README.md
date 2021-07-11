@@ -229,7 +229,7 @@ This will open you browser directly to your localhost where yui will find the ap
 at the functionalities as the today, tomorrow prediction, the browserable API (the description of how 
 to use that is in that page) and the rest of the application:
 
-![Image](../master/Display/media/pred_t.JPG)
+![Image](../master/Display/media/pred_t.PNG)
 
 ## Arguments available
 
