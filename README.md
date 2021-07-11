@@ -14,16 +14,15 @@ Italy. All the code in this [Git repository], where you can also find the [Docke
 
 | Argument | Description |
 | --------------|---------------|
-| How to run the application | Description of how run the application using our dbs and brokers.|
-| Arguments available | Brief description of the argument that can passed to the docker-compose.yml|
-| Change the services | Guide to change from our dbs and brokers to yours.|  
+| [How to run the application](https://github.com/GabrieleGhisleni/EnergyProject#how-to-run-the-application) | Description of how run the application using our dbs and brokers.|
+| [Arguments available](#arguments-available) | Brief description of the argument that can passed to the docker-compose.yml|
+| [Change the services](https://github.com/GabrieleGhisleni/EnergyProject#change-the-services) | Guide to change from our dbs and brokers to yours.|  
 
 
 Where in the first paragraph we will show how to run the application for the very first time using our dbs and our 
 mosquitto broker, in the second paragraph we will show the arguments that can be passed to the scripts and lastly we 
 will explain how to detach our services and replace those with yours (in particular your mysql db). 
 
-<a name="first"></a>
 ## How to run the application
 
 > First we will show how to run the application using our services as our Amazon RDS MySql database and our Mosquitto 
