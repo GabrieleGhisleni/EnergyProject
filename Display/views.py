@@ -230,21 +230,8 @@ def renewable_plot(db):
 
 
 def load_plot(db):
-    df = db.query_from_sql_to_pandas(f"""SELECT total_load, holiday,date,
-                                            CASE EXTRACT(MONTH FROM date)
-                                                WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
-                                                WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
-                                                WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
-                                            END as month,
-                                            CASE EXTRACT(HOUR FROM date)
-                                                WHEN '1' THEN  '1'	WHEN '2' THEN  '2'	WHEN '3' THEN  '3'	WHEN '4' THEN  '4'
-                                                WHEN '5' THEN  '5'	WHEN '6' THEN  '6'	WHEN '7' THEN  '7'	WHEN '8' THEN  '8'
-                                                WHEN '9' THEN  '9'	WHEN '10' THEN  '10'	WHEN '11' THEN  '11'	WHEN '12' THEN  '12'
-                                                WHEN '13' THEN  '13'	WHEN '14' THEN  '14'	WHEN '15' THEN  '15'	WHEN '16' THEN  '16'
-                                                WHEN '17' THEN  '17'	WHEN '18' THEN  '18'	WHEN '19' THEN  '19'	WHEN '20' THEN  '20'
-                                                WHEN '21' THEN  '21'	WHEN '22' THEN  '22'	WHEN '23' THEN  '23'	WHEN '0' THEN  '0'    
-                                            END as str_hour
-                                            from energy.energy_load""")
+    df = db.get_training_load_data(whole=True)
+    df.rename(columns={'str_month':'month'}, inplace=True)
     summer = ['june', 'july', 'august']
     winter = ['decembter', 'january', 'february']
     df_summer = df.loc[df.month.isin(summer), :]
@@ -306,7 +293,7 @@ def load_plot(db):
     else: return make_empty_plot()
 
 def infographic(requests):
-    db = dbs.MySqlDB()
+    db = dbs.MySqlModels()
     plot_renewable = renewable_plot(db)
     plot_load = load_plot(db)
     context = dict(plot_div=plot_renewable, plot_load=plot_load)

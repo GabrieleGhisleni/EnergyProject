@@ -4,7 +4,7 @@ from Code.models_manager import *
 import Code.meteo_managers as dbs
 
 class MqttManager:
-    def __init__(self, broker: str = 'localhost', path_models: str = 'Models/'):
+    def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
         def on_connect(client, userdata, flags, rc):
             if rc == 0: print(f"Connection OK! Waiting for messages!")
             else: print("Bad connection Returned code = ", rc)
@@ -50,7 +50,7 @@ class MqttManager:
 
         self.broker = broker if broker.lower() == 'localhost' else 'AWS-IoT-Core'
         self.path_model = path_models
-        self.redis = dbs.RedisDB()
+        self.redis = dbs.RedisDB(hours_expiration=ex_time)
         self.mysql = dbs.MySqlDB()
         self.mqttc = mqtt.Client()
         self.mqttc.on_connect = on_connect
@@ -72,7 +72,7 @@ class MqttManager:
 
         self.mqttc.on_message = on_message_custom
         self.sleeps = 0 if self.broker == 'localhost' else 0.5
-        self.retain = True if self.broker == 'localhost' else False
+        self.retain = retain
         # remember if use aws remove retain = True or it wont work.
 
     def custom_publish(self, data, topic: str) -> None:
@@ -97,10 +97,7 @@ class MqttManager:
             elif topic == 'energy': to_sub = "Energy/PredictionEnergy/"
             elif topic == 'thermal': to_sub = "Energy/PredictionThermal/"
             elif topic == 'load': to_sub = "Energy/Load/"
-            elif topic == 'storico': to_sub = "Energy/Storico/"
-            else:
-                text_error = f"'{topic}' is an invalid choice! [forecast, energy, thermal, all, load]"
-                raise ValueError(text_error)
+            else: to_sub = "Energy/Storico/"
             time.sleep(self.sleeps)
             print(f"Subscribing to {topic} --> Broker = {self.broker}")
             self.mqttc.subscribe(to_sub)
@@ -109,24 +106,18 @@ class MqttManager:
 def time_(): return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def main():
+    topic_available = ['forecast', 'energy', 'thermal', 'load', 'all', 'storico']
     arg_parse = argparse.ArgumentParser(description="MQTT Manager!")
     arg_parse.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
+    arg_parse.add_argument('-t', '--topic', required=True, choices=topic_available)
+    arg_parse.add_argument('-r', '--retain', default=False, type=bool, help="Retain mqtt messages")
+    arg_parse.add_argument('-ex', '--expiration_time', default=24, type=int, help="Expiration of redis store")
     arg_parse.add_argument('-p', '--path', default='Models/', help="""Path to find the models""")
-    arg_parse.add_argument('-t', '--topic', required=True, choices=['forecast', 'energy', 'thermal', 'load', 'all', 'storico'],
-                           help="""
-                           Since we made this project as decoupled as possible here you can basically assign 
-                           each step of the processing pipeline to a different 'machine' specifying the topic in which \
-                           have to be subscribed. According to the subscription each piece will perform different tasks. \
-                           IMPORTANT: if you are running for test purpose you can specify 'all' so it will do all the operation\
-                           in one process, otherwise specify the topic and run different process in this order [forecast, energy, thermal]\
-                           -IF you are running with different process and using as broker aws you must run at the same time because we
-                           cannot use retain option.""")
     args = arg_parse.parse_args()
-    if args.broker != 'localhost' and args.broker != 'aws': print(f"Not valid broker - {args.broker}"), exit()
-    if args.topic not in ['all', 'load', 'thermal', 'energy','forecast', 'storico']: print(f"Not valid topic - {args.topic}"), exit()
-    MqttManager(broker=args.broker, path_models=args.path).subscriber(topic=args.topic)
+
+    mqtt_ = MqttManager(broker=args.broker, path_models=args.path, ex_time=args.expiration_time, retain=args.retain)
+    mqtt_.subscriber(topic=args.topic)
 
 
 if __name__ == "__main__":
-    MqttManager(path_models='../Models/').subscriber('all')
     main()

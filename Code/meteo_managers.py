@@ -1,4 +1,4 @@
-import json, os, datetime, argparse, redis, sqlalchemy
+import json, os, datetime, argparse, redis, sqlalchemy, time
 from typing import List, Tuple
 import pandas as pd; import datetime as dt
 from pandas import DataFrame as PandasDataFrame
@@ -185,9 +185,9 @@ class MySqlModels(MySqlDB):
                         WHEN '21' THEN  '21 PM'	WHEN '22' THEN  '22 PM'	WHEN '23' THEN  '23 PM'	WHEN '0' THEN  '12 PM'
                     END as str_hour,
                     CASE EXTRACT(MONTH FROM energy_meteo.date)
-                        WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
-                        WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
-                        WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
+                        WHEN '1' THEN 'january' WHEN 2 THEN 'february' WHEN '3' THEN 'march' WHEN '4' THEN 'april'
+                        WHEN '5' THEN 'may' WHEN '6' THEN 'june' WHEN '7' THEN 'july' WHEN '8' THEN 'august'
+                        WHEN '9' THEN 'september' WHEN '10' THEN 'october' WHEN '11' THEN 'november' WHEN '12' THEN 'december'
                     END as str_month
                     FROM energy_generation
                     INNER JOIN energy_meteo
@@ -218,9 +218,9 @@ class MySqlModels(MySqlDB):
                         where energy_source != 'thermal' and energy_source != 'hydro'  GROUP BY date;"""
         query_thermal = f""" SELECT holiday, total_load, generation, energy_load.`date`,
                             CASE EXTRACT(MONTH FROM energy_load.`date`)
-                                WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
-                                WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
-                                WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
+                                WHEN '1' THEN 'january' WHEN 2 THEN 'february' WHEN '3' THEN 'march' WHEN '4' THEN 'april'
+                                WHEN '5' THEN 'may' WHEN '6' THEN 'june' WHEN '7' THEN 'july' WHEN '8' THEN 'august'
+                                WHEN '9' THEN 'september' WHEN '10' THEN 'october' WHEN '11' THEN 'november' WHEN '12' THEN 'december'
                             END as str_month    
                             FROM energy_load
                             INNER JOIN energy_generation
@@ -234,15 +234,15 @@ class MySqlModels(MySqlDB):
         return predictors, target
 
 
-    def get_training_load_data(self) -> Tuple[PandasDataFrame, PandasSeries]:
+    def get_training_load_data(self, whole: str = None) -> Tuple[PandasDataFrame, PandasSeries]:
         """
         Retrive the data that are used for the LoadModel and return them as already processed dataframe.
         """
         query = f"""SELECT total_load, holiday,date,
                     CASE EXTRACT(MONTH FROM date)
-                        WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
-                        WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
-                        WHEN '9' THEN  'september'	WHEN '10' THEN  'october'	WHEN '11' THEN  'november'	WHEN '12' THEN  'december'
+                        WHEN '1' THEN 'january' WHEN 2 THEN 'february' WHEN '3' THEN 'march' WHEN '4' THEN 'april'
+                        WHEN '5' THEN 'may' WHEN '6' THEN 'june' WHEN '7' THEN 'july' WHEN '8' THEN 'august'
+                        WHEN '9' THEN 'september' WHEN '10' THEN 'october' WHEN '11' THEN 'november' WHEN '12' THEN 'december'
                     END as str_month,
                     CASE EXTRACT(HOUR FROM date)
                         WHEN '1' THEN  '1'	WHEN '2' THEN  '2'	WHEN '3' THEN  '3'	WHEN '4' THEN  '4'
@@ -254,9 +254,11 @@ class MySqlModels(MySqlDB):
                     END as str_hour
                     from energy.energy_load"""
         df = self.query_from_sql_to_pandas(query)
-        predictors = df[["holiday", "str_hour", "str_month"]]
-        target = df.loc[:, ['total_load']]
-        return predictors, target
+        if whole: return df
+        else:
+            predictors = df[["holiday", "str_hour", "str_month"]]
+            target = df.loc[:, ['total_load']]
+            return predictors, target
 
 
 class MySqlTransfer(MySqlDB):
@@ -275,19 +277,25 @@ class MySqlTransfer(MySqlDB):
         """
         print('Creating Tables for the new DB')
         s = " ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
-        queries = [f"""CREATE TABLE `energy_meteo` (`idenergy_meteo` int NOT NULL AUTO_INCREMENT,`date` datetime NOT NULL,
-                      `clouds` float NOT NULL,`pressure` float NOT NULL,`humidity` float NOT NULL,`rain_1h` float NOT NULL,
-                      `snow_1h` float NOT NULL,`wind_deg` float NOT NULL, `temp` float NOT NULL, `wind_speed` float NOT NULL,
-                      PRIMARY KEY (`idenergy_meteo`), UNIQUE KEY `idenergy_meteo_UNIQUE` (`idenergy_meteo`)) {s}""",
-                f"""CREATE TABLE `energy_generation` (`idenergy_generation` int NOT NULL AUTO_INCREMENT,`date` datetime NOT NULL,
-                      `energy_source` varchar(45) NOT NULL, `generation` float NOT NULL,PRIMARY KEY (`idenergy_generation`)){s}""",
-                f"""CREATE TABLE `energy_load` (`idenergy_load` int NOT NULL AUTO_INCREMENT, `date` datetime NOT NULL,
-                        `holiday` varchar(45) NOT NULL, `total_load` float NOT NULL, PRIMARY KEY (`idenergy_load`)) {s}""",
-                f"""CREATE TABLE `prediction_energy` (`idprediction_energy` int NOT NULL AUTO_INCREMENT,  `date` datetime NOT NULL,
-                        `energy` varchar(45) NOT NULL,  `generation` float DEFAULT NULL,  PRIMARY KEY (`idprediction_energy`)){s}""",
-                f"""CREATE TABLE `prediction_meteo` (`idenergy_meteo` int NOT NULL AUTO_INCREMENT, `date` datetime NOT NULL, `clouds` float NOT NULL, 
-                        `pressure` float NOT NULL,`humidity` float NOT NULL, `rain_1h` float NOT NULL,  `snow_1h` float NOT NULL, `wind_deg` float NOT NULL, 
-                        `temp` float NOT NULL,  `wind_speed` float NOT NULL, PRIMARY KEY (`idenergy_meteo`)){s}"""]
+        queries = [
+            f"""CREATE TABLE `energy_meteo` (`idenergy_meteo` int NOT NULL AUTO_INCREMENT,`date` datetime NOT NULL,
+                `clouds` float NOT NULL,`pressure` float NOT NULL,`humidity` float NOT NULL,`rain_1h` float NOT NULL,
+                `snow_1h` float NOT NULL,`wind_deg` float NOT NULL, `temp` float NOT NULL, `wind_speed` float NOT NULL,
+                PRIMARY KEY (`idenergy_meteo`), UNIQUE KEY `idenergy_meteo_UNIQUE` (`idenergy_meteo`)) {s}""",
+
+            f"""CREATE TABLE `energy_generation` (`idenergy_generation` int NOT NULL AUTO_INCREMENT,`date` datetime NOT NULL,
+                `energy_source` varchar(45) NOT NULL, `generation` float NOT NULL,PRIMARY KEY (`idenergy_generation`)){s}""",
+
+            f"""CREATE TABLE `energy_load` (`idenergy_load` int NOT NULL AUTO_INCREMENT, `date` datetime NOT NULL,
+                `holiday` varchar(45) NOT NULL, `total_load` float NOT NULL, PRIMARY KEY (`idenergy_load`)) {s}""",
+
+            f"""CREATE TABLE `prediction_energy` (`idprediction_energy` int NOT NULL AUTO_INCREMENT,  `date` datetime NOT NULL,
+                `energy` varchar(45) NOT NULL,  `generation` float DEFAULT NULL,  PRIMARY KEY (`idprediction_energy`)){s}""",
+
+            f"""CREATE TABLE `prediction_meteo` (`idenergy_meteo` int NOT NULL AUTO_INCREMENT, `date` datetime NOT NULL, 
+                `clouds` float NOT NULL, `pressure` float NOT NULL,`humidity` float NOT NULL, `rain_1h` float NOT NULL,  
+                `snow_1h` float NOT NULL, `wind_deg` float NOT NULL, `temp` float NOT NULL,  `wind_speed` float NOT NULL, 
+                PRIMARY KEY (`idenergy_meteo`)) {s}"""]
 
         for query in queries:
             try: self.engine.execute(query)
@@ -560,19 +568,16 @@ def shrink_mean(data: List[dict]) -> PandasDataFrame:
     res.rename(columns={'cross_join': 'date'}, inplace=True)
     return res
 
-def collecting_storico(rate = 'auto', broker: str = 'localhost') -> None:
-    if rate == 'auto':
-        while True:
-            now = datetime.datetime.now()
-            if now.strftime("%M").endswith("00"):
-                print(f'Uploading MySQL database at {now}')
-                meteos = collector.GetMeteoData().fetching_current_meteo_json()
-                meteos = [MeteoData.current_from_original_dict_to_class(meteo) for meteo in meteos]
-                meteos = shrink_mean([i.from_class_to_dict() for i in meteos])
-                c_mqtt.MqttManager(broker=broker).custom_publish(data=meteos.to_dict(), topic="Energy/Storico/")
-    elif rate == 'crontab':
+def populate(dbs: MySqlTransfer, load_path: str, energy_path: str) -> None:
+    dbs.load_from_terna(load_path.split(",")) if load_path else dbs.load_from_terna()
+    dbs.generation_from_terna(energy_path.split(",")) if energy_path else dbs.generation_from_terna()
+    dbs.from_json_to_db()
+
+def collecting_storico(rate: int = 12, broker: str = 'localhost') -> None:
+    hours_to_sleep = (60*60) * rate
+    while True:
         now = datetime.datetime.now()
-        print(f"Uploading MySQL database at {now}")
+        print(f'Uploading MySQL database at {now}')
         day = dt.datetime.now().strftime("%d/%m/%Y")
         hour = dt.time(dt.datetime.now().hour).strftime("%H:%S %p")
         modified_cross_join = day + " " + hour
@@ -581,31 +586,31 @@ def collecting_storico(rate = 'auto', broker: str = 'localhost') -> None:
         for obs in meteos: obs.cross_join = modified_cross_join
         meteos = shrink_mean([i.from_class_to_dict() for i in meteos])
         c_mqtt.MqttManager(broker=broker).custom_publish(data=meteos.to_dict(), topic="Energy/Storico/")
+        time.sleep(hours_to_sleep)
 
 def main():
     arg_parser = argparse.ArgumentParser(description="Data Collector Meteo")
     arg_parser.add_argument('-c', '--create_tables', default=False, type=bool)
     arg_parser.add_argument('-p', '--partially_populate', default=False, type=bool)
-    arg_parser.add_argument('-el', '--external_load_path', default=[], type=list[str])
-    arg_parser.add_argument('-eg', '--external_generation_path', default=[], type=list[str])
+    arg_parser.add_argument('-el', '--external_load_path', default=None, type=str)
+    arg_parser.add_argument('-eg', '--external_generation_path', default=None, type=str)
     arg_parser.add_argument('-f', '--file_paths', required=False, default=None)
-    arg_parser.add_argument("-r", "--rate", default='auto', choices=['crontab', 'auto'],
-                            help="""Rate of the collection, if type 'auto' it will deal the best option for collecting data, otherwhise it just
-                                 collect the data and finish so is possible to deal with crontab options. Pay attention
-                                 it will save the data if and only if are collected hourly at the 00 of each ours.    """)
+    arg_parser.add_argument("-s", "--storico", default=True, type=bool)
+    arg_parser.add_argument("-r", "--rate", default=12, type=int, help="Rate expressed in hours")
     arg_parser.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
     args = arg_parser.parse_args()
+
     if args.create_tables:
-        transfer = MySqlTransfer() if not args.file_paths else MySqlTransfer(args.file_paths)
+        if args.file_paths: transfer = MySqlTransfer(args.file_paths)
+        else: transfer = MySqlTransfer()
         transfer.create_tables()
         if args.partially_populate:
-            if args.external_load_path: transfer.load_from_terna(args.external_load_path)
-            else: transfer.load_from_terna()
-            if args.external_generation_path: transfer.generation_from_terna(args.external_generation_path)
-            else: transfer.generation_from_terna()
-            transfer.from_json_to_db()
-    else: collecting_storico(rate=args.rate, broker=args.broker)
+            populate(transfer, args.external_load_path, args.external_generation_path)
 
+    if args.storico:
+        while True:
+            collecting_storico(rate=args.rate, broker=args.broker)
+            time.sleep(args.rate * (60*60))
 
 if __name__ == "__main__":
     main()

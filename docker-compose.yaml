@@ -31,7 +31,7 @@ services:
       driver: "none"
 
   web_app:
-    image: energy:latest
+    image: eenergy:latest
     tty: false
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     container_name: energyDjango
@@ -45,7 +45,7 @@ services:
       driver: "none"
 
   load_receiver:
-      image: energy:latest
+      image: eenergy:latest
       container_name: load_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic load"
       depends_on:
@@ -54,7 +54,7 @@ services:
         - energy.env
 
   forecast_meteo_receiver:
-      image: energy:latest
+      image: eenergy:latest
       container_name:  forecast_meteo_receiver
       command: bash -c "python -u Code/mqtt_manager.py --broker aws --topic forecast"
       depends_on:
@@ -65,7 +65,7 @@ services:
         - energy.env
 
   energy_receiver:
-      image: energy:latest
+      image: eenergy:latest
       container_name: energy_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic energy"
       depends_on:
@@ -74,7 +74,7 @@ services:
         - energy.env
 
   thermal_receiver:
-      image: energy:latest
+      image: eenergy:latest
       container_name: thermal_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic thermal"
       depends_on:
@@ -83,7 +83,7 @@ services:
         - energy.env
 
   storico_receiver:
-      image: energy:latest
+      image: eenergy:latest
       container_name: storico_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic storico"
       env_file:
@@ -94,7 +94,7 @@ services:
         - mysql
 
   forecast_meteo_sender:
-      image: energy:latest
+      image: eenergy:latest
       container_name: forecast_meteo_sender
       command:  bash -c "python Code/meteo_collector.py --broker aws"
       depends_on:
@@ -103,7 +103,7 @@ services:
         - energy.env
 
   load_sender:
-      image: energy:latest
+      image: eenergy:latest
       container_name: load_sender
       command:  bash -c "python Code/models_manager.py --sendload True --broker aws "
       depends_on:
@@ -112,7 +112,7 @@ services:
         - energy.env
 
   storico_sender:
-      image: energy:latest
+      image: eenergy:latest
       container_name: storico_sender
       command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --rate auto "
       depends_on:

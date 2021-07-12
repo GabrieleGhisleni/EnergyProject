@@ -213,26 +213,22 @@ def predict_load(broker: str, path: str = None) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Predictive Models')
-    parser.add_argument('-m', '--model_to_train', default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"],
-                        help=""" Pick the model that you want to train! All the trained models will be defaults, selected by us during the data exploration. """)
-    parser.add_argument('-l', '--sendload', default=True, type=bool, help="Create the load prediction and send it to MQTT")
-    parser.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
-    parser.add_argument('-r', '--rate', default='auto', help="""Frequencies express in hours, if do not specified will use the best rate found up to now""")
-    parser.add_argument('-p', '--path', default='Models/', help="""Path to find the models""")
-    parser.add_argument('-a', '--aug', default='yes', help="""Slightly increase artificially the number of obs to avoid problems
-                                                                when train the model near the end of the month""")
-    parse = parser.parse_args()
-    topic_available = ['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]
-    if parse.model_to_train and parse.model_to_train not in topic_available: print(f"Model not found"), exit()
-    elif parse.model_to_train: train_models(model=parse.model_to_train, path=parse.path)
-    else:
-        if parse.rate == 'auto': waiting_time = 60 * 60 * 12  # each 12 hours (do not depend on meteo)
-        elif type(parse.rate) != int: raise ValueError('Required INT')
-        else: waiting_time = parse.rate * 60 * 60
+    model_available = ['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]
+    help_aug = "Slightly increase artificially the number of obs to avoid problems when train the model near the end of the month"
+    arg_parser = argparse.ArgumentParser(description='Predictive Models')
+    arg_parser.add_argument('-m', '--model_to_train', default=None, choices=model_available)
+    arg_parser.add_argument('-a', '--aug', default='yes', choices=['yes','no'], help=help_aug)
+    arg_parser.add_argument('-p', '--path', default='Models/', help="""Path to find the models""")
+    arg_parser.add_argument('-l', '--sendload', default=True, type=bool, help="Create the load prediction and send to mqtt")
+    arg_parser.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
+    arg_parser.add_argument('-r', '--rate', default=12, type=int, help="Frequencies express in hours")
+    args = arg_parser.parse_args()
+
+    if args.model_to_train: train_models(args.model_to_train, args.path, args.aug)
+    if args.sendload:
         while True:
-            predict_load(broker=parse.broker, path=parse.path)
-            time.sleep(waiting_time)
+            predict_load(broker=args.broker, path=args.path)
+            time.sleep(args.rate * (60*60))
 
 
 if __name__ == "__main__":

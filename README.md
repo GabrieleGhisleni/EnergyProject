@@ -214,6 +214,17 @@ PYTHONPATH=/src/
 Now you are able to run the application for the very first time! Open the CLI of your PC and go to the folder that you 
 made. Once there type the following command:
 
+- If you do not want to see many logs informations:
+
+C:\..\your_fresh_directory > `docker-compose up web_app -d   
+&& docker-compose up mysql -d 
+&& docker-compose up mqtt -d 
+&& docker-compose up redis -d
+&& docker-compose up
+`
+
+- Otherwhise:
+
 C:\..\your_fresh_directory> `docker-compose up`
 
 Follow the printing statement and at the end click on the hyper link displayed!
@@ -241,23 +252,59 @@ argument that can be passed to the script trough the docker-compose.
 ```
  -b, --broker, default='localhost', choices=['localhost', 'aws']
  -t, --topic, required=True, choices=['forecast', 'energy', 'thermal', 'load', 'all', 'storico']
+ -r, --retain, default=False, type=bool
+ -ex, --expiration_time, default=24, type=int
 ```
-2. Services based on __*meteo_managers.py*__
+
+- Retain is available only when works with localhost!
+- Expiration time refers to the expiration time that the predictions will be available Redis.
+- Broker is the mqtt broker to connect.
+- Topic refers to the particular topic to subscribe.
+
+2. Services based on __*models_manager.py*__
+```
+    -l, --sendload, default=True, type=bool, 
+    -b, --broker, default='localhost', choices=['localhost', 'aws'])
+    -r, --rate, default='auto
+    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
+    -a, --aug, default='yes'
+
+```
+
+- Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
+- Broker is the mqtt broker to connect
+- Rate is the frequency of the Sendload expressed in hours
+
+- Model_to_train is an argument that can be used in case you want to train again the models 
+  (make you that you collect some data before)
+- Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
+(in particual when the month is ending).
+  
+3. Services based on __*meteo_managers.py*__
 ```
     -c, --create_tables, default=False, type=bool 
     -p, --partially_populate, default=False, type=bool
-    -el, --external_load_path, default=[], type=list[str]
-    -eg, --external_generation_path, default=[], type=list[str]
+    -el, --external_load_path, default=None, type=str
+    -eg, --external_generation_path, default=None, type=str
     
-    -r, --rate, default='auto', choices=['crontab', 'auto']
+    -s, --storico, default=True, type=bool)
+    -r, --rate, default=12, type=int
     -b, --broker, default='localhost', choices=['localhost', 'aws']
 ```
 We made a services that allow you to start you dbs in a proper ways. This service will create automatically the tables 
-as they have to be and it will trasnfer a little amount of data that we collected. --create_tables and 
---partially_populate belong to the service that is used to transfer the data into your database.
+as they have to be and it will trasnfer a little amount of data that we collected. 
+
+- Create_tables creates the tables into your new database as they have to be
+- Partially_populate belong to the service that is used to transfer the data into your database.
 
 We also allow to pass new files that you can download from [Terna Download Center].  
-You have to use --external_load_path and --external_generation_path as a list of strings where you stored this files.
+
+- External_load_path, external_generation_path are path that points to additional files. Make sure to 
+follow the procedure indicate below if you want to add files. if there are more than one just pass a string and use comma to separate files as:
+
+`
+ --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
+`
 
 There are two files that you can update:
 1. `Load -> Total Load`, you can download as excel or csv.
@@ -266,33 +313,19 @@ There are two files that you can update:
          *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
    2.  `Generation -> Renewable Generation` and select only *Biomass*.
    
---rate argument refers to to the rate of collecting meteo data that will be upload on the dbs (the historic), by default
+- Rate argument refers to to the rate of collecting meteo data that will be upload on the dbs (the historic), by default
 is set hourly but you can set differently. Be aware, the minimun rate is hourly, if you set it lower you won't 
 get benefits of that.
-
-3. Services based on __*models_manager.py*__
-```
-    -l, --sendload, default=True, type=bool, 
-    -b, --broker, default='localhost', choices=['localhost', 'aws'])
-    -r, --rate, default='auto
-    
-    -a, --aug, default='yes'
-    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
-
-```
-
-Here this script is used to principally send the prediction of the Load (2 days on) to the mqtt broker which can be 
-choicen with the --broker argument, here as before you can set the a custom rate for sending the data. 
-
-Then we have also two argument that chan be used to re train the models (you have first to collect some data) 
-and an argument --aug that is used to introduce some observation of the next month so to avoid problems 
-(in particual when the month is ending).
+  
+- Storico is the the arguments that indicate the procedure of starting collecting data.
 
 4. Services based on __*meteo_collector.py*__
 ```
     -b, --broker, required=True, type=str, choices=['localhost', 'aws'])
-    -r, --rate, default='auto'
+    -r, --rate, default=6, type=int
 ```
+- Broker mqtt to subscribe
+- Rate is the frequencies of sending data expressed in hours.
 
 ## Change the services
 

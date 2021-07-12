@@ -92,18 +92,12 @@ def prepare_forecast_to_send(broker: str = 'localhost') -> None:
 def main():
     arg_parser = argparse.ArgumentParser(description="Forecast collector!")
     arg_parser.add_argument("-b", "--broker", required=True, type=str,  help="MQTT Broker", choices=['localhost', 'aws'])
-    arg_parser.add_argument('-r', '--rate', default='auto', help="""Frequencies express in seconds, if do not specified will'
-                                                                           use the best rate found up to now""")
+    arg_parser.add_argument('-r', '--rate', default=6, type=int, help="Frequencies express in hours")
     args = arg_parser.parse_args()
-    if args.broker not in ['localhost', 'aws']:
-        print(f"Not valid broker - {args.broker}")
-        exit()
-    if args.rate == 'auto':  waiting_time = 60 * 60 * 6  # each 6 hours
-    elif type(args.rate) != int: raise ValueError('Required INT')
-    else: waiting_time = args.rate
+
     while True:
         prepare_forecast_to_send(broker=args.broker)
-        time.sleep(waiting_time)
+        time.sleep(args.rate * (60*60))
 
 
 if __name__ == "__main__":
