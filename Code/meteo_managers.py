@@ -46,7 +46,7 @@ class RedisDB:
                 value_db = data[hour][energy]
                 self.redis.setex(name=key_db, time=self.time_expire, value=value_db)
 
-    def set_thermal(self, data: NumpyArray, hours: NumpyArray) -> None:
+    def set_src(self, data: NumpyArray, hours: NumpyArray, src: str) -> None:
         """
         takes the thermal predictions and store them into the db. the prediction
         that are already present will be replaced by the latest, this data also
@@ -55,7 +55,7 @@ class RedisDB:
         if len(data) != len(hours): print(f"Len differ between data and timestamp, {len(data)},{len(hours)}")
         else:
             for iel in range(len(data)):
-                key_db = f"{hours[iel]}:thermal"
+                key_db = f"{hours[iel]}:{src}"
                 value_db = data[iel]
                 self.redis.setex(name=key_db, time=self.time_expire, value=value_db)
 
@@ -210,13 +210,13 @@ class MySqlModels(MySqlDB):
         target = df.loc[:, ['generation']]
         return predictors, target
 
-    def get_training_thermal_data(self) -> Tuple[PandasDataFrame, PandasSeries]:
+    def get_training_hydro_or_thermal_data(self, src: str) -> Tuple[PandasDataFrame, PandasSeries]:
         """
         Retrive the data that are used for the ThermalModel and return them as already processed dataframe.
         """
         query_rest = """SELECT date, SUM(generation) AS Sum_of_rest_GW FROM energy_generation 
-                        where energy_source != 'thermal'  GROUP BY date;"""
-        query_thermal = """ SELECT holiday, total_load, generation, energy_load.`date`,
+                        where energy_source != 'thermal' and energy_source != 'hydro'  GROUP BY date;"""
+        query_thermal = f""" SELECT holiday, total_load, generation, energy_load.`date`,
                             CASE EXTRACT(MONTH FROM energy_load.`date`)
                                 WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
                                 WHEN '5' THEN  'may'	WHEN '6' THEN  'june'	WHEN '7' THEN  'july'	WHEN '8' THEN  'august'
@@ -224,8 +224,7 @@ class MySqlModels(MySqlDB):
                             END as str_month    
                             FROM energy_load
                             INNER JOIN energy_generation
-                            ON energy_load.date = energy_generation.date
-                                                where energy_source = 'thermal';"""
+                            ON energy_load.date = energy_generation.date  where energy_source = '{src}';"""
 
         df_rest = self.query_from_sql_to_pandas(query=query_rest)
         df_thermal = self.query_from_sql_to_pandas(query=query_thermal)
@@ -233,6 +232,7 @@ class MySqlModels(MySqlDB):
         predictors = final[["holiday", "total_load", "Sum_of_rest_GW", "str_month"]]
         target = final.loc[:, ['generation']]
         return predictors, target
+
 
     def get_training_load_data(self) -> Tuple[PandasDataFrame, PandasSeries]:
         """
@@ -569,7 +569,7 @@ def collecting_storico(rate = 'auto', broker: str = 'localhost') -> None:
                 meteos = collector.GetMeteoData().fetching_current_meteo_json()
                 meteos = [MeteoData.current_from_original_dict_to_class(meteo) for meteo in meteos]
                 meteos = shrink_mean([i.from_class_to_dict() for i in meteos])
-                c_mqtt.MqttManager(broker=broker).publish(data=meteos, topic="Energy/Storico/", is_dict=True)
+                c_mqtt.MqttManager(broker=broker).custom_publish(data=meteos.to_dict(), topic="Energy/Storico/")
     elif rate == 'crontab':
         now = datetime.datetime.now()
         print(f"Uploading MySQL database at {now}")
@@ -580,7 +580,7 @@ def collecting_storico(rate = 'auto', broker: str = 'localhost') -> None:
         meteos = [MeteoData.current_from_original_dict_to_class(meteo) for meteo in meteos]
         for obs in meteos: obs.cross_join = modified_cross_join
         meteos = shrink_mean([i.from_class_to_dict() for i in meteos])
-        c_mqtt.MqttManager(broker=broker).publish(data=meteos, topic="Energy/Storico/", is_dict=True)
+        c_mqtt.MqttManager(broker=broker).custom_publish(data=meteos.to_dict(), topic="Energy/Storico/")
 
 def main():
     arg_parser = argparse.ArgumentParser(description="Data Collector Meteo")

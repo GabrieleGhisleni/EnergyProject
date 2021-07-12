@@ -27,7 +27,8 @@ class EnergyModels:
         encoder = (OneHotEncoder(), self.cat_variable)
         pre_process = make_column_transformer(encoder, remainder='passthrough')
         sql_manager = dbs.MySqlModels()
-        if self.source == 'thermal': pred, target = sql_manager.get_training_thermal_data()
+        if self.source == 'thermal': pred, target = sql_manager.get_training_hydro_or_thermal_data('thermal')
+        elif self.source == 'hydro': pred, target = sql_manager.get_training_hydro_or_thermal_data('hydro')
         elif self.source == 'load': pred, target = sql_manager.get_training_load_data()
         else: pred, target = sql_manager.get_training_data(self.source, aug=aug)
         self.pipeline = make_pipeline(pre_process, self.model)
@@ -40,6 +41,22 @@ class EnergyModels:
         Return prediction of the given model.
         """
         return self.pipeline.predict(new_observation.drop(columns=['date']))
+
+    def pre_process(self, predictions: dict, loads: dict) -> PandasDataFrame:
+        """
+        Pre process the data that are passed to the hydro and to the thermal model.
+        """
+        tmp = []
+        holiday_detector = dbs.HolidayDetector()
+        for key in predictions:
+            sum_of_rest, load = 0, 0
+            holiday = holiday_detector.check_holiday_day(key)
+            str_month = dt.datetime.strptime(key, "%Y/%m/%d %H:%M:%S").strftime("%B").lower()
+            for energy in predictions[key]: sum_of_rest += predictions[key][energy]
+            load = loads['generation'][key]
+            tmp.append([holiday, sum_of_rest, load, str_month, key])
+        colnames = {0: 'holiday', 1: 'Sum_of_rest_GW', 2: 'total_load', 3: 'str_month', 4: 'date'}
+        return pd.DataFrame(tmp).rename(columns=colnames)
 
 
 class GeoThermalModel(EnergyModels):
@@ -107,9 +124,9 @@ class HydroModel(EnergyModels):
     Model used for deal the hydro energy source.
     """
     def __init__(self, path: str = '../Models/'):
-        super(HydroModel, self).__init__()
+        self.cat_variable = ["holiday", "str_month"]
         self.path, self.source = f"{path}hydro.mod", 'hydro'
-        self.model = RandomForestRegressor(n_estimators=100, criterion='mse', bootstrap=True)
+        self.model = RandomForestRegressor(n_estimators=30, criterion='mse', bootstrap=True)
         if os.path.exists(self.path): self.pipeline = joblib.load(self.path)
         else: print(f"Do not found an already existing model at {self.path}")
 
@@ -124,22 +141,6 @@ class ThermalModel(EnergyModels):
         self.cat_variable = ["holiday", "str_month"]
         if os.path.exists(self.path): self.pipeline = joblib.load(self.path)
         else: print(f"Do not found an already existing model at {self.path}")
-
-    def pre_process(self, predictions: dict, loads: dict) -> PandasDataFrame:
-        """
-        Pre process the data that are passed to the thermal model.
-        """
-        tmp = []
-        holiday_detector = dbs.HolidayDetector()
-        for key in predictions:
-            sum_of_rest, load = 0, 0
-            holiday = holiday_detector.check_holiday_day(key)
-            str_month = dt.datetime.strptime(key, "%Y/%m/%d %H:%M:%S").strftime("%B").lower()
-            for energy in predictions[key]: sum_of_rest += predictions[key][energy]
-            load = loads['generation'][key]
-            tmp.append([holiday, sum_of_rest, load, str_month, key])
-        colnames = {0: 'holiday', 1: 'Sum_of_rest_GW', 2: 'total_load', 3: 'str_month', 4: 'date'}
-        return pd.DataFrame(tmp).rename(columns=colnames)
 
 
 def train_models(model: str = 'all', path: str = "../Models/", aug: str = 'yes') -> None:
@@ -165,7 +166,6 @@ def process_forecast_mqtt(msg: dict, path: str) -> dict:
     hours_of_prediction = new_obs["date"].unique()
     ts = pd.to_datetime(hours_of_prediction)
     hours_of_prediction = ts.strftime('%Y/%m/%d %H:%M:%S').tolist()
-    hydro_prediction = HydroModel(path=path).custom_predict(new_obs)
     geothermal_prediction = GeoThermalModel(path=path).custom_predict(new_obs)
     wind_prediction = WindModel(path=path).custom_predict(new_obs)
     photovoltaic_prediction = PhotoVoltaicModel(path=path).custom_predict(new_obs)
@@ -173,24 +173,24 @@ def process_forecast_mqtt(msg: dict, path: str) -> dict:
     res = {}
     for ih in range(len(hours_of_prediction)):
         res[hours_of_prediction[ih]] = {
-            'hydro': hydro_prediction[ih],
             'geothermal': geothermal_prediction[ih],
             'wind': wind_prediction[ih],
             'photovoltaic': photovoltaic_prediction[ih],
             'biomass': biomass_prediction[ih], }
     return res
 
-def process_thermal_mqtt(predictions: dict, path: str) -> PandasDataFrame:
+def preprocess_mqtt(predictions: dict, path: str, src: str) -> PandasDataFrame:
     """
     Takes the energy predictions from the mqtt broker, fetch the load
     and perform the prediction of thermal sorce.
     """
-    thermal = ThermalModel(path=path)
+    if src == 'thermal':  model = ThermalModel(path=path)
+    else: model = HydroModel(path=path)
     loads = dbs.RedisDB().get_loads(list(predictions.keys()))
-    thermal_data = thermal.pre_process(predictions, loads)
+    observations = model.pre_process(predictions, loads)
     columns = ["holiday", "total_load", "Sum_of_rest_GW", "str_month", 'date']
-    thermal_prediction = thermal.custom_predict(thermal_data[columns])
-    return pd.DataFrame(thermal_prediction, thermal_data["date"].unique())
+    prediction = model.custom_predict(observations[columns])
+    return pd.DataFrame(prediction, observations["date"].unique())
 
 def process_results(msg: dict) -> Tuple[NumpyArray, NumpyArray]:
     """
@@ -209,7 +209,7 @@ def predict_load(broker: str, path: str = None) -> None:
     load_to_predict, dates = dbs.HolidayDetector().prepare_load_to_predict()
     load_tot, res = LoadModel(path=path).custom_predict(load_to_predict), {}
     for iday in range(len(dates)): res[dates[iday]] = dict(load=load_tot[iday])
-    c_mqtt.MqttManager(broker=broker).publish(data=res, is_dict=False, topic="Energy/Load/")
+    c_mqtt.MqttManager(broker=broker).custom_publish(data=res, topic="Energy/Load/")
 
 
 def main():
@@ -236,4 +236,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+   main()

@@ -87,7 +87,7 @@ def prepare_forecast_to_send(broker: str = 'localhost') -> None:
     predictions_raw = GetMeteoData().fetching_forecast_meteo()
     meteo_forecast = meteo_class.MeteoData.forecast_from_dict_to_class(city=predictions_raw)
     meteos_df = meteo_class.MeteoData.update_forecast_meteo(forecast_meteo=meteo_forecast)
-    c_mqtt.MqttManager(broker).publish(data=meteos_df, is_dict=True, topic="Energy/ForecastMeteo/")
+    c_mqtt.MqttManager(broker).custom_publish(data=meteos_df.to_dict(), topic="Energy/ForecastMeteo/")
 
 def main():
     arg_parser = argparse.ArgumentParser(description="Forecast collector!")

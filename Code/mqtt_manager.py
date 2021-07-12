@@ -15,30 +15,38 @@ class MqttManager:
                 predictions = json.loads(msg.payload.decode())
                 self.mysql.prediction_to_sql(predictions)
                 self.redis.set_load(predictions)
+
             elif msg.topic == "Energy/Storico/":
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 msg = json.loads(msg.payload)
                 meteos = pd.DataFrame.from_dict(msg)
                 self.mysql.save_current_meteo(meteos)
+
             elif msg.topic == "Energy/ForecastMeteo/":
                 print(f"Receving at {self.broker}/{msg.topic}")
                 raw_msg = json.loads(msg.payload)
                 res = process_forecast_mqtt(msg=raw_msg, path=self.path_model)
-                self.publish(data=res, is_dict=False, topic="Energy/PredictionEnergy/")
+                self.custom_publish(data=res, topic="Energy/PredictionEnergy/")
+
             elif msg.topic == "Energy/PredictionEnergy/":
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 predictions = json.loads(msg.payload.decode())
                 self.mysql.prediction_to_sql(predictions)
                 self.redis.set_energy(predictions)
-                res = process_thermal_mqtt(predictions, self.path_model)
-                self.publish(data=res, is_dict=True, topic="Energy/PredictionThermal/")
+                thermal_res = preprocess_mqtt(predictions, path=self.path_model, src='thermal')
+                hydro_res = preprocess_mqtt(predictions, path=self.path_model, src='hydro')
+                self.custom_publish(data=[thermal_res.to_dict(), hydro_res.to_dict()], topic="Energy/PredictionThermal/")
+
             elif msg.topic == "Energy/PredictionThermal/":
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 raw_msg = json.loads(msg.payload)
-                values, dates = process_results(raw_msg)
-                self.mysql.preprocess_thermal_prediction_to_sql(values, dates)
-                self.redis.set_thermal(values, dates)
+                values_thermal, dates_thermal = process_results(raw_msg[0])
+                values_hydro, dates_hydro = process_results(raw_msg[1])
+                self.mysql.preprocess_thermal_prediction_to_sql(values_thermal, dates_hydro)
+                self.redis.set_src(values_thermal, dates_hydro, src='thermal')
+                self.redis.set_src(values_hydro, dates_hydro, src='hydro')
                 print("Done! - Check the data on  http://127.0.0.1:8000/today-prediction/ ")
+                time.sleep(60)
 
         self.broker = broker if broker.lower() == 'localhost' else 'AWS-IoT-Core'
         self.path_model = path_models
@@ -67,10 +75,9 @@ class MqttManager:
         self.retain = True if self.broker == 'localhost' else False
         # remember if use aws remove retain = True or it wont work.
 
-    def publish(self, data, topic: str, is_dict: bool = False) -> None:
+    def custom_publish(self, data, topic: str) -> None:
         print(f"Sending to {self.broker}/{topic} at: {time_()}")
-        if is_dict:  msg = json.dumps(data.to_dict())
-        else: msg = json.dumps(data)
+        msg = json.dumps(data)
         time.sleep(self.sleeps)
         self.mqttc.publish(topic=topic, payload=msg,  qos=1, retain=self.retain)
         time.sleep(self.sleeps)
@@ -121,4 +128,5 @@ def main():
 
 
 if __name__ == "__main__":
+    MqttManager(path_models='../Models/').subscriber('all')
     main()

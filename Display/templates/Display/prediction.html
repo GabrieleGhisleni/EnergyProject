@@ -7,13 +7,25 @@
   {% for p in probability %}
   <div class="col-lg-1 " style="margin: 0px;padding: 1px">
     {% if -2 < p.obs.v  and p.obs.v < 2 %}
-        <p style="background-color:rgba(144,230,150,0.6);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}} </p>
+        {% if p.obs.v > 0 %}
+            <p style="background-color:rgba(144,230,150,0.6);text-align: center;">{{ p.obs.k }} &nbsp +{{p.obs.v}}</p>
+        {% else %}
+            <p style="background-color:rgba(144,230,150,0.6);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
+        {% endif %}
     {% elif -5 < p.obs.v and p.obs.v < 5 %}
-      <p style="background-color:rgb(255,244,79);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
+        {% if p.obs.v > 0 %}
+            <p style="background-color:rgb(255,244,79);text-align: center;">{{ p.obs.k }} &nbsp +{{p.obs.v}}</p>
+        {% else %}
+            <p style="background-color:rgb(255,244,79);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
+        {% endif %}
     {% else %}
-      <p style="background-color:rgba(255,36,0,0.5);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
+        {% if p.obs.v > 0 %}
+            <p style="background-color:rgba(255,36,0,0.5);text-align: center;">{{ p.obs.k }} &nbsp +{{p.obs.v}}</p>
+        {% else %}
+            <p style="background-color:rgba(255,36,0,0.5);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
+        {% endif %}
     {% endif%}
-  </div>  
+  </div>
   {% endfor %}
     </div>
 </div>

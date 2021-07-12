@@ -47,7 +47,7 @@ services:
   load_receiver:
       image: energy:latest
       container_name: load_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker localhost --topic load"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic load"
       depends_on:
         - forecast_meteo_receiver
       env_file:
@@ -56,7 +56,7 @@ services:
   forecast_meteo_receiver:
       image: energy:latest
       container_name:  forecast_meteo_receiver
-      command: bash -c "python -u Code/mqtt_manager.py --broker localhost --topic forecast"
+      command: bash -c "python -u Code/mqtt_manager.py --broker aws --topic forecast"
       depends_on:
         - redis
         - mqtt
@@ -67,7 +67,7 @@ services:
   energy_receiver:
       image: energy:latest
       container_name: energy_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker localhost --topic energy"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic energy"
       depends_on:
         - forecast_meteo_receiver
       env_file:
@@ -76,7 +76,7 @@ services:
   thermal_receiver:
       image: energy:latest
       container_name: thermal_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker localhost --topic thermal"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic thermal"
       depends_on:
         - energy_receiver
       env_file:
@@ -85,7 +85,7 @@ services:
   storico_receiver:
       image: energy:latest
       container_name: storico_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker localhost --topic storico"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic storico"
       env_file:
         - energy.env
       depends_on:
@@ -96,7 +96,7 @@ services:
   forecast_meteo_sender:
       image: energy:latest
       container_name: forecast_meteo_sender
-      command:  bash -c "python Code/meteo_collector.py --broker localhost"
+      command:  bash -c "python Code/meteo_collector.py --broker aws"
       depends_on:
         - forecast_meteo_receiver
       env_file:
@@ -105,7 +105,7 @@ services:
   load_sender:
       image: energy:latest
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --sendload True --broker localhost "
+      command:  bash -c "python Code/models_manager.py --sendload True --broker aws "
       depends_on:
         - load_receiver
       env_file:
@@ -114,7 +114,7 @@ services:
   storico_sender:
       image: energy:latest
       container_name: storico_sender
-      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker localhost --rate crontab "
+      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --rate auto "
       depends_on:
         - storico_receiver
       env_file:
