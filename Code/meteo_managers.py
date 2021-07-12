@@ -9,6 +9,12 @@ import Code.meteo_collector as collector
 import Code.mqtt_manager as c_mqtt
 
 class RedisDB:
+    """
+    class created to handle the files with Redis database.
+    Since we use redis only to display data we set an expiration
+    time on the observation. by default they will be available
+    for 24 hours than they will expire.
+    """
     def __init__(self, hours_expiration: int = 24):
         self.host = os.environ.get('REDIS_HOST')
         self.port = os.getenv('REDIS_PORT', 6379)
@@ -16,6 +22,11 @@ class RedisDB:
         self.redis = redis.StrictRedis(host=self.host, port=self.port, charset="utf-8", decode_responses=True)
 
     def set_load(self, data: dict) -> None:
+        """
+        takes the load predictions and store them into the db. the prediction
+        that are already present will be replaced by the latest, this data also
+        have an expiration time that is defined we the class is initialized.
+        """
         for key in data:
             for value in data[key]:
                 str_hours = str(key).replace("-", "/")
@@ -24,6 +35,11 @@ class RedisDB:
                 self.redis.setex(name=key_db, time=self.time_expire, value=value_db)
 
     def set_energy(self, data: dict) -> None:
+        """
+        takes the renewable energy predictions (thermal excluded)and store them into the db.
+         the prediction that are already present will be replaced by the latest, this data also
+        have an expiration time that is defined we the class is initialized.
+        """
         for hour in data:
             for energy in data[hour]:
                 key_db = f"{hour}:{energy}"
@@ -31,6 +47,11 @@ class RedisDB:
                 self.redis.setex(name=key_db, time=self.time_expire, value=value_db)
 
     def set_thermal(self, data: NumpyArray, hours: NumpyArray) -> None:
+        """
+        takes the thermal predictions and store them into the db. the prediction
+        that are already present will be replaced by the latest, this data also
+        have an expiration time that is defined we the class is initialized.
+        """
         if len(data) != len(hours): print(f"Len differ between data and timestamp, {len(data)},{len(hours)}")
         else:
             for iel in range(len(data)):
@@ -39,6 +60,9 @@ class RedisDB:
                 self.redis.setex(name=key_db, time=self.time_expire, value=value_db)
 
     def get_loads(self, dates: NumpyArray) -> dict:
+        """
+        Retrive the load in the dates that are passed from the Redis db.
+        """
         res = dict(generation={})
         for date in dates:
             value = self.redis.get(f"{date}:load")
@@ -46,10 +70,13 @@ class RedisDB:
             else: return res
         return res
 
-    def fetch_load_predictions(self, dates: NumpyArray) -> dict:
-        return self.get_loads(dates)
-
     def get_data(self, day: str = 'today') -> dict:
+        """
+        takes the all the predictions that will be displayed in the application.
+        We decided that all the predictions must be alligned for the next 48 hours
+        so we used temporary flag to stop the procedure when we miss the prediction
+        of particular source.
+        """
         if day == 'today':  day = dt.datetime.today().strftime("%Y-%m-%d")
         elif day == 'tomorrow': day = (dt.datetime.today()+dt.timedelta(days=1)).strftime("%Y-%m-%d")
         day_long = pd.date_range(day, periods=24, freq='H').tolist()
@@ -77,7 +104,7 @@ class RedisDB:
 
 class MySqlDB:
     """
-    Class used to comunicate with the MySql database
+    Class created to handle the files with MySQL database.
     """
     def __init__(self):
         mysql_host = os.environ.get('MYSQL_HOST')
@@ -87,10 +114,18 @@ class MySqlDB:
         self.engine.connect()
 
     def save_current_meteo(self, meteos: PandasDataFrame) -> None:
+        """
+        takes the new meteo observation that are used to create the historic
+         already processed and update the db.
+        """
         print(f"Updating energy.meteo!")
         meteos.to_sql("energy_meteo", con=self.engine, if_exists='append', index=False)
 
     def prediction_to_sql(self, predictions: dict) -> None:
+        """
+        Takes the energy predictions that arrive from the  Mqtt broker,
+        process it and upload them into the db.
+        """
         predictions = predictions
         df = pd.DataFrame.from_dict(predictions, orient='index')
         df.reset_index(inplace=True, drop=False)
@@ -108,12 +143,16 @@ class MySqlDB:
         """
         Fancy function that given a query it return the result as
         a Pandas DataFrame, if the query return none the data frame
-        will be empty
+        will be empty.
         """
         if dates: return pd.read_sql_query(query, self.engine, parse_dates=[dates])
         else: return pd.read_sql_query(query, self.engine)
 
     def preprocess_thermal_prediction_to_sql(self, pred: NumpyArray, dates: NumpyArray) -> None:
+        """
+         Takes the thermal predictions that arrive from the  Mqtt broker,
+         process it and upload them into the db.
+         """
         df = pd.DataFrame(pred, dates)
         df["date"] = df.index
         df["energy"] = "thermal"
@@ -121,10 +160,21 @@ class MySqlDB:
         df.to_sql("prediction_energy",  con=self.engine, if_exists='append', index=False)
 
 class MySqlModels(MySqlDB):
+    """
+    Child class of MySqlDB, it is used to retrive the data that must be passed
+    as training data to fit the models.
+    """
     def __init__(self):
         super().__init__()
 
     def get_training_data(self, source: str, aug: str = 'yes') -> Tuple[PandasDataFrame, PandasSeries]:
+        """
+        Retrive the data that are used for the HydroModel, PhotovoltaicModel, BiomassModel,
+        GeoThermalModel and WindModel and return them as already processed dataframe.
+        We also allow to slightly augment the data that are returned, this is because we transform
+        the month as a categorical variable and if we try to predict a month that the model never seen
+        it will complain telling that it never saw that particular categorical variable.
+        """
         query = f"""SELECT energy_meteo.clouds, pressure, humidity, temp, rain_1h, snow_1h, wind_deg, wind_speed, energy_generation.generation,
                     CASE EXTRACT(HOUR FROM energy_meteo.date)
                         WHEN '1' THEN  '01 AM'	WHEN '2' THEN  '02 AM' WHEN '3' THEN  '03 AM' WHEN '4' THEN  '04 AM'
@@ -161,6 +211,9 @@ class MySqlModels(MySqlDB):
         return predictors, target
 
     def get_training_thermal_data(self) -> Tuple[PandasDataFrame, PandasSeries]:
+        """
+        Retrive the data that are used for the ThermalModel and return them as already processed dataframe.
+        """
         query_rest = """SELECT date, SUM(generation) AS Sum_of_rest_GW FROM energy_generation 
                         where energy_source != 'thermal'  GROUP BY date;"""
         query_thermal = """ SELECT holiday, total_load, generation, energy_load.`date`,
@@ -182,6 +235,9 @@ class MySqlModels(MySqlDB):
         return predictors, target
 
     def get_training_load_data(self) -> Tuple[PandasDataFrame, PandasSeries]:
+        """
+        Retrive the data that are used for the LoadModel and return them as already processed dataframe.
+        """
         query = f"""SELECT total_load, holiday,date,
                     CASE EXTRACT(MONTH FROM date)
                         WHEN  '1' THEN  'january'	WHEN 2 THEN  'february' WHEN '3' THEN  'march'	WHEN '4' THEN  'april'
@@ -204,11 +260,19 @@ class MySqlModels(MySqlDB):
 
 
 class MySqlTransfer(MySqlDB):
+    """
+    Child class of MySqlDB, it is used to build the transfer service that allow
+    to replicate rapidly the tables that we used and  transfer part of the data
+    that we collect to a new dataset.
+    """
     def __init__(self, path_folder: str = 'Documentation/Files_from_terna'):
         super().__init__()
         self.path_folder = path_folder
 
     def create_tables(self) -> None:
+        """
+        Function that create the tables as we did.
+        """
         print('Creating Tables for the new DB')
         s = " ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;"
         queries = [f"""CREATE TABLE `energy_meteo` (`idenergy_meteo` int NOT NULL AUTO_INCREMENT,`date` datetime NOT NULL,
@@ -233,6 +297,10 @@ class MySqlTransfer(MySqlDB):
                 else: print(f" {query.split(' ')[2]} Failed because of {e}")
 
     def generation_from_terna(self, external_path: List[str] = None) -> None:
+        """
+        Takes the files inside Documentation, process them and upload the data into
+        the db. we also allow to pass an external file that can be added to the list.
+        """
         paths = f"{self.path_folder}/generation/"
         print(f"Updating Generation to the new DB")
         paths = [paths + i for i in os.listdir(paths)]
@@ -264,9 +332,8 @@ class MySqlTransfer(MySqlDB):
 
     def load_from_terna(self, external_path: List[str] = None) -> None:
         """
-        Function that given a list of .xlsx file obtained from the Terna Download Center
-        it preprocess the data, add the socio-economic predictor refered to the holidays
-        and store it into our local sql database. this is a process to made just once.
+        Takes the files inside Documentation, process them and upload the data into
+        the db. we also allow to pass an external file that can be added to the list.
         """
         paths = f"{self.path_folder}/load/"
         print(f"Updating Load to the new DB")
@@ -298,18 +365,19 @@ class MySqlTransfer(MySqlDB):
             else: print(f"{path} is not a valid load path!")
         print(f"Finished updating Load")
 
-    def save_meteo_to_db_from_json(self, meteos: List[MeteoData]) -> None:
-        res = []
+    def from_json_to_db(self) -> None:
+        """
+        Takes the storico in json format that we prepared, it process
+        those data and add it into the new db.
+        """
+        path = f"{self.path_folder}/storico_meteo_r.json"
+        print(f"Updating MeteoData to the new DB")
+        meteos,res = JsonManagerCurrentMeteo(path).load_unprocess(),[]
         for city in meteos: res.append(city.from_class_to_dict())
         res = shrink_mean(res)
         res.to_sql("energy_meteo", con=self.engine, if_exists='append', index=False)
         print(f"Finished updating MeteoData: {len(res)}")
 
-    def from_json_to_db(self) -> None:
-        path = f"{self.path_folder}/storico_meteo_r.json"
-        print(f"Updating MeteoData to the new DB")
-        meteo = JsonManagerCurrentMeteo(path).load_unprocess()
-        self.save_meteo_to_db_from_json(meteos=meteo)
 
 
 class JsonManagerCurrentMeteo:
@@ -321,18 +389,27 @@ class JsonManagerCurrentMeteo:
         self.path = path
 
     def load_unprocess(self) -> List[MeteoData]:
+        """
+        Load from the json when none of the data have been pre-processed.
+        """
         if os.path.exists(self.path):
             with open(self.path, "r") as file: storico = json.load(file)
             return [MeteoData.current_from_original_dict_to_class(obj) for obj in storico]
         else: print(f"Do not find the right path!")
 
     def load(self) -> List[MeteoData]:
+        """
+        Load from the json when the data have been pre-processed.
+        """
         if os.path.exists(self.path):
             with open(self.path, "r") as file:  storico = json.load(file)
             return [MeteoData.current_from_preprocess_dict_to_class(obj) for obj in storico]
         else: print(f"Do not find the right path!")
 
     def first_update(self, current_meteo: List[MeteoData]) -> None:
+        """
+        Create the json file and update it for the first time!
+        """
         print("File not found, created 'storico_meteo.json' and first update")
         obs = [MeteoData.from_class_to_dict(obj) for obj in current_meteo]
         with open("storico_meteo.json", "w") as file:
@@ -340,6 +417,9 @@ class JsonManagerCurrentMeteo:
             self.path = "storico_meteo.json"
 
     def update(self, current_meteo: List[MeteoData]) -> None:
+        """
+        Update the Storico.json.
+        """
         if os.path.exists(self.path):
             storico = self.load()
             update = storico + current_meteo
@@ -348,11 +428,18 @@ class JsonManagerCurrentMeteo:
 
 
 class HolidayDetector:
+    """
+    Class created to deal the italian holiday since they are very important
+    for predicting the thermal and the load on the net.
+    """
     def __init__(self):
         self.it_holiday = {"01-01", "06-01", "25-04", "01-05", "02-06",
                            "15-08", "01-10", "08-12", "25-12", "26-12"}
 
     def easter_day(self, year: int) -> str:
+        """
+        Given a year it return the day of the Easter.
+        """
         special_years = ['1954', '1981', '2049', '2076']
         specyr_sub = 7
         a, b, c = year % 19, year % 4, year % 7
@@ -368,6 +455,10 @@ class HolidayDetector:
         else: return "{}-03".format(dateofeaster)
 
     def easter_plus_one(self, day: str) -> str:
+        """
+        Given the day of Easter which is on sunday it return
+        the Easter Monday.
+        """
         if day.startswith("31"): return "01-04"
         else:
             _day = (int(day.split("-")[0]) + 1)
@@ -428,6 +519,10 @@ class HolidayDetector:
         return holiday_today
 
     def prepare_load_to_predict(self, days: int = 3) -> Tuple[PandasDataFrame, PandasSeries]:
+        """
+        Since the load is enterely based on the holiday, the month and the hour we can built
+        those data, this function do that.
+        """
         now = dt.datetime.now().strftime("%H")
         today = dt.datetime.now().strftime("%Y/%m/%d")
         month = dt.datetime.now().strftime("%B").lower()

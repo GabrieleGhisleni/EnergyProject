@@ -166,7 +166,7 @@ services:
   load_sender:
       image: energy:latest
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --sendload True --broker localhost --path Models/"
+      command:  bash -c "python Code/models_manager.py --sendload True --broker aws --path Models/"
       depends_on:
         - load_receiver
       env_file:
@@ -175,7 +175,7 @@ services:
   storico_sender:
       image: energy:latest
       container_name: storico_sender
-      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker localhost --rate crontab "
+      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --rate crontab "
       depends_on:
         - storico_receiver
       env_file:

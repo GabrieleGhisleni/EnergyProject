@@ -4,6 +4,9 @@ import Code.meteo_class as meteo_class
 import Code.mqtt_manager as c_mqtt
 
 class GetMeteoData:
+    """
+    class created to handle the raw data from the OpenWeather Map API.
+    """
     def __init__(self):
         self.key = os.environ.get('OPEN_WEATHER_APPID')
         self.it_regions = {'Bari': {'lat': 41.1177, 'lon': 16.8512},
@@ -91,12 +94,10 @@ def main():
     arg_parser.add_argument("-b", "--broker", required=True, type=str,  help="MQTT Broker", choices=['localhost', 'aws'])
     arg_parser.add_argument('-r', '--rate', default='auto', help="""Frequencies express in seconds, if do not specified will'
                                                                            use the best rate found up to now""")
-
     args = arg_parser.parse_args()
     if args.broker not in ['localhost', 'aws']:
         print(f"Not valid broker - {args.broker}")
         exit()
-
     if args.rate == 'auto':  waiting_time = 60 * 60 * 6  # each 6 hours
     elif type(args.rate) != int: raise ValueError('Required INT')
     else: waiting_time = args.rate

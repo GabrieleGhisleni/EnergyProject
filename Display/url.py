@@ -7,7 +7,7 @@ urlpatterns = [
     path('today-prediction/', views.today_pred, name= 'today'),
     path('tomorrow-prediction/', views.tomorrow_pred, name='tomorrow'),
     path('', views.home, name='home'),
-    path('about/', views.about, name='about'),
+    path('infographic/', views.infographic, name='infographic'),
     path('register/', views.register, name="register"),
     path('api-auth/', views.Energy_Full_Rest_API, name='api') #include('rest_framework.urls', namespace='rest_framework'))
 ]

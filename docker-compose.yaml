@@ -105,7 +105,7 @@ services:
   load_sender:
       image: energy:latest
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --sendload True --broker localhost --path Models/"
+      command:  bash -c "python Code/models_manager.py --sendload True --broker localhost "
       depends_on:
         - load_receiver
       env_file:
