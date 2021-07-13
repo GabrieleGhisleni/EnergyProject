@@ -48,5 +48,6 @@ tqdm==4.60.0
 typing-extensions==3.10.0.0
 tzlocal==2.1
 urllib3==1.26.4
+Jinja2==3.0.1
 whitenoise==5.2.0
 xlrd==2.0.1
