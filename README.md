@@ -391,7 +391,7 @@ service for mosquitto in the docker-compose. To complete this step you should ju
 as:
 
 ```
-  command:  bash -c "python Code/meteo_collector.py --localhost aws"
+  command:  bash -c "python Code/meteo_collector.py --broker localhost"
 ```
 
 **Be sure that all the services refer to the same broker.**
