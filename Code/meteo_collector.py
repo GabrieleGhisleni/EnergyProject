@@ -4,6 +4,9 @@ import Code.meteo_class as meteo_class
 import Code.mqtt_manager as c_mqtt
 
 class GetMeteoData:
+    """
+    class created to handle the raw data from the OpenWeather Map API.
+    """
     def __init__(self):
         self.key = os.environ.get('OPEN_WEATHER_APPID')
         self.it_regions = {'Bari': {'lat': 41.1177, 'lon': 16.8512},
@@ -84,25 +87,17 @@ def prepare_forecast_to_send(broker: str = 'localhost') -> None:
     predictions_raw = GetMeteoData().fetching_forecast_meteo()
     meteo_forecast = meteo_class.MeteoData.forecast_from_dict_to_class(city=predictions_raw)
     meteos_df = meteo_class.MeteoData.update_forecast_meteo(forecast_meteo=meteo_forecast)
-    c_mqtt.MqttManager(broker).publish(data=meteos_df, is_dict=True, topic="Energy/ForecastMeteo/")
+    c_mqtt.MqttManager(broker).custom_publish(data=meteos_df.to_dict(), topic="Energy/ForecastMeteo/")
 
 def main():
     arg_parser = argparse.ArgumentParser(description="Forecast collector!")
     arg_parser.add_argument("-b", "--broker", required=True, type=str,  help="MQTT Broker", choices=['localhost', 'aws'])
-    arg_parser.add_argument('-r', '--rate', default='auto', help="""Frequencies express in seconds, if do not specified will'
-                                                                           use the best rate found up to now""")
-
+    arg_parser.add_argument('-r', '--rate', default=6, type=int, help="Frequencies express in hours")
     args = arg_parser.parse_args()
-    if args.broker not in ['localhost', 'aws']:
-        print(f"Not valid broker - {args.broker}")
-        exit()
 
-    if args.rate == 'auto':  waiting_time = 60 * 60 * 6  # each 6 hours
-    elif type(args.rate) != int: raise ValueError('Required INT')
-    else: waiting_time = args.rate
     while True:
         prepare_forecast_to_send(broker=args.broker)
-        time.sleep(waiting_time)
+        time.sleep(args.rate * (60*60))
 
 
 if __name__ == "__main__":

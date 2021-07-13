@@ -9,6 +9,8 @@ import datetime as dt
 from plotly.offline import plot
 import plotly.graph_objs as go
 import Code.meteo_managers as dbs
+from plotly.subplots import make_subplots
+import pandas as pd
 
 def make_plot(dates, load, thermal, wind, hydro, photovoltaic, geothermal, biomass):
     fig = go.Figure()
@@ -59,7 +61,18 @@ def make_empty_plot():
 def difference(load, thermal, wind, hydro, photovoltaic, geothermal, biomass):
     summation = np.array(wind) + np.array(thermal) + np.array(hydro) + np.array(photovoltaic) + np.array(geothermal) + np.array(biomass)
     differencess = (np.array(load) - summation).tolist()
-    return [round(i, 2) for i in differencess]
+    rounded = [round(i, 2) for i in differencess]
+    hours = [iel for iel in range(23, 23-len(rounded),-1)]
+    hours.reverse()
+    res, tmp =[], {}
+    for value in range(len(rounded)):
+        tmp = {}
+        tmp["obs"] = {}
+        tmp["obs"]["v"] = rounded[value]
+        tmp["obs"]["k"] = f"{hours[value]}h" if hours[value]>9 else f"0{hours[value]}h"
+        res.append(tmp)
+    return res
+
 
 def get_data(day='today'):
     redis = dbs.RedisDB()
@@ -186,3 +199,102 @@ def register(request):
             return redirect("today")
     else:  form = UserRegistrationForm()
     return render(request, 'Display/newsletter.html', {"form": form})
+
+
+def renewable_plot(db):
+    df = db.query_from_sql_to_pandas(query="select energy_source,date,generation from energy_generation")
+    df['month'] = df.date.dt.strftime("%B")
+    df['hour'] = df.date.dt.strftime("%H").astype('int')
+    res = []
+    for energy in np.unique(df.energy_source):
+        tmp = df.loc[df.energy_source == energy, :].groupby('hour').mean().reset_index()
+        tmp['energy'] = energy
+        res.append(tmp)
+    if res:
+        res = pd.concat(res)
+        fig = make_subplots(rows=1, cols=2, print_grid=False,x_title='Hours of the day',
+                    y_title='Generation in GWH', subplot_titles=['Thermal and Hydro<br>', 'Others Renewable Energies<br>'], shared_yaxes=True)
+        for energy in np.unique(res.energy):
+            if energy == 'Hydro' or energy == 'Thermal':
+                fig.add_trace(go.Scatter(x=res.loc[res.energy == energy].hour, y=res.loc[res.energy == energy].generation,
+                                         name=energy, mode='lines'), row=1, col=1)
+            else: fig.add_trace(go.Scatter(x=res.loc[res.energy == energy].hour, y=res.loc[res.energy == energy].generation,
+                                           name=energy, mode='lines'),row=1, col=2)
+        margin_dict = dict(l=75, r=75, b=75, t=50, pad=10)
+        legend_dict = dict(orientation="v", yanchor="middle", y=0.85, xanchor="right", x=1)
+        fig.update_layout(height=600, width=1100, template='gridon', paper_bgcolor='rgb(245,245,245)',
+                          margin=margin_dict, legend=legend_dict)
+        fig.update_annotations(font_size=20, font_family='italic')
+        return plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
+    else: return make_empty_plot()
+
+
+def load_plot(db):
+    df = db.get_training_load_data(whole=True)
+    df.rename(columns={'str_month':'month'}, inplace=True)
+    summer = ['june', 'july', 'august']
+    winter = ['decembter', 'january', 'february']
+    df_summer = df.loc[df.month.isin(summer), :]
+    df_winter = df.loc[df.month.isin(winter), :]
+    if not df_winter.empty:
+        tmp_winter = []
+        for h in np.unique(df_winter.holiday):
+            m = df_winter.loc[df_winter.holiday == h, :].groupby('str_hour').mean().reset_index()
+            m['holiday'] = h
+            tmp_winter.append(m)
+        final_winter = pd.concat(tmp_winter)
+        final_winter.str_hour = final_winter.str_hour.astype('int')
+        final_winter.sort_values('str_hour', inplace=True)
+        tmp_summer = []
+        for h in np.unique(df_summer.holiday):
+            m = df_summer.loc[df_summer.holiday == h, :].groupby('str_hour').mean().reset_index()
+            m['holiday'] = h
+            tmp_summer.append(m)
+        final_summer = pd.concat(tmp_summer)
+        final_summer.str_hour = final_summer.str_hour.astype('int')
+        final_summer.sort_values('str_hour', inplace=True)
+        titles = ['Winter weeks', 'Winter Saturday', 'Winter Sunday', 'Winter Holiday',
+                  'Summer weeks', 'Summer Saturday', 'Summer Sunday', 'Summer Holiday']
+        fig = make_subplots(rows=2, cols=4, print_grid=False, x_title='Hours of the day',
+                    y_title='Load in GWH', subplot_titles=titles, shared_yaxes=True, vertical_spacing=0.1)
+        for h in np.unique(final_winter.holiday):
+            if h == 'no':
+                fig.add_trace(go.Scatter(x=final_winter.loc[final_winter.holiday == h].str_hour,
+                                         y=final_winter.loc[final_winter.holiday == h].total_load, mode='lines'), row=1, col=1)
+            elif h == 'saturday':
+                fig.add_trace(go.Scatter(x=final_winter.loc[final_winter.holiday == h].str_hour,
+                                         y=final_winter.loc[final_winter.holiday == h].total_load, mode='lines'), row=1, col=2)
+            elif h == 'sunday':
+                fig.add_trace(go.Scatter(x=final_winter.loc[final_winter.holiday == h].str_hour,
+                                         y=final_winter.loc[final_winter.holiday == h].total_load, mode='lines'), row=1, col=3)
+            elif h == 'holiday':
+                fig.add_trace(go.Scatter(x=final_winter.loc[final_winter.holiday == h].str_hour,
+                                         y=final_winter.loc[final_winter.holiday == h].total_load, mode='lines'), row=1, col=4)
+
+        for h in np.unique(final_summer.holiday):
+            if h == 'no':
+                fig.add_trace(go.Scatter(x=final_summer.loc[final_summer.holiday == h].str_hour,
+                                         y=final_summer.loc[final_summer.holiday == h].total_load, mode='lines'), row=2, col=1)
+            elif h == 'saturday':
+                fig.add_trace(go.Scatter(x=final_summer.loc[final_summer.holiday == h].str_hour,
+                                         y=final_summer.loc[final_summer.holiday == h].total_load, mode='lines'), row=2, col=2)
+            elif h == 'sunday':
+                fig.add_trace(go.Scatter(x=final_summer.loc[final_summer.holiday == h].str_hour,
+                                         y=final_summer.loc[final_summer.holiday == h].total_load, mode='lines'), row=2, col=3)
+            elif h == 'holiday':
+                fig.add_trace(go.Scatter(x=final_summer.loc[final_summer.holiday == h].str_hour,
+                                         y=final_summer.loc[final_summer.holiday == h].total_load, mode='lines'), row=2, col=4)
+
+        margin_dict = dict(l=75, r=75, b=75, t=75, pad=10)
+        fig.update_layout(height=1000, width=1400, template='gridon', paper_bgcolor='rgb(245,245,245)',
+                          margin=margin_dict, showlegend=False)
+        fig.update_annotations(font_size=20, font_family='italic')
+        return plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
+    else: return make_empty_plot()
+
+def infographic(requests):
+    db = dbs.MySqlModels()
+    plot_renewable = renewable_plot(db)
+    plot_load = load_plot(db)
+    context = dict(plot_div=plot_renewable, plot_load=plot_load)
+    return render(requests, "Display/infos.html", context)
