@@ -44,7 +44,8 @@ We suggest to create a fresh directory where the following structure should be r
 |-- docker-compose.yml
 |-- energy.env
 |-- Volumes
-|   |-- mysql 
+|   |-- mysql
+|   |-- redis 
 |   |-- mosquitto
 |   |   |-- mosquitto.conf
 ```
@@ -71,8 +72,10 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+    volumes:
+    - ./Volumes/redis:/data
     ports:
-    - '6379:6379'
+    - "6379:6379"
 
   mqtt:
     image: eclipse-mosquitto
@@ -90,7 +93,7 @@ services:
     env_file:
       - energy.env
     ports:
-    - 3307:3306
+    - "3307:3306"
 
   web_app:
     image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
