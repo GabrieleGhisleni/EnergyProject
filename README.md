@@ -33,7 +33,7 @@ It is required a basic understanding of how to use [docker].
 In any case, the first step would be pulling the [Docker Image] attached to this github page, running the following command:
 
 ```sh
-docker pull git+{bho}
+docker pull docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
 ```
 
 We suggest to create a fresh directory where the following structure should be replicated:
@@ -93,7 +93,7 @@ services:
     - 3307:3306
 
   web_app:
-    image: energy:latest
+    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
     tty: false
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     container_name: energyDjango
@@ -105,7 +105,7 @@ services:
     - "8000:8000"
 
   load_receiver:
-      image: energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: load_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic load"
       depends_on:
@@ -114,7 +114,7 @@ services:
         - energy.env
 
   forecast_meteo_receiver:
-      image: energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name:  forecast_meteo_receiver
       command: bash -c "python -u Code/mqtt_manager.py --broker aws --topic forecast"
       depends_on:
@@ -125,7 +125,7 @@ services:
         - energy.env
 
   energy_receiver:
-      image: energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: energy_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic energy"
       depends_on:
@@ -134,7 +134,7 @@ services:
         - energy.env
 
   thermal_receiver:
-      image: energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: thermal_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic thermal"
       depends_on:
@@ -143,7 +143,7 @@ services:
         - energy.env
 
   storico_receiver:
-      image: energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: storico_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic storico"
       env_file:
@@ -154,7 +154,7 @@ services:
         - mysql
 
   forecast_meteo_sender:
-      image: energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: forecast_meteo_sender
       command:  bash -c "python Code/meteo_collector.py --broker aws"
       depends_on:
@@ -163,18 +163,18 @@ services:
         - energy.env
 
   load_sender:
-      image: energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --sendload True --broker localhost --path Models/"
+      command:  bash -c "python Code/models_manager.py --sendload True --broker aws"
       depends_on:
         - load_receiver
       env_file:
         - energy.env
 
   storico_sender:
-      image: energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: storico_sender
-      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker localhost --rate crontab "
+      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws"
       depends_on:
         - storico_receiver
       env_file:
@@ -211,8 +211,18 @@ PYTHONPATH=/src/
 ```
 
 Now the application can be run for the very first time! Open the CLI of your PC and go to the folder that was just 
-created. Once you are there, type the following command:
+created. Once you are there, type the on of following command:
 
+- If you do not want to see many logs messages (from mysql, mqtt, redis and django images):
+
+C:\..\your_fresh_directory > `docker-compose up web_app -d   
+&& docker-compose up mysql -d 
+&& docker-compose up mqtt -d 
+&& docker-compose up redis -d
+&& docker-compose up
+`
+
+- Otherwhise:
 C:\..\your_fresh_directory> `docker-compose up`
 
 Follow the printing statement and click on the hyperlink displayed at the end!
@@ -240,23 +250,58 @@ arguments that can be passed to the script through the docker-compose.
 ```
  -b, --broker, default='localhost', choices=['localhost', 'aws']
  -t, --topic, required=True, choices=['forecast', 'energy', 'thermal', 'load', 'all', 'storico']
+ -r, --retain, default=False, type=bool
+ -ex, --expiration_time, default=24, type=int
 ```
-2. Services based on __*meteo_managers.py*__
+
+- Retain is available only when works with localhost!
+- Expiration time refers to the expiration time that the predictions will be available Redis.
+- Broker is the mqtt broker to connect.
+- Topic refers to the particular topic to subscribe.
+
+2. Services based on __*models_manager.py*__
+```
+    -l, --sendload, default=True, type=bool, 
+    -b, --broker, default='localhost', choices=['localhost', 'aws'])
+    -r, --rate, default='auto
+    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
+    -a, --aug, default='yes'
+```
+
+- Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
+- Broker is the mqtt broker to connect
+- Rate is the frequency of the Sendload expressed in hours
+
+- Model_to_train is an argument that can be used in case you want to train again the models 
+  (make you that you collect some data before)
+- Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
+(in particual when the month is ending).
+  
+3. Services based on __*meteo_managers.py*__
 ```
     -c, --create_tables, default=False, type=bool 
     -p, --partially_populate, default=False, type=bool
-    -el, --external_load_path, default=[], type=list[str]
-    -eg, --external_generation_path, default=[], type=list[str]
-    
-    -r, --rate, default='auto', choices=['crontab', 'auto']
+    -el, --external_load_path, default=None, type=str
+    -eg, --external_generation_path, default=None, type=str
+    -s, --storico, default=True, type=bool
+    -r, --rate, default=12, type=int
     -b, --broker, default='localhost', choices=['localhost', 'aws']
 ```
 We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
-as they need to be, transferring there a small amount of the data we collected. --create_tables and 
---partially_populate belong to the service used to transfer the data into your database.
+as they need to be, transferring there a small amount of the data we collected.
+
+- Create_tables and Partially_populate populate belong to the service that is used to transfer the data into your database.
 
 We also allow passing new files that can be downloaded from [Terna Download Center].  
-It would be necessary to use --external_load_path and --external_generation_path as a list of strings where you stored these files.
+
+- External_load_path and External_generation_path are path that points to additional files. 
+  
+Make sure to follow the procedure indicate below if you want to add files. 
+if there are more than one just pass a string and use comma to separate files as:
+
+`
+ --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
+`
 
 There are two files that can be updated:
 1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
@@ -265,33 +310,19 @@ There are two files that can be updated:
          *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
    2.  `Generation -> Renewable Generation`, then select only *Biomass*.
    
---rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
+- Rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
 is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
 give particular benefits.
-
-3. Services based on __*models_manager.py*__
-```
-    -l, --sendload, default=True, type=bool, 
-    -b, --broker, default='localhost', choices=['localhost', 'aws'])
-    -r, --rate, default='auto
-    
-    -a, --aug, default='yes'
-    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
-
-```
-
-The present script is mainly used to send predictions of the Load (for the next 2 days) to the mqtt broker that can be 
-chosen with the --broker argument. As before, you can set a customized rate for sending the data. 
-
-Moreover, two arguments can be used to retrain the models (remember to collect some data first). 
-An argument --aug is used to introduce observations of the next month to avoid problems 
-(in particular when the month is ending).
+  
+- Storico is the the arguments that indicate the procedure of starting collecting data.
 
 4. Services based on __*meteo_collector.py*__
 ```
     -b, --broker, required=True, type=str, choices=['localhost', 'aws'])
-    -r, --rate, default='auto'
+    -r, --rate, default=6, type=int
 ```
+- Broker mqtt to subscribe
+- Rate is the frequencies of sending data expressed in hours.
 
 ## Change the services
 
@@ -362,6 +393,8 @@ as:
 ```
   command:  bash -c "python Code/meteo_collector.py --localhost aws"
 ```
+
+**Be sure that all the services refer to the same broker.**
 
 > 3. OpenWeather Secret API Keys
 
