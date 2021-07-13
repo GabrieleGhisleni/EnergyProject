@@ -36,12 +36,12 @@
     <div class="row" style="margin-top: 20px;text-align: center;align-content: center;justify-content: center" >
         {{ plot_div }}
     </div>
-<!--    <div class="row" style="margin-top: 20px;" >-->
-<!--    <div class="col-md-4 col-lg-4">-->
-<!--            {{ plot_div }}-->
-<!--    </div>-->
-<!--    <div class="col-md-4 col-lg-6">-->
-<!--      {{ load }}-->
+    <div class="container">
+        {{ load }}
+    </div>
+      <h2 style="font-family: 'Poppins', sans-serif;text-align: left;margin:50px;"><strong>Tabular Form of {{day}}'s Prediction {{ day_s }}</strong></h2>
+    <div class="container" style="align-content: flex-start">
+        {{ table }}
     </div>
   </class>
 {% endautoescape %}

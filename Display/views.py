@@ -144,6 +144,20 @@ def make_load_panel_plot(load_df):
     fig.update_annotations(font_size=30, font_family='italic')
     return plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
 
+def getTableHTML(df):
+    df = df[['dates', 'geothermal', 'wind', 'biomass', 'photovoltaic', 'hydro', 'thermal', 'load']]
+    df.columns = [i.capitalize() for i in df.columns]
+    styles = [
+        dict(selector=" ",props=[("margin", "5"), ("font-family", '"Helvetica", "Arial", sans-serif'), ("background-color", "lightblue")]),
+        dict(selector="tbody tr:nth-child(even)", props=[("background-color", "#fff")]),
+        dict(selector="tbody tr:nth-child(odd)",props=[("background-color", "rgb(240, 255, 255)")]),
+        dict(selector="td", props=[("padding-right", "50px"),("padding-left", "35px"), ('border', '10px'), ("width", "150px")]),
+        dict(selector="th", props=[("font-size", "25px"), ("text-align", "center")]),
+        dict(selector=".row_heading", props=[('display','none')]),
+        dict(selector='.col0', props=[('min-width', '300px')]),
+        dict(selector='.col1', props=[('min-width', '35px')]),
+        dict(selector='.blank.level0', props= [('display', 'none')])]
+    return (df.style.set_table_styles(styles).set_precision(2).render())
 
 def today_pred(requests):
     data = get_data('today')
@@ -153,7 +167,7 @@ def today_pred(requests):
                     photovoltaic=data["photovoltaic"], geothermal=data["geothermal"], biomass=data["biomass"])
         differences = difference(data['load'], data["thermal"], data["wind"], data["hydro"], data["photovoltaic"], data["geothermal"], data["biomass"])
         today_s = dt.datetime.now().strftime("%B, %d-%Y")
-        context = dict(plot_div=fig, day='Today', probability=differences, day_s=today_s)
+        context = dict(plot_div=fig, day='Today', probability=differences, day_s=today_s,table=getTableHTML(pd.DataFrame(data)))
         return render(requests, "Display/prediction.html", context)
 
 def tomorrow_pred(requests):
@@ -164,7 +178,7 @@ def tomorrow_pred(requests):
                         photovoltaic=data["photovoltaic"], geothermal=data["geothermal"], biomass=data["biomass"])
         differences = difference(data['load'], data["thermal"], data["wind"], data["hydro"], data["photovoltaic"], data["geothermal"], data["biomass"])
         tomorrow_s = (dt.datetime.now()+dt.timedelta(days=1)).strftime("%B, %d-%Y")
-        context = dict(plot_div=fig, day='Tomorrow', probability=differences, day_s=tomorrow_s)
+        context = dict(plot_div=fig, day='Tomorrow', probability=differences, day_s=tomorrow_s,table=getTableHTML(pd.DataFrame(data)))
         return render(requests, "Display/prediction.html", context)
 
 def home(requests):
@@ -175,7 +189,7 @@ def register(request):
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Account created, from now on you will receive an email each time the prediction are update!")
+            messages.success(request, "Account created, from now on you will receive our updates!")
             return redirect("today")
     else:  form = UserRegistrationForm()
     return render(request, 'Display/newsletter.html', {"form": form})

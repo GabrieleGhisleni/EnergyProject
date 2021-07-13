@@ -40,7 +40,7 @@ We suggest to create a fresh directory where the following structure should be r
 
 ```
 ## Directory's tree
-/newfolder/
+FreshFolder
 |-- docker-compose.yml
 |-- energy.env
 |-- Volumes
@@ -62,6 +62,7 @@ In particular:
 allow_anonymous true
 listener 1883
 ```
+
 
 To run the code with our services it is necessary to now create the [docker-compose.yml] as follows:
 
