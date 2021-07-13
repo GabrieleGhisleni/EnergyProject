@@ -8,35 +8,35 @@
 [Fork](https://github.com/GabrieleGhisleni/EnergyProject/fork)
 
 The goal is to predict the quantity of energy from renewable sources that can be produced in an hour and in a day in 
-Italy. All the code in this [Git repository], where you can also find the [Docker Image].
+Italy. All the code is available in this [Git repository], where you can also find the [Docker Image].
 
 ### Table of Contents
 
 | Argument | Description |
 | --------------|---------------|
-| [How to run the application](#how-to-run-the-application) | Description of how run the application using our dbs and brokers.|
-| [Arguments available](#arguments-available) | Brief description of the argument that can passed to the docker-compose.yml|
-| [Change the services](#change-the-services) | Guide to change from our dbs and brokers to yours.|  
+| [How to run the application](#how-to-run-the-application) | Description of how to run the application using our DBs and brokers.|
+| [Arguments available](#arguments-available) | Brief description of the arguments that can be passed to the docker-compose.yml|
+| [Change the services](#change-the-services) | Guide for switching from our DBs and brokers to yours.|  
 
 
-Where in the first paragraph we will show how to run the application for the very first time using our dbs and our 
-mosquitto broker, in the second paragraph we will show the arguments that can be passed to the scripts and lastly we 
-will explain how to detach our services and replace those with yours (in particular your mysql db). 
+While in the first paragraph we will show how to run the application for the very first time using our DBs and our 
+mosquitto broker, in the second one we will illustrate the arguments that can be passed to the scripts. Lastly, we 
+will explain how to detach our services and replace them with yours (in particular your mysql DB). 
 
 ## How to run the application
 
-> First we will show how to run the application using our services as our Amazon RDS MySql database and our Mosquitto 
-broker that are both hosted on Amazon AWS.  
-**Then we will exaplin how to change those services and replace them with yours.**
+> First, we will show how to run the application using the services we defined, such as our Amazon RDS MySql database and our Mosquitto 
+broker, which are both hosted on Amazon AWS.  
+**Then we will explain how to change those services and replace them with yours.**
 
-We except that you are able to use [docker], at least in its basic usage. So starting from that you have to pull 
-the [Docker Image] that are attached on this github page running the following command:
+It is required a basic understanding of how to use [docker]. 
+In any case, the first step would be pulling the [Docker Image] attached to this github page, running the following command:
 
 ```sh
 docker pull git+{bho}
 ```
 
-We suggets to create a fresh directory where you have to replicate the following structures. 
+We suggest to create a fresh directory where the following structure should be replicated:
 
 ```
 ## Directory's tree
@@ -48,13 +48,12 @@ We suggets to create a fresh directory where you have to replicate the following
 |   |-- mosquitto
 |   |   |-- mosquitto.conf
 ```
-To be more clear:
+In particular:
  1. Create an empty folder.
- 2. Create inside this folder a docker-compose.yml and energy.env files.
- 3. Create a sub-directory called Volumes in which there are two more sub-directory: 
-    mosquitto and mysql
- 4. Keep the mysql folder empty while in the mosquitto folder create a file called 
-    mosquitto.conf and paste inside this file the following lines (you can also find the 
+ 2. Create, inside this folder, a docker-compose.yml and an energy.env file.
+ 3. Create a sub-directory called "Volumes" with two more sub-directory: 
+    "mosquitto" and "mysql".
+ 4. Keep the mysql folder empty while creating a file called mosquitto.conf in the mosquitto folder. Then paste the following lines inside this mosquitto.conf file (you can also find the 
     [mosquitto.conf] here):
     
 ```sh
@@ -63,7 +62,7 @@ allow_anonymous true
 listener 1883
 ```
 
-As we said we guide you first running the code with ours services so now create the [docker-compose.yml] as follows:
+To run the code with our services it is necessary to now create the [docker-compose.yml] as follows:
 
 ```sh
 ## docker-compose.yml
@@ -166,7 +165,7 @@ services:
   load_sender:
       image: energy:latest
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --sendload True --broker aws --path Models/"
+      command:  bash -c "python Code/models_manager.py --sendload True --broker localhost --path Models/"
       depends_on:
         - load_receiver
       env_file:
@@ -175,15 +174,15 @@ services:
   storico_sender:
       image: energy:latest
       container_name: storico_sender
-      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --rate crontab "
+      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker localhost --rate crontab "
       depends_on:
         - storico_receiver
       env_file:
         - energy.env
 ```
-Last step is to create the energy.env file which containes all the password and the enviromental variable that are 
+The last step is to create the energy.env file containing all passwords and environmental variables that are 
 passed to the code.  
-After this first running we will change those according to your services (so to use your databases and so on).
+As mentioned, it is always possible to change passwords and variables according to your services (e.g. to use your own databases).
 
 ```sh
 ## energy.conf
@@ -211,129 +210,96 @@ SECRET_KEY_ENERGY="django-insecure-3@f4136pszq%m3ljx=1!$8h)$71(496%i=_g-xb2+mhyk
 PYTHONPATH=/src/
 ```
 
-Now you are able to run the application for the very first time! Open the CLI of your PC and go to the folder that you 
-made. Once there type the following command:
-
-- If you do not want to see many logs informations:
-
-C:\..\your_fresh_directory > `docker-compose up web_app -d   
-&& docker-compose up mysql -d 
-&& docker-compose up mqtt -d 
-&& docker-compose up redis -d
-&& docker-compose up
-`
-
-- Otherwhise:
+Now the application can be run for the very first time! Open the CLI of your PC and go to the folder that was just 
+created. Once you are there, type the following command:
 
 C:\..\your_fresh_directory> `docker-compose up`
 
-Follow the printing statement and at the end click on the hyper link displayed!
-When the process is ended you will see displayed this:
+Follow the printing statement and click on the hyperlink displayed at the end!
+When the process is done you will see this:
 
 ![Image](../master/Display/media/Done.JPG)
 
-Clink on the hyper link:
+Clink on the hyperlink:
 
 > Done! - Check the data on  http://127.0.0.1:8000/today-prediction/
 
-This will open you browser directly to your localhost where yui will find the application running! you can have a look 
-at the functionalities as the today, tomorrow prediction, the browserable API (the description of how 
-to use that is in that page) and the rest of the application:
+This link will open your browser directly to your localhost where you'd find the application running! 
+Various functionalities are available, such as today or tomorrow predictions, the browsable API (the description of how 
+to use it is in that same page) and the rest of the application:
 
 ![Image](../master/Display/media/pred_t.PNG)
 
 ## Arguments available
 
-> Before illustrate how to change the services a brief introduction to the
-argument that can be passed to the script trough the docker-compose.
+> Before illustrating how to change the services according to the user's needs, we make a brief overview of the
+arguments that can be passed to the script through the docker-compose.
 
 
 1.  Services based on __*mqtt_managers.py*__
 ```
  -b, --broker, default='localhost', choices=['localhost', 'aws']
  -t, --topic, required=True, choices=['forecast', 'energy', 'thermal', 'load', 'all', 'storico']
- -r, --retain, default=False, type=bool
- -ex, --expiration_time, default=24, type=int
 ```
+2. Services based on __*meteo_managers.py*__
+```
+    -c, --create_tables, default=False, type=bool 
+    -p, --partially_populate, default=False, type=bool
+    -el, --external_load_path, default=[], type=list[str]
+    -eg, --external_generation_path, default=[], type=list[str]
+    
+    -r, --rate, default='auto', choices=['crontab', 'auto']
+    -b, --broker, default='localhost', choices=['localhost', 'aws']
+```
+We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
+as they need to be, transferring there a small amount of the data we collected. --create_tables and 
+--partially_populate belong to the service used to transfer the data into your database.
 
-- Retain is available only when works with localhost!
-- Expiration time refers to the expiration time that the predictions will be available Redis.
-- Broker is the mqtt broker to connect.
-- Topic refers to the particular topic to subscribe.
+We also allow passing new files that can be downloaded from [Terna Download Center].  
+It would be necessary to use --external_load_path and --external_generation_path as a list of strings where you stored these files.
 
-2. Services based on __*models_manager.py*__
+There are two files that can be updated:
+1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
+2. Here you have to collect two different files:
+   1.  `Generation -> Energy Balance`, select all the possible energies in the field "type"
+         *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
+   2.  `Generation -> Renewable Generation`, then select only *Biomass*.
+   
+--rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
+is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
+give particular benefits.
+
+3. Services based on __*models_manager.py*__
 ```
     -l, --sendload, default=True, type=bool, 
     -b, --broker, default='localhost', choices=['localhost', 'aws'])
     -r, --rate, default='auto
-    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
-    -a, --aug, default='yes'
-
-```
-
-- Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
-- Broker is the mqtt broker to connect
-- Rate is the frequency of the Sendload expressed in hours
-
-- Model_to_train is an argument that can be used in case you want to train again the models 
-  (make you that you collect some data before)
-- Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
-(in particual when the month is ending).
-  
-3. Services based on __*meteo_managers.py*__
-```
-    -c, --create_tables, default=False, type=bool 
-    -p, --partially_populate, default=False, type=bool
-    -el, --external_load_path, default=None, type=str
-    -eg, --external_generation_path, default=None, type=str
     
-    -s, --storico, default=True, type=bool)
-    -r, --rate, default=12, type=int
-    -b, --broker, default='localhost', choices=['localhost', 'aws']
+    -a, --aug, default='yes'
+    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
+
 ```
-We made a services that allow you to start you dbs in a proper ways. This service will create automatically the tables 
-as they have to be and it will trasnfer a little amount of data that we collected. 
 
-- Create_tables creates the tables into your new database as they have to be
-- Partially_populate belong to the service that is used to transfer the data into your database.
+The present script is mainly used to send predictions of the Load (for the next 2 days) to the mqtt broker that can be 
+chosen with the --broker argument. As before, you can set a customized rate for sending the data. 
 
-We also allow to pass new files that you can download from [Terna Download Center].  
-
-- External_load_path, external_generation_path are path that points to additional files. Make sure to 
-follow the procedure indicate below if you want to add files. if there are more than one just pass a string and use comma to separate files as:
-
-`
- --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
-`
-
-There are two files that you can update:
-1. `Load -> Total Load`, you can download as excel or csv.
-2. Here you have to collect two different files:
-   1.  `Generation -> Energy Balance` select all the possible energies in the field type
-         *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
-   2.  `Generation -> Renewable Generation` and select only *Biomass*.
-   
-- Rate argument refers to to the rate of collecting meteo data that will be upload on the dbs (the historic), by default
-is set hourly but you can set differently. Be aware, the minimun rate is hourly, if you set it lower you won't 
-get benefits of that.
-  
-- Storico is the the arguments that indicate the procedure of starting collecting data.
+Moreover, two arguments can be used to retrain the models (remember to collect some data first). 
+An argument --aug is used to introduce observations of the next month to avoid problems 
+(in particular when the month is ending).
 
 4. Services based on __*meteo_collector.py*__
 ```
     -b, --broker, required=True, type=str, choices=['localhost', 'aws'])
-    -r, --rate, default=6, type=int
+    -r, --rate, default='auto'
 ```
-- Broker mqtt to subscribe
-- Rate is the frequencies of sending data expressed in hours.
 
 ## Change the services
 
 > 1. Change MySql Database
 
-To change that you have to modify the docker-compose.yml mysql and energy.env as follows and inserting 
-into the the brackets `< >` the data that you want to use. **make sure that the folder mysql is still empty
-otherwhise delete all the elements before starting this procedure**
+To change the mysql DB you have to modify the mysql service in the docker-compose.yml and the energy.env file as follows. You would need to insert
+into the brackets `< >` the data that you want to use as well. **Make sure that the folder "mysql" is still empty.
+If that's not the case, delete all the elements before starting this procedure.**
 
 ```shell
 ## docker-compose.yml
@@ -361,7 +327,7 @@ MYSQL_PASSWORD = <your_new_psw>   # parameter specified inside .yml
 ```
 
 **We also provide a service that can be used to create the correct tables inside your fresh database**, specifying 
-the argument --partially_populate we also transfer to you part of the data.
+the argument --partially_populate a part of the data will be transferred to you.
 
 ```shell
 ## docker-compose.yml
@@ -376,8 +342,8 @@ the argument --partially_populate we also transfer to you part of the data.
       - energy.env
 ```
 
-If you also have downloaded new data from the download center and you want to pass it to the scripts modify 
-the `command` of the trasnfer_service as follows:
+If you downloaded new data from the "download center" and you want to pass it to the scripts, modify 
+the `command` of the transfer_service as follows:
 
 ```shell
 ## docker-compose.yml -> transfer_service
@@ -389,9 +355,9 @@ command: bash -c "sleep 45 && python Code/meteo_managers.py \
 
 > 2. Change Mqtt Broker
 
-To do this **you must have configured the mosquitto.conf** as shown before. As you can see we already provide the 
-service of mosquitto in the docker-compose. To complete this step you just have to change in the docker-compose.yml 
-all the section `command`, changing the parameter broker from 'aws' to 'localhost' as:
+To do this **you must have configured the mosquitto.conf** file as shown before. It can be observed that we already provide the 
+service for mosquitto in the docker-compose. To complete this step you should just change the broker parameter from 'aws' to 'localhost' in all the sections `command` of the docker-compose.yml
+as:
 
 ```
   command:  bash -c "python Code/meteo_collector.py --localhost aws"
@@ -399,7 +365,7 @@ all the section `command`, changing the parameter broker from 'aws' to 'localhos
 
 > 3. OpenWeather Secret API Keys
 
-Go the [OpenWeather] and follow the instricution to get the free API keys.
+Go the [OpenWeather] and follow the instruction to get the free API keys.
 
 [//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
    [docker]: <https://www.docker.com>
