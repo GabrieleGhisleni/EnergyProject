@@ -15,12 +15,12 @@ Italy. All the code is available in this [Git repository], where you can also fi
 | Argument | Description |
 | --------------|---------------|
 | [How to run the application](#how-to-run-the-application) | Description of how to run the application using our DBs and brokers.|
-| [Arguments available](#arguments-available) | Brief description of the arguments that can passed to the docker-compose.yml|
-| [Change the services](#change-the-services) | Guide to change from our DBs and brokers to yours.|  
+| [Arguments available](#arguments-available) | Brief description of the arguments that can be passed to the docker-compose.yml|
+| [Change the services](#change-the-services) | Guide for switching from our DBs and brokers to yours.|  
 
 
 While in the first paragraph we will show how to run the application for the very first time using our DBs and our 
-mosquitto broker, in the second paragraph we will show the arguments that can be passed to the scripts. Lastly, we 
+mosquitto broker, in the second one we will illustrate the arguments that can be passed to the scripts. Lastly, we 
 will explain how to detach our services and replace them with yours (in particular your mysql DB). 
 
 ## How to run the application
@@ -30,7 +30,7 @@ broker, which are both hosted on Amazon AWS.
 **Then we will explain how to change those services and replace them with yours.**
 
 It is required a basic understanding of how to use [docker]. 
-In any case, the first step would be to pull the [Docker Image] attached to this github page, running the following command:
+In any case, the first step would be pulling the [Docker Image] attached to this github page, running the following command:
 
 ```sh
 docker pull git+{bho}
@@ -62,7 +62,7 @@ allow_anonymous true
 listener 1883
 ```
 
-To run the code with ours services it is necessary to now create the [docker-compose.yml] as follows:
+To run the code with our services it is necessary to now create the [docker-compose.yml] as follows:
 
 ```sh
 ## docker-compose.yml
@@ -182,7 +182,7 @@ services:
 ```
 The last step is to create the energy.env file containing all passwords and environmental variables that are 
 passed to the code.  
-As mentioned, it is always possible to passwords and variables according to your services (so to use your databases and so on).
+As mentioned, it is always possible to change passwords and variables according to your services (e.g. to use your own databases).
 
 ```sh
 ## energy.conf
@@ -232,8 +232,8 @@ to use it is in that same page) and the rest of the application:
 
 ## Arguments available
 
-> Before illustrating how to change the services according to the user needs, we make a brief overview of the
-arguments that can be passed to the script trough the docker-compose.
+> Before illustrating how to change the services according to the user's needs, we make a brief overview of the
+arguments that can be passed to the script through the docker-compose.
 
 
 1.  Services based on __*mqtt_managers.py*__
@@ -252,11 +252,11 @@ arguments that can be passed to the script trough the docker-compose.
     -b, --broker, default='localhost', choices=['localhost', 'aws']
 ```
 We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
-as they need to be, transferring then a small amount of the data we collected. --create_tables and 
+as they need to be, transferring there a small amount of the data we collected. --create_tables and 
 --partially_populate belong to the service used to transfer the data into your database.
 
 We also allow passing new files that can be downloaded from [Terna Download Center].  
-It would be necessary to use --external_load_path and --external_generation_path as a list of strings where you stored this files.
+It would be necessary to use --external_load_path and --external_generation_path as a list of strings where you stored these files.
 
 There are two files that can be updated:
 1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
@@ -267,7 +267,7 @@ There are two files that can be updated:
    
 --rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
 is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
-generate particular benefits.
+give particular benefits.
 
 3. Services based on __*models_manager.py*__
 ```
@@ -281,7 +281,7 @@ generate particular benefits.
 ```
 
 The present script is mainly used to send predictions of the Load (for the next 2 days) to the mqtt broker that can be 
-chosen with the --broker argument. As before you can set a customized rate for sending the data. 
+chosen with the --broker argument. As before, you can set a customized rate for sending the data. 
 
 Moreover, two arguments can be used to retrain the models (remember to collect some data first). 
 An argument --aug is used to introduce observations of the next month to avoid problems 
@@ -298,8 +298,8 @@ An argument --aug is used to introduce observations of the next month to avoid p
 > 1. Change MySql Database
 
 To change the mysql DB you have to modify the mysql service in the docker-compose.yml and the energy.env file as follows. You would need to insert
-into the brackets `< >` the data that you want to use as well. **make sure that the folder mysql is still empty.
-If that's not the case, delete all the elements before starting this procedure**
+into the brackets `< >` the data that you want to use as well. **Make sure that the folder "mysql" is still empty.
+If that's not the case, delete all the elements before starting this procedure.**
 
 ```shell
 ## docker-compose.yml
@@ -327,7 +327,7 @@ MYSQL_PASSWORD = <your_new_psw>   # parameter specified inside .yml
 ```
 
 **We also provide a service that can be used to create the correct tables inside your fresh database**, specifying 
-the argument --partially_populate a part of the data can be transferred to you.
+the argument --partially_populate a part of the data will be transferred to you.
 
 ```shell
 ## docker-compose.yml
@@ -343,7 +343,7 @@ the argument --partially_populate a part of the data can be transferred to you.
 ```
 
 If you downloaded new data from the "download center" and you want to pass it to the scripts, modify 
-the `command` of the trasnfer_service as follows:
+the `command` of the transfer_service as follows:
 
 ```shell
 ## docker-compose.yml -> transfer_service
@@ -356,8 +356,8 @@ command: bash -c "sleep 45 && python Code/meteo_managers.py \
 > 2. Change Mqtt Broker
 
 To do this **you must have configured the mosquitto.conf** file as shown before. It can be observed that we already provide the 
-service for mosquitto in the docker-compose. To complete this step you should just change the broker parameter, in all the sections `command` of the docker-compose.yml, 
-from 'aws' to 'localhost' as:
+service for mosquitto in the docker-compose. To complete this step you should just change the broker parameter from 'aws' to 'localhost' in all the sections `command` of the docker-compose.yml
+as:
 
 ```
   command:  bash -c "python Code/meteo_collector.py --localhost aws"
