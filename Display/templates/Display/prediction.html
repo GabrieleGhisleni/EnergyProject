@@ -14,15 +14,15 @@
         {% endif %}
     {% elif -5 < p.obs.v and p.obs.v < 5 %}
         {% if p.obs.v > 0 %}
-            <p style="background-color:rgb(255,244,79);text-align: center;">{{ p.obs.k }} &nbsp +{{p.obs.v}}</p>
+            <p style="background-color:rgba(255,244,79,0.6);text-align: center;">{{ p.obs.k }} &nbsp +{{p.obs.v}}</p>
         {% else %}
-            <p style="background-color:rgb(255,244,79);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
+            <p style="background-color:rgba(255,244,79,0.6);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
         {% endif %}
     {% else %}
         {% if p.obs.v > 0 %}
-            <p style="background-color:rgba(255,36,0,0.5);text-align: center;">{{ p.obs.k }} &nbsp +{{p.obs.v}}</p>
+            <p style="background-color:rgba(255,0,0,0.4);text-align: center;">{{ p.obs.k }} &nbsp +{{p.obs.v}}</p>
         {% else %}
-            <p style="background-color:rgba(255,36,0,0.5);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
+            <p style="background-color:rgba(255,36,0,0.4);text-align: center;">{{ p.obs.k }} &nbsp {{p.obs.v}}</p>
         {% endif %}
     {% endif%}
   </div>
