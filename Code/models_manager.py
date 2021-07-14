@@ -157,7 +157,7 @@ def train_models(model: str = 'all', path: str = "../Models/", aug: str = 'yes')
     if model == 'all': [tmp[model].custom_fit_model(aug=aug) for model in tmp]
     else: tmp[model].custom_fit_model(aug=aug)
 
-def process_forecast_mqtt(msg: dict, path: str) -> dict:
+def process_forecast_mqtt(msg: dict, path: str) -> Tuple[dict, PandasDataFrame]:
     """
     Takes the already processed meteo forecast from the mqtt broker,
     perform the prediction and return them as a dict.
@@ -177,7 +177,7 @@ def process_forecast_mqtt(msg: dict, path: str) -> dict:
             'wind': wind_prediction[ih],
             'photovoltaic': photovoltaic_prediction[ih],
             'biomass': biomass_prediction[ih], }
-    return res
+    return res, new_obs.iloc[:,:-2]
 
 def preprocess_mqtt(predictions: dict, path: str, src: str) -> PandasDataFrame:
     """

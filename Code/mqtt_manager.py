@@ -1,10 +1,13 @@
 import paho.mqtt.client as mqtt
 import json, ssl
+
+import pandas as pd
+
 from Code.models_manager import *
 import Code.meteo_managers as dbs
 
 class MqttManager:
-    def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
+    def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = True):
         def on_connect(client, userdata, flags, rc):
             if rc == 0: print(f"Connection OK! Waiting for messages!")
             else: print("Bad connection Returned code = ", rc)
@@ -20,32 +23,34 @@ class MqttManager:
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 msg = json.loads(msg.payload)
                 meteos = pd.DataFrame.from_dict(msg)
-                self.mysql.save_current_meteo(meteos)
+                self.mysql.save_meteo(meteos)
 
             elif msg.topic == "Energy/ForecastMeteo/":
                 print(f"Receving at {self.broker}/{msg.topic}")
                 raw_msg = json.loads(msg.payload)
-                res = process_forecast_mqtt(msg=raw_msg, path=self.path_model)
+                res, to_sql = process_forecast_mqtt(msg=raw_msg, path=self.path_model)
                 self.custom_publish(data=res, topic="Energy/PredictionEnergy/")
+                self.mysql.save_meteo(to_sql, forecast=True)
 
             elif msg.topic == "Energy/PredictionEnergy/":
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 predictions = json.loads(msg.payload.decode())
-                self.mysql.prediction_to_sql(predictions)
-                self.redis.set_energy(predictions)
                 thermal_res = preprocess_mqtt(predictions, path=self.path_model, src='thermal')
                 hydro_res = preprocess_mqtt(predictions, path=self.path_model, src='hydro')
+                self.redis.set_energy(predictions)
                 self.custom_publish(data=[thermal_res.to_dict(), hydro_res.to_dict()], topic="Energy/PredictionThermal/")
+                self.mysql.prediction_to_sql(predictions)
+
 
             elif msg.topic == "Energy/PredictionThermal/":
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 raw_msg = json.loads(msg.payload)
                 values_thermal, dates_thermal = process_results(raw_msg[0])
                 values_hydro, dates_hydro = process_results(raw_msg[1])
-                self.mysql.preprocess_thermal_prediction_to_sql(values_thermal, dates_hydro)
                 self.redis.set_src(values_thermal, dates_hydro, src='thermal')
                 self.redis.set_src(values_hydro, dates_hydro, src='hydro')
                 print("Done! - Check the data on  http://127.0.0.1:8000/today-prediction/ ")
+                self.mysql.preprocess_thermal_prediction_to_sql(values_thermal, dates_hydro)
                 time.sleep(60)
 
         self.broker = broker if broker.lower() == 'localhost' else 'AWS-IoT-Core'

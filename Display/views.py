@@ -103,11 +103,13 @@ def make_load_panel_plot(load_df: PandasDataFrame) -> plot:
 
 def get_infographic_plots_data() -> Tuple[PandasDataFrame, PandasDataFrame]:
     db = dbs.MySqlDB()
-    query_energy = "select energy_source as src, date, generation as y from energy_generation"
-    query_load = "SELECT total_load as y, holiday, date from energy.energy_load"
-    energy = db.query_from_sql_to_pandas(query_energy)
-    load = db.query_from_sql_to_pandas(query_load)
-    return energy,load
+    try:
+        query_energy = "select energy_source as src, date, generation as y from energy_generation"
+        query_load = "SELECT total_load as y, holiday, date from energy.energy_load"
+        energy = db.query_from_sql_to_pandas(query_energy)
+        load = db.query_from_sql_to_pandas(query_load)
+        return energy,load
+    except Exception: return pd.DataFrame(), pd.DataFrame()
 
 def difference(data) -> NumpyArray:
     summation = np.array(data["wind"]) + np.array(data["thermal"]) + np.array(data["hydro"]) +\

@@ -183,7 +183,7 @@ services:
   storico_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: storico_sender
-      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws"
+      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --storico True"
       depends_on:
         - storico_receiver
       env_file:
@@ -192,6 +192,7 @@ services:
 The last step is to create the energy.env file containing all passwords and environmental variables that are 
 passed to the code.  
 As mentioned, it is always possible to change passwords and variables according to your services (e.g. to use your own databases).
+Later on there will be the exact procedure to follow.
 
 ```sh
 ## energy.conf
@@ -222,16 +223,6 @@ PYTHONPATH=/src/
 Now the application can be run for the very first time! Open the CLI of your PC and go to the folder that was just 
 created. Once you are there, type the on of following command:
 
-- If you do not want to see many logs messages (from mysql, mqtt, redis and django images):
-
-C:\..\your_fresh_directory > `docker-compose up web_app -d   
-&& docker-compose up mysql -d 
-&& docker-compose up mqtt -d 
-&& docker-compose up redis -d
-&& docker-compose up
-`
-
-- Otherwhise:
 C:\..\your_fresh_directory> `docker-compose up`
 
 Follow the printing statement and click on the hyperlink displayed at the end!
@@ -272,20 +263,13 @@ arguments that can be passed to the script through the docker-compose.
 ```
     -l, --sendload, default=True, type=bool, 
     -b, --broker, default='localhost', choices=['localhost', 'aws'])
-    -r, --rate, default='auto
-    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
-    -a, --aug, default='yes'
+    -r, --rate, default=12, type=int
 ```
 
 - Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
 - Broker is the mqtt broker to connect
 - Rate is the frequency of the Sendload expressed in hours
 
-- Model_to_train is an argument that can be used in case you want to train again the models 
-  (make you that you collect some data before)
-- Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
-(in particual when the month is ending).
-  
 3. Services based on __*meteo_managers.py*__
 ```
     -c, --create_tables, default=False, type=bool 
@@ -298,6 +282,7 @@ arguments that can be passed to the script through the docker-compose.
 ```
 We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
 as they need to be, transferring there a small amount of the data we collected.
+In the next section we will explain in details how to do that.
 
 - Create_tables and Partially_populate populate belong to the service that is used to transfer the data into your database.
 
@@ -337,9 +322,11 @@ give particular benefits.
 
 > 1. Change MySql Database
 
-To change the mysql DB you have to modify the mysql service in the docker-compose.yml and the energy.env file as follows. You would need to insert
-into the brackets `< >` the data that you want to use as well. **Make sure that the folder "mysql" is still empty.
-If that's not the case, delete all the elements before starting this procedure.**
+To change the mysql DB you have to modify the mysql service in the docker-compose.yml and the energy.env file as follows. 
+You would need to insert into the brackets `< >` the data that you want to use as well.  
+
+**Make sure that the folder "mysql" is still empty. If that's not the case, delete all the elements before starting 
+this procedure. If there is some problem deleting check if there is an instance container associated with and in case remove it**
 
 ```shell
 ## docker-compose.yml
@@ -356,30 +343,34 @@ If that's not the case, delete all the elements before starting this procedure.*
     ports:
     - 3307:3306
 ```
-Modify the mysql_service section inside the energy.env file as:
 
-```shell
-## energy.env
-# mysql_service
-MYSQL_HOST = mysql # name of the mysql service
-MYSQL_USER = <your_new_user> # parameter specified inside .yml
-MYSQL_PASSWORD = <your_new_psw>   # parameter specified inside .yml
-```
-
-**We also provide a service that can be used to create the correct tables inside your fresh database**, specifying 
-the argument --partially_populate a part of the data will be transferred to you.
+**We also provide a service that can be used to create the correct tables inside your fresh database! is it highly 
+recommended at least to transfer the tables of the database**, specifying also the argument --partially_populate 
+a part of the data will be transferred to you (also recommended).
 
 ```shell
 ## docker-compose.yml
-  trasnfer_service:
-    image: energy:latest
+# Make sure that the volumes folder of mysql is empty!
+  transfer_service:
+    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
     container_name: transfer_service
-    command: bash -c "sleep 45 && python Code/meteo_managers.py --create_tables True --partially_populate True
+    command: bash -c "sleep 45 && python Code/meteo_managers.py --create_tables True --partially_populate True -s False"
     # we pass sleep 45 because the mysql must be ready so to be reachable from the script
     depends_on:
       - mysql
     env_file:
       - energy.env
+```
+
+Before run the script modify also the energy.env file as follow:
+
+```shell
+## energy.env
+# mysql_service
+MYSQL_HOST=<mysql> # name of the mysql service
+MYSQL_USER=<your_new_user> # parameter specified inside .yml
+MYSQL_PASSWORD=<your_new_psw>   # parameter specified inside .yml
+MYSQL_DATABASE=energy
 ```
 
 If you downloaded new data from the "download center" and you want to pass it to the scripts, modify 
@@ -392,6 +383,27 @@ command: bash -c "sleep 45 && python Code/meteo_managers.py \
 --external_load_path ['https://link-to-the-storage/<yourfile>.csv'] \
 --external_generation_path [https://raw.githubusercontent.com/<yourfile>.csv]
 ```
+
+Otherwhise run the command:
+
+C:\..\your_fresh_directory> ```docker-compose up transfer_service```
+
+After have done that remeber to **remove the trasnfer_service from the docker-compose or comment it so to avoid 
+upload multiple time the same data**.
+
+Instead if you do not want that the tables are generated neither the data are passed follow this: run the mysql 
+service alone, (the very first time it took around 1 minute to prepare the volumes) as:
+
+C:\..\your_fresh_directory> ```docker-compose up mysql```
+
+it takes around 40 seconds, it finishes when the following message id displayed:
+
+> /usr/sbin/mysqld: ready for connections. Version: '8.0.25'  socket: '/va
+r/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+
+then you are able to run 
+
+C:\..\your_fresh_directory> ```docker-compose up```
 
 > 2. Change Mqtt Broker
 

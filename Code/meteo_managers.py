@@ -113,13 +113,13 @@ class MySqlDB:
         self.engine = sqlalchemy.create_engine(f"mysql+pymysql://{mysql_user}:{mysql_psw}@{mysql_host}/energy")
         self.engine.connect()
 
-    def save_current_meteo(self, meteos: PandasDataFrame) -> None:
+    def save_meteo(self, meteos: PandasDataFrame, forecast: bool = False) -> None:
         """
         takes the new meteo observation that are used to create the historic
          already processed and update the db.
         """
-        print(f"Updating energy.meteo!")
-        meteos.to_sql("energy_meteo", con=self.engine, if_exists='append', index=False)
+        if forecast: meteos.to_sql("forecast_meteo", con=self.engine, if_exists='append', index=False)
+        else: meteos.to_sql("energy_meteo", con=self.engine, if_exists='append', index=False)
 
     def prediction_to_sql(self, predictions: dict) -> None:
         """
@@ -292,10 +292,10 @@ class MySqlTransfer(MySqlDB):
             f"""CREATE TABLE `prediction_energy` (`idprediction_energy` int NOT NULL AUTO_INCREMENT,  `date` datetime NOT NULL,
                 `energy` varchar(45) NOT NULL,  `generation` float DEFAULT NULL,  PRIMARY KEY (`idprediction_energy`)){s}""",
 
-            f"""CREATE TABLE `prediction_meteo` (`idenergy_meteo` int NOT NULL AUTO_INCREMENT, `date` datetime NOT NULL, 
-                `clouds` float NOT NULL, `pressure` float NOT NULL,`humidity` float NOT NULL, `rain_1h` float NOT NULL,  
-                `snow_1h` float NOT NULL, `wind_deg` float NOT NULL, `temp` float NOT NULL,  `wind_speed` float NOT NULL, 
-                PRIMARY KEY (`idenergy_meteo`)) {s}"""]
+            f"""CREATE TABLE `forecast_meteo` (`idforecast_meteo` int NOT NULL AUTO_INCREMENT,`date` datetime NOT NULL,
+                `clouds` float NOT NULL,`pressure` float NOT NULL,`humidity` float NOT NULL,`rain_1h` float NOT NULL,
+                `snow_1h` float NOT NULL,`wind_deg` float NOT NULL, `temp` float NOT NULL, `wind_speed` float NOT NULL,
+                PRIMARY KEY (`idforecast_meteo`), UNIQUE KEY `idforecast_meteo_UNIQUE` (`idforecast_meteo`)) {s}"""]
 
         for query in queries:
             try: self.engine.execute(query)
@@ -606,11 +606,10 @@ def main():
         transfer.create_tables()
         if args.partially_populate:
             populate(transfer, args.external_load_path, args.external_generation_path)
+            print('Done!')
 
     if args.storico:
-        while True:
-            collecting_storico(rate=args.rate, broker=args.broker)
-            time.sleep(args.rate * (60*60))
+        collecting_storico(rate=args.rate, broker=args.broker)
 
 if __name__ == "__main__":
     main()

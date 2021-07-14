@@ -10,6 +10,7 @@ ADD EnergyDjango /src/EnergyDjango
 ADD Models /src/Models
 ADD manage.py /src/
 ADD requirements.txt /src/
+ADD Documentation /src/Documentation
 
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
