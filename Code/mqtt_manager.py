@@ -38,11 +38,10 @@ class MqttManager:
                 thermal_res = preprocess_mqtt(predictions, path=self.path_model, src='thermal')
                 hydro_res = preprocess_mqtt(predictions, path=self.path_model, src='hydro')
                 self.redis.set_energy(predictions)
-                self.custom_publish(data=[thermal_res.to_dict(), hydro_res.to_dict()], topic="Energy/PredictionThermal/")
+                self.custom_publish(data=[thermal_res.to_dict(), hydro_res.to_dict()], topic="Energy/PredictionHydroThermal/")
                 self.mysql.prediction_to_sql(predictions)
 
-
-            elif msg.topic == "Energy/PredictionThermal/":
+            elif msg.topic == "Energy/PredictionHydroThermal/":
                 print(f"Receiving at {self.broker}/{msg.topic}")
                 raw_msg = json.loads(msg.payload)
                 values_thermal, dates_thermal = process_results(raw_msg[0])
@@ -95,12 +94,12 @@ class MqttManager:
             self.mqttc.subscribe("Energy/Load/")
             self.mqttc.subscribe("Energy/ForecastMeteo/")
             self.mqttc.subscribe("Energy/PredictionEnergy/")
-            self.mqttc.subscribe("Energy/PredictionThermal/")
+            self.mqttc.subscribe("Energy/PredictionHydroThermal/")
             self.mqttc.loop_forever()
         else:
             if topic == 'forecast': to_sub = "Energy/ForecastMeteo/"
             elif topic == 'energy': to_sub = "Energy/PredictionEnergy/"
-            elif topic == 'thermal': to_sub = "Energy/PredictionThermal/"
+            elif topic == 'hydro_thermal': to_sub = "Energy/PredictionHydroThermal/"
             elif topic == 'load': to_sub = "Energy/Load/"
             else: to_sub = "Energy/Storico/"
             time.sleep(self.sleeps)
@@ -111,7 +110,7 @@ class MqttManager:
 def time_(): return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def main():
-    topic_available = ['forecast', 'energy', 'thermal', 'load', 'all', 'storico']
+    topic_available = ['forecast', 'energy', 'hydro_thermal', 'load', 'all', 'storico']
     arg_parse = argparse.ArgumentParser(description="MQTT Manager!")
     arg_parse.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
     arg_parse.add_argument('-t', '--topic', required=True, choices=topic_available)

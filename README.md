@@ -42,6 +42,7 @@ We suggest to create a fresh directory where the following structure should be r
 ## Directory's tree
 FreshFolder
 |-- docker-compose.yml
+|-- extra-services.yml
 |-- energy.env
 |-- Volumes
 |   |-- django
@@ -151,7 +152,7 @@ services:
   thermal_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: thermal_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic thermal"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic hydro_thermal"
       depends_on:
         - redis
         - mqtt
@@ -264,7 +265,7 @@ arguments that can be passed to the script through the docker-compose.
 1.  Services based on __*mqtt_managers.py*__
 ```
  -b, --broker, default='localhost', choices=['localhost', 'aws']
- -t, --topic, required=True, choices=['forecast', 'energy', 'thermal', 'load', 'all', 'storico']
+ -t, --topic, required=True, choices=['forecast', 'energy', 'hydro_thermal', 'load', 'all', 'storico']
  -r, --retain, action=store_true
  -ex, --expiration_time, default=24, type=int
 ```
@@ -361,6 +362,7 @@ this procedure. If there is some problem deleting check if there is an instance 
     - MYSQL_USER = <your_new_user>  # same to specify inside .env AS MYSQL_USER
     - MYSQL_PASSWORD = <your_new_psw> # same to specify inside .env AS MYSQL_PASSWORD
     - MYSQL_ROOT_PASSWORD = <your_new_psw>  
+    - MYSQL_DATABASE=energy
     ports:
     - 3307:3306
 ```
@@ -369,8 +371,25 @@ this procedure. If there is some problem deleting check if there is an instance 
 recommended at least to transfer the tables of the database**, specifying also the argument --partially_populate 
 a part of the data will be transferred to you (also recommended).
 
+We decided to keep these services in a different .yml.
+
 ```shell
- #Make sure that the volumes folder of mysql is empty!
+## extra.services.yml 
+version: '3.9'
+services:
+  mysql: # <- same to specify inside .env as MYSQL_HOST
+    image: mysql:latest
+    container_name: mysql
+    volumes:
+    - ./Volumes/mysql:/var/lib/mysql
+    environment:
+    - MYSQL_USER = <your_new_user>  # same to specify inside .env AS MYSQL_USER
+    - MYSQL_PASSWORD = <your_new_psw> # same to specify inside .env AS MYSQL_PASSWORD
+    - MYSQL_ROOT_PASSWORD = <your_new_psw>
+    - MYSQL_DATABASE=energy
+    ports:
+    - 3307:3306
+
   transfer_service:
     image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
     container_name: transfer_service
@@ -397,21 +416,20 @@ If you downloaded new data from the "download center" and you want to pass it to
 the `command` of the transfer_service as follows:
 
 ```shell
-## docker-compose.yml -> transfer_service
+## extra-servoces.yml -> transfer_service
 command: bash -c "sleep 45 && python Code/meteo_managers.py \
 --create_tables --partially_populate \
 --external_load_path ['https://link-to-the-storage/<yourfile>.csv'] \
 --external_generation_path [https://raw.githubusercontent.com/<yourfile>.csv]
 ```
 
-Otherwhise run the command:
+Otherwhise just run the command:
 
-C:\..\your_fresh_directory> ```docker-compose up transfer_service```
+C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up transfer_service```
 
-After have done that remeber to **remove the trasnfer_service from the docker-compose or comment it so to avoid 
-upload multiple time the same data**.
+After have done that you can use all the services with your Dbs.
 
-Instead if you do not want that the tables are generated neither the data are passed follow this: run the mysql 
+However if you do not want that the tables are generated neither the data are passed run the mysql 
 service alone, (the very first time it took around 1 minute to prepare the volumes) as:
 
 C:\..\your_fresh_directory> ```docker-compose up mysql```
@@ -421,7 +439,7 @@ it takes around 40 seconds, it finishes when the following message id displayed:
 > /usr/sbin/mysqld: ready for connections. Version: '8.0.25'  socket: '/va
 r/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
 
-then you are able to run 
+then, when he created all the volumes and is ready, you are able to run 
 
 C:\..\your_fresh_directory> ```docker-compose up```
 
@@ -440,9 +458,12 @@ as:
 > 3. Re-train the models
 
 Add this service and specify the model that you want to train from ['all', "wind", "hydro", "load", 
-"thermal", "geothermal", "biomass", "photovoltaic"]. we also recommend to let --aug equal to True.
+"thermal", "geothermal", "biomass", "photovoltaic"]. we also recommend to let --aug.
+
+Always in extra.services.yml add the following code:
 
 ```shell
+# extra-services.yml
   train_models:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: train_models
@@ -453,7 +474,7 @@ Add this service and specify the model that you want to train from ['all', "wind
         - energy.env
 ```
 
-Run this only service with ```docker-compose up train_models```
+Run this only service with ```docker-compose -f extra-services.yml up train_models```
 
 Then you have to commit the change to the image as follow:
 
