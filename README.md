@@ -263,13 +263,19 @@ arguments that can be passed to the script through the docker-compose.
 ```
     -l, --sendload, default=True, type=bool, 
     -b, --broker, default='localhost', choices=['localhost', 'aws'])
+    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
+    -a, --aug, default='yes'
     -r, --rate, default=12, type=int
 ```
 
 - Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
 - Broker is the mqtt broker to connect
 - Rate is the frequency of the Sendload expressed in hours
-
+- Model_to_train is an argument that can be used in case you want to train again the models 
+  (make you that you collect some data before)
+- Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
+(in particual when the month is ending).
+  
 3. Services based on __*meteo_managers.py*__
 ```
     -c, --create_tables, default=False, type=bool 
@@ -417,7 +423,32 @@ as:
 
 **Be sure that all the services refer to the same broker.**
 
-> 3. OpenWeather Secret API Keys
+> 3. Re-train the models
+
+Add this service and specify the model that you want to train from ['all', "wind", "hydro", "load", 
+"thermal", "geothermal", "biomass", "photovoltaic"]. we also recommend to let --aug equal to yes.
+
+```shell
+#  train_models:
+#      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+#      container_name: train_models
+#      command:  bash -c "python Code/models_manager.py -s False --model_to_train all --aug yes"
+#      depends_on:
+#        - mysql
+#      env_file:
+#        - energy.env
+```
+
+Run this only service with ```docker-compose up train_models```
+
+Then you have to commit the change to the image as follow:
+
+1. ``` docker ps -a``` search for the container having as name trained_models and copy the ID.
+2. ```docker commit <ID container train_models> docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest```
+
+Doing this operation the fresh models will be available for also the others services.
+
+> 4. OpenWeather Secret API Keys
 
 Go the [OpenWeather] and follow the instruction to get the free API keys.
 

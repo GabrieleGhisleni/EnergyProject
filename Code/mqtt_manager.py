@@ -115,7 +115,7 @@ def main():
     arg_parse = argparse.ArgumentParser(description="MQTT Manager!")
     arg_parse.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
     arg_parse.add_argument('-t', '--topic', required=True, choices=topic_available)
-    arg_parse.add_argument('-r', '--retain', default=False, type=bool, help="Retain mqtt messages")
+    arg_parse.add_argument('-r', '--retain', action='store_true', help="Retain mqtt messages")
     arg_parse.add_argument('-ex', '--expiration_time', default=24, type=int, help="Expiration of redis store")
     arg_parse.add_argument('-p', '--path', default='Models/', help="""Path to find the models""")
     args = arg_parse.parse_args()

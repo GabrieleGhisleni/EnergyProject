@@ -7,7 +7,6 @@ services:
     - '6379:6379'
     volumes:
     - ./Volumes/redis:/data
-
   mqtt:
     image: eclipse-mosquitto
     container_name: mqtt
@@ -15,7 +14,6 @@ services:
     - ./Volumes/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
     ports:
     - "1883:1883"
-
   mysql:
     image: mysql:latest
     container_name: mysql
@@ -26,6 +24,7 @@ services:
     ports:
     - 3307:3306
 
+  # Web App
   web_app:
     image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
     tty: false
@@ -40,16 +39,17 @@ services:
     volumes:
     - ./Volumes/django:/src/Volumes/django
 
-
+  # Services base on mqtt_managers
   load_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: load_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic load"
       depends_on:
-        - forecast_meteo_receiver
+        - redis
+        - mqtt
+        - mysql
       env_file:
         - energy.env
-
   forecast_meteo_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name:  forecast_meteo_receiver
@@ -60,25 +60,28 @@ services:
         - mysql
       env_file:
         - energy.env
-
   energy_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: energy_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic energy"
       depends_on:
+        - redis
+        - mqtt
+        - mysql
         - forecast_meteo_receiver
       env_file:
         - energy.env
-
   thermal_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: thermal_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic thermal"
       depends_on:
+        - redis
+        - mqtt
+        - mysql
         - energy_receiver
       env_file:
         - energy.env
-
   storico_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: storico_receiver
@@ -90,37 +93,54 @@ services:
         - mqtt
         - mysql
 
+  # meteo_collect based
   forecast_meteo_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: forecast_meteo_sender
-      command:  bash -c "python Code/meteo_collector.py --broker aws"
+      command:  bash -c "python Code/meteo_collector.py --broker aws --rate 12"
       depends_on:
         - forecast_meteo_receiver
+        - mqtt
       env_file:
         - energy.env
 
+  # models_manager based
   load_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --sendload True --broker aws "
+      command:  bash -c "python Code/models_manager.py --broker aws --sendload"
       depends_on:
         - load_receiver
+        - mqtt
       env_file:
         - energy.env
 
+#  train_models:
+#      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+#      container_name: train_models
+#      command:  bash -c "python Code/models_manager.py --model_to_train all --aug"
+#      depends_on:
+#        - mysql
+#      env_file:
+#        - energy.env
+
+  # meteo_managers based
   storico_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: storico_sender
-      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws"
+      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --storico"
       depends_on:
         - storico_receiver
+        - mqtt
       env_file:
         - energy.env
 
-#  trasnfer_service:
-#    image: energy:latest
-#    container_name: trasnfer_service
-#    command: bash -c "sleep 45 && python Code/meteo_managers.py --create_tables True --partially_populate True --file_paths Documentation/Files_from_terna"
+ #Make sure that the volumes folder of mysql is empty!
+#  transfer_service:
+#    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+#    container_name: transfer_service
+#    command: bash -c "sleep 45 && python Code/meteo_managers.py --create_tables --partially_populate"
+#    # we pass sleep 45 because the mysql must be ready so to be reachable from the script
 #    depends_on:
 #      - mysql
 #    env_file:

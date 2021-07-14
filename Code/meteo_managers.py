@@ -195,7 +195,7 @@ class MySqlModels(MySqlDB):
                     where energy_generation.energy_source = '{source}';"""
 
         df = self.query_from_sql_to_pandas(query=query)
-        if aug == 'yes':
+        if aug:
             actual_month = dt.datetime.now().strftime("%B").lower()
             monthinteger = (dt.datetime.now().month) + 1
             month = dt.date(1, monthinteger, 1).strftime('%B').lower()
@@ -590,13 +590,13 @@ def collecting_storico(rate: int = 12, broker: str = 'localhost') -> None:
 
 def main():
     arg_parser = argparse.ArgumentParser(description="Data Collector Meteo")
-    arg_parser.add_argument('-c', '--create_tables', default=False, type=bool)
-    arg_parser.add_argument('-p', '--partially_populate', default=False, type=bool)
+    arg_parser.add_argument('-c', '--create_tables', action='store_true')
+    arg_parser.add_argument('-p', '--partially_populate', action='store_true')
     arg_parser.add_argument('-el', '--external_load_path', default=None, type=str)
     arg_parser.add_argument('-eg', '--external_generation_path', default=None, type=str)
     arg_parser.add_argument('-f', '--file_paths', required=False, default=None)
-    arg_parser.add_argument("-s", "--storico", default=True, type=bool)
-    arg_parser.add_argument("-r", "--rate", default=12, type=int, help="Rate expressed in hours")
+    arg_parser.add_argument('-s', '--storico', action='store_true')
+    arg_parser.add_argument('-r', '--rate', default=12, type=int, help="Rate expressed in hours")
     arg_parser.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
     args = arg_parser.parse_args()
 

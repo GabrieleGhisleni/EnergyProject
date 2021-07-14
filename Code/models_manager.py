@@ -217,9 +217,9 @@ def main():
     help_aug = "Slightly increase artificially the number of obs to avoid problems when train the model near the end of the month"
     arg_parser = argparse.ArgumentParser(description='Predictive Models')
     arg_parser.add_argument('-m', '--model_to_train', default=None, choices=model_available)
-    arg_parser.add_argument('-a', '--aug', default='yes', choices=['yes','no'], help=help_aug)
+    arg_parser.add_argument('-a', '--aug', action='store_true', help=help_aug)
     arg_parser.add_argument('-p', '--path', default='Models/', help="""Path to find the models""")
-    arg_parser.add_argument('-l', '--sendload', default=True, type=bool, help="Create the load prediction and send to mqtt")
+    arg_parser.add_argument('-l', '--sendload', action='store_true', help="Create the load prediction and send to mqtt")
     arg_parser.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
     arg_parser.add_argument('-r', '--rate', default=12, type=int, help="Frequencies express in hours")
     args = arg_parser.parse_args()
