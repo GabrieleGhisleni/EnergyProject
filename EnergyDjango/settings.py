@@ -87,13 +87,23 @@ WSGI_APPLICATION = 'EnergyDjango.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 import os
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase',
+        'NAME': os.path.join(BASE_DIR, "Volumes", "django", "mysql_lite_usage_db"),
     }
 }
-
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.getenv('MYSQL_DATABASE','energy'),
+#         'USER': os.environ['MYSQL_USER'],
+#         'PASSWORD': os.environ['MYSQL_PASSWORD'],
+#         'HOST': os.environ['MYSQL_HOST'],
+#         'PORT': 3306,
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 

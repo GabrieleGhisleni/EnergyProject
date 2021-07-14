@@ -36,7 +36,7 @@ In any case, the first step would be pulling the [Docker Image] attached to this
 docker pull docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
 ```
 
-We suggest creating a fresh directory where the following structure should be replicated:
+We suggest to create a fresh directory where the following structure should be replicated:
 
 ```
 ## Directory's tree
@@ -44,18 +44,19 @@ FreshFolder
 |-- docker-compose.yml
 |-- energy.env
 |-- Volumes
+|   |-- django
 |   |-- mysql
 |   |-- redis 
 |   |-- mosquitto
-|   |   |-- mosquitto.conf
+|   |   |-- config
+|   |   |      |-- mosquitto.conf
 ```
 In particular:
  1. Create an empty folder.
  2. Create, inside this folder, a docker-compose.yml and an energy.env file.
- 3. Create a sub-directory called "Volumes" with two more sub-directory: 
-    "mosquitto" and "mysql".
- 4. Keep the mysql folder empty while creating a new sub-folder called "config" in the mosquitto folder. In the latter "config" folder create a file called mosquitto.conf. 
-    Then paste the following lines inside this mosquitto.conf file (you can also find the 
+ 3. Create a sub-directory called "Volumes" with four more sub-directory: 
+    "mosquitto", "mysql", "django", "redis" and let those empty.
+ 4. Creating a file called mosquitto.conf in the mosquitto/config folder. Then paste the following lines inside this mosquitto.conf file (you can also find the 
     [mosquitto.conf] here):
     
 ```sh
@@ -102,12 +103,15 @@ services:
     tty: false
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     container_name: energyDjango
+    volumes:
+    - ./Volumes/django:/src/Volumes/django
     env_file:
       - energy.env
     depends_on:
       - redis
     ports:
     - "8000:8000"
+
 
   load_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
@@ -216,7 +220,7 @@ PYTHONPATH=/src/
 ```
 
 Now the application can be run for the very first time! Open the CLI of your PC and go to the folder that was just 
-created. Once you are there, type one of the following commands:
+created. Once you are there, type the on of following command:
 
 - If you do not want to see many logs messages (from mysql, mqtt, redis and django images):
 
@@ -227,7 +231,7 @@ C:\..\your_fresh_directory > `docker-compose up web_app -d
 && docker-compose up
 `
 
-- Otherwise:
+- Otherwhise:
 C:\..\your_fresh_directory> `docker-compose up`
 
 Follow the printing statement and click on the hyperlink displayed at the end!
@@ -259,10 +263,10 @@ arguments that can be passed to the script through the docker-compose.
  -ex, --expiration_time, default=24, type=int
 ```
 
-- Retain is available only while working with localhost!
-- Expiration time refers to the time for which the predictions will be available on Redis.
-- Broker is the mqtt broker connect to.
-- Topic refers to the particular topic you subscribe to.
+- Retain is available only when works with localhost!
+- Expiration time refers to the expiration time that the predictions will be available Redis.
+- Broker is the mqtt broker to connect.
+- Topic refers to the particular topic to subscribe.
 
 2. Services based on __*models_manager.py*__
 ```
@@ -273,14 +277,14 @@ arguments that can be passed to the script through the docker-compose.
     -a, --aug, default='yes'
 ```
 
-- Sendload is the principal function of this service, it is mainly used to send the predictions of the Load (next 2 days). 
-- Broker is the mqtt broker you connect to.
+- Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
+- Broker is the mqtt broker to connect
 - Rate is the frequency of the Sendload expressed in hours
 
-- Model_to_train is an argument that can be used in case you want to re-train the models 
-  (make sure to collect some data before)
+- Model_to_train is an argument that can be used in case you want to train again the models 
+  (make you that you collect some data before)
 - Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
-(in particular when the month is ending).
+(in particual when the month is ending).
   
 3. Services based on __*meteo_managers.py*__
 ```
@@ -295,31 +299,31 @@ arguments that can be passed to the script through the docker-compose.
 We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
 as they need to be, transferring there a small amount of the data we collected.
 
-- Create_tables and Partially_populate belong to the service that is used to transfer the data into your database.
+- Create_tables and Partially_populate populate belong to the service that is used to transfer the data into your database.
 
 We also allow passing new files that can be downloaded from [Terna Download Center].  
 
-- External_load_path and External_generation_path are paths pointing to additional files. 
+- External_load_path and External_generation_path are path that points to additional files. 
   
-If you want to add files, make sure to follow the procedure indicated below. 
-If there are more than one, just pass a string and use comma to separate the files as:
+Make sure to follow the procedure indicate below if you want to add files. 
+if there are more than one just pass a string and use comma to separate files as:
 
 `
  --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
 `
 
 There are two files that can be updated:
-1. to get load data go to `Load -> Total Load`, downloadable as an Excel or a csv.
-2. to get generation data, you'll need to collect two different files:
-   1.  `Generation -> Energy Balance`, selecting all the possible energies in the field "type"
+1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
+2. Here you have to collect two different files:
+   1.  `Generation -> Energy Balance`, select all the possible energies in the field "type"
          *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
-   2.  `Generation -> Renewable Generation`, selecting only *Biomass*.
+   2.  `Generation -> Renewable Generation`, then select only *Biomass*.
    
 - Rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
 is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
 give particular benefits.
   
-- Storico is the argument that indicates the procedure for starting the data collection.
+- Storico is the the arguments that indicate the procedure of starting collecting data.
 
 4. Services based on __*meteo_collector.py*__
 ```
@@ -327,7 +331,7 @@ give particular benefits.
     -r, --rate, default=6, type=int
 ```
 - Broker mqtt to subscribe
-- Rate is the frequency at which we send data expressed in hours.
+- Rate is the frequencies of sending data expressed in hours.
 
 ## Change the services
 

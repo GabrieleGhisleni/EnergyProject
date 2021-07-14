@@ -11,118 +11,75 @@ import plotly.graph_objs as go
 import Code.meteo_managers as dbs
 from plotly.subplots import make_subplots
 import pandas as pd
+from pandas import DataFrame as PandasDataFrame
+from numpy import numarray as NumpyArray
+from typing import Tuple, List
 
-def make_plot(dates, load, thermal, wind, hydro, photovoltaic, geothermal, biomass):
+def make_plot(data: dict) -> plot:
     fig = go.Figure()
     marker_load = dict(color='red', size=5, line=dict(color='red', width=2))
-    fig.add_trace(go.Scatter(name="Load", x=dates, y=load, fill='tonexty', mode='lines+markers', marker=marker_load))
-    fig.add_trace(go.Scatter(name="Thermal", x=dates, y=thermal, fill='tozeroy', stackgroup='one', hoverinfo='x+y'))
-    fig.add_trace(go.Scatter(name="Photovoltaic", x=dates, y=photovoltaic, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
-    fig.add_trace(go.Scatter(name="Hydro", x=dates, y=hydro, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
-    fig.add_trace(go.Scatter(name="Wind", x=dates, y=wind, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
-    fig.add_trace(go.Scatter(name="Biomass", x=dates, y=biomass, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
-    fig.add_trace(go.Scatter(name="Geothermal", x=dates, y=geothermal, fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    dates = data['dates']
+    fig.add_trace(go.Scatter(name="Load", x=dates, y=data["load"], fill='tonexty', mode='lines+markers', marker=marker_load))
+    fig.add_trace(go.Scatter(name="Thermal", x=dates, y=data["thermal"], fill='tozeroy', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Photovoltaic", x=dates, y=data["photovoltaic"], fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Hydro", x=dates, y=data["hydro"], fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Wind", x=dates, y=data['wind'], fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Biomass", x=dates, y=data['biomass'], fill='tonexty', stackgroup='one', hoverinfo='x+y'))
+    fig.add_trace(go.Scatter(name="Geothermal", x=dates, y=data['geothermal'], fill='tonexty', stackgroup='one', hoverinfo='x+y'))
     x_ticks = [date.split(" ")[1][:5] for date in dates]
     tickfont = dict(family='Old Standard TT, serif',size=18, color='black' )
     legend_dict = dict(orientation="h", yanchor="middle", y=1.01, xanchor="right", x=1.01, font = dict(size=20))
     xaxis_dict = dict(tickmode='array', tickvals=dates, ticktext=x_ticks, tick0=0.2, tickangle=30, dtick=0.5, tickfont=tickfont)
-    yaxis_dict = dict(title=dict(text="Generation/consumption in  GW/H",font_size=25),
-                      range=[0, 65], showgrid=True, tickfont=tickfont)
+    yaxis_dict = dict(title=dict(text="Generation/consumption in  GW/H",font_size=25), range=[0, 65], showgrid=True, tickfont=tickfont)
     margin_dict = dict(l=100, r=50, b=50, t=35, pad=7.5)
 
-    fig.update_layout(legend=legend_dict,
-                      xaxis=xaxis_dict, yaxis=yaxis_dict, margin=margin_dict, width=1400, height=600,
-                      template="gridon", paper_bgcolor='rgb(240,248,255)')
+    fig.update_layout(legend=legend_dict,  xaxis=xaxis_dict, yaxis=yaxis_dict, margin=margin_dict,
+                      width=1400, height=600, template="gridon", paper_bgcolor='rgb(240,248,255)')
 
-    load = plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
-    return load
+    return plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
 
-def make_empty_plot():
+
+def make_empty_plot() -> plot:
     fig = go.Figure()
-    fig.add_annotation(x=-1, y=0, text="No Data To Display Yet",
-                       font=dict(family="sans serif, bold", size=45, color="crimson"),
-                       showarrow=False, yshift=0)
-    x, y = [-1], [0]
-    for source in ['Load', 'Thermal', 'Photovoltaic', 'Hydro', 'Wind', 'Biomass', 'Geothermal']:
-        fig.add_trace(go.Scatter(name=source, x=x, y=y, mode='lines'))
-
+    text_dict = dict(family="sans serif, bold", size=45, color="crimson")
     xaxis_dict = dict(visible=False, showgrid=False)
     yaxis_dict = dict(visible=False, showgrid=False)
     margin_dict = dict(l=40, r=40, b=40, t=40, pad=7.5)
+    fig.add_annotation(x=-1, y=0, text="No Data To Display Yet", font=text_dict, showarrow=False, yshift=0)
+    fig.add_trace(go.Scatter(x=[-1], y=[0], mode='lines'))
     fig.update_layout(xaxis=xaxis_dict, yaxis=yaxis_dict, margin=margin_dict, showlegend=False,
                       width=900, height=600, template="gridon", paper_bgcolor='rgba(255,10,10,4)')
-    empty = plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
-    return empty
+    return plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
 
-def difference(load, thermal, wind, hydro, photovoltaic, geothermal, biomass):
-    summation = np.array(wind) + np.array(thermal) + np.array(hydro) + np.array(photovoltaic) + np.array(geothermal) + np.array(biomass)
-    differencess = (np.array(load) - summation).tolist()
-    rounded = [round(i, 2) for i in differencess]
-    hours = [iel for iel in range(23, 23-len(rounded),-1)]
-    hours.reverse()
-    res, tmp =[], {}
-    for value in range(len(rounded)):
-        tmp = {}
-        tmp["obs"] = {}
-        tmp["obs"]["v"] = rounded[value]
-        tmp["obs"]["k"] = f"{hours[value]}h" if hours[value]>9 else f"0{hours[value]}h"
-        res.append(tmp)
-    return res
-
-def get_data(day='today'):
-    redis = dbs.RedisDB()
-    data = redis.get_data(day=day)
-    return data
-
-def unroll_df(df, cat, groups, dates):
-    if not df.empty:
-        df['month'] = df[dates].dt.strftime("%B")
-        df['hour'] = df[dates].dt.strftime("%H").astype('int')
-        storage = []
-        for unique in np.unique(df[cat]):
-            temp = df.loc[df[cat] == unique, :].groupby(groups).mean().reset_index()
-            temp[cat] = unique
-            storage.append(temp)
-        return pd.concat(storage)
-    else: return pd.DataFrame()
-
-def get_plots_data():
-    db = dbs.MySqlDB()
-    query_energy = "select energy_source as src, date, generation as y from energy_generation"
-    query_load = "SELECT total_load as y, holiday, date from energy.energy_load"
-    energy = db.query_from_sql_to_pandas(query_energy)
-    load = db.query_from_sql_to_pandas(query_load)
-    return energy,load
-
-def make_energy_panel_plot(energy_df, load_df):
+def make_energy_panel_plot(energy_df: PandasDataFrame, load_df: PandasDataFrame) -> plot:
     titles = ['Load', 'Thermal & Hydro', 'Others Renewable']
     x_m, y_m = 'Hours of the day', 'Load - Generation in [GWH]'
     fig = make_subplots(rows=1, cols=3, print_grid=False, subplot_titles=titles, x_title=x_m, y_title=y_m, shared_yaxes=True)
-    lined = dict(width=4)
+
     for src in np.unique(energy_df.src):
         if src == 'Hydro' or src == 'Thermal':
             fig.add_trace(go.Scatter(x=energy_df.loc[energy_df.src == src].hour, y=energy_df.loc[energy_df.src == src].y,
-                           name=src, mode='lines', showlegend=False, line=lined), row=1, col=2)
+                           name=src, mode='lines', showlegend=False, line=dict(width=4)), row=1, col=2)
         else:
             fig.add_trace(go.Scatter(x=energy_df.loc[energy_df.src == src].hour, y=energy_df.loc[energy_df.src == src].y,
-                           name=src, mode='lines',showlegend=True,line=lined), row=1, col=3)
+                           name=src, mode='lines',showlegend=True,line=dict(width=4)), row=1, col=3)
 
     fig.add_trace(go.Scatter(x=load_df.groupby('hour').mean().reset_index().hour, name='load',showlegend=False,
-                             y=load_df.groupby('hour').mean().reset_index().y, mode='lines',line=lined), row=1, col=1)
+                             y=load_df.groupby('hour').mean().reset_index().y, mode='lines',line=dict(width=4)), row=1, col=1)
 
     margin_dict = dict(l=100, r=75, b=75, t=60, pad=7.5)
+    x_tick_text = [f"0{str(i)}" if i < 10 else str(i) for i in range(0, 24)]
     yaxis_dict = dict(zeroline=False, tickvals=[i for i in range(0, 45, 2)], ticktext=[i for i in range(0, 45, 2)])
     xaxis_dict = dict(tickvals=[i for i in range(0, 24)], tickmode='array', tick0=0.2, tickangle=90, zeroline=False,
-                      dtick=0.5, showgrid=False, ticktext=[f"0{str(i)}" if i < 10 else str(i) for i in range(0, 24)])
+                      dtick=0.5, showgrid=False, ticktext=x_tick_text)
     for i in range(1, 4): fig.update_xaxes(xaxis_dict, row=1, col=i)
     for i in range(1, 4): fig.update_yaxes(yaxis_dict, row=1, col=i)
     legend_dict = dict(yanchor="middle", y=0.89, xanchor="right", x=1.0, font = dict(size=20))
-    fig.update_layout(height=700, width=1400, template='gridon', paper_bgcolor='rgb(240,248,255)',
-                      margin=margin_dict, legend=legend_dict)
+    fig.update_layout(height=700, width=1400, template='gridon', paper_bgcolor='rgb(240,248,255)', margin=margin_dict, legend=legend_dict)
     fig.update_annotations(font_size=30, font_family='italic')
     return plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
 
-def make_load_panel_plot(load_df):
+def make_load_panel_plot(load_df: PandasDataFrame) -> plot:
     titles = ['Load on Holiday', 'Load on Sunday', 'Load on Saturday', 'Load during Weeks']
     x_m, y_m = 'Hours of the day', 'Load - in [GWH]'
     lined = dict(width=4)
@@ -144,8 +101,52 @@ def make_load_panel_plot(load_df):
     fig.update_annotations(font_size=30, font_family='italic')
     return plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
 
-def getTableHTML(df):
-    df = df[['dates', 'geothermal', 'wind', 'biomass', 'photovoltaic', 'hydro', 'thermal', 'load']]
+def get_infographic_plots_data() -> Tuple[PandasDataFrame, PandasDataFrame]:
+    db = dbs.MySqlDB()
+    query_energy = "select energy_source as src, date, generation as y from energy_generation"
+    query_load = "SELECT total_load as y, holiday, date from energy.energy_load"
+    energy = db.query_from_sql_to_pandas(query_energy)
+    load = db.query_from_sql_to_pandas(query_load)
+    return energy,load
+
+def difference(data) -> NumpyArray:
+    summation = np.array(data["wind"]) + np.array(data["thermal"]) + np.array(data["hydro"]) +\
+                np.array(data["photovoltaic"])  + np.array(data["geothermal"]) + np.array(data["biomass"])
+    differencess = (np.array(data['load']) - summation).tolist()
+    rounded = [round(i, 2) for i in differencess]
+    return rounded
+
+def pretty_difference(diff: NumpyArray) -> List[dict]:
+    hours = [iel for iel in range(23, 23-len(diff),-1)]
+    hours.reverse()
+    res, tmp =[], {}
+    for value in range(len(diff)):
+        tmp = {}
+        tmp["obs"] = {}
+        tmp["obs"]["v"] = diff[value]
+        tmp["obs"]["k"] = f"{hours[value]}h" if hours[value]>9 else f"0{hours[value]}h"
+        res.append(tmp)
+    return res
+
+def get_data(day:str = 'today') -> dict:
+    redis = dbs.RedisDB()
+    data = redis.get_data(day=day)
+    return data
+
+def unroll_df(df: PandasDataFrame, cat: str, groups: str, dates: str) -> PandasDataFrame:
+    if not df.empty:
+        df['month'] = df[dates].dt.strftime("%B")
+        df['hour'] = df[dates].dt.strftime("%H").astype('int')
+        storage = []
+        for unique in np.unique(df[cat]):
+            temp = df.loc[df[cat] == unique, :].groupby(groups).mean().reset_index()
+            temp[cat] = unique
+            storage.append(temp)
+        return pd.concat(storage)
+    else: return pd.DataFrame()
+
+def pretty_html_table(df: PandasDataFrame) -> str:
+    df = df[['dates', 'geothermal', 'wind', 'biomass', 'photovoltaic', 'hydro', 'thermal', 'load', 'Imbalance']]
     df.columns = [i.capitalize() for i in df.columns]
     styles = [
         dict(selector=" ",props=[("margin", "5"), ("font-family", '"Helvetica", "Arial", sans-serif'), ("background-color", "lightblue")]),
@@ -154,31 +155,40 @@ def getTableHTML(df):
         dict(selector="td", props=[("padding-right", "50px"),("padding-left", "35px"), ('border', '10px'), ("width", "150px")]),
         dict(selector="th", props=[("font-size", "25px"), ("text-align", "center")]),
         dict(selector=".row_heading", props=[('display','none')]),
-        dict(selector='.col0', props=[('min-width', '300px')]),
+        dict(selector='.col0', props=[('min-width', '240px')]),
         dict(selector='.col1', props=[('min-width', '35px')]),
+        dict(selector='.col4', props=[('min-width', '70px')]),
+        dict(selector='.col8', props=[('min-width', '150px')]),
         dict(selector='.blank.level0', props= [('display', 'none')])]
     return (df.style.set_table_styles(styles).set_precision(2).render())
 
+
 def today_pred(requests):
+    today_s = dt.datetime.now().strftime("%B, %d-%Y")
     data = get_data('today')
-    if not data['load']: return render(requests, "Display/prediction.html", context=dict(plot_div=make_empty_plot(), day='Today', probability=[]))
+    if not data['load']:
+        context=dict(day='Today',plot_div=make_empty_plot(), day_s=today_s, probability=[])
+        return render(requests, "Display/prediction.html", context=context)
     else:
-        fig = make_plot(dates=data["dates"], load=data["load"], thermal=data["thermal"], wind=data["wind"], hydro=data["hydro"],
-                    photovoltaic=data["photovoltaic"], geothermal=data["geothermal"], biomass=data["biomass"])
-        differences = difference(data['load'], data["thermal"], data["wind"], data["hydro"], data["photovoltaic"], data["geothermal"], data["biomass"])
-        today_s = dt.datetime.now().strftime("%B, %d-%Y")
-        context = dict(plot_div=fig, day='Today', probability=differences, day_s=today_s,table=getTableHTML(pd.DataFrame(data)))
+        fig = make_plot(data)
+        imbalance = difference(data)
+        table = pd.DataFrame(data)
+        table['Imbalance'] = imbalance
+        context = dict(plot_div=fig, day='Today', probability=pretty_difference(imbalance), day_s=today_s, table=pretty_html_table(table))
         return render(requests, "Display/prediction.html", context)
 
 def tomorrow_pred(requests):
+    tomorrow_s = (dt.datetime.now() + dt.timedelta(days=1)).strftime("%B, %d-%Y")
     data = get_data(day='tomorrow')
-    if not data['load']: return render(requests, "Display/prediction.html", context=dict(plot_div=make_empty_plot(), day='Today', probability=[]))
+    if not data['load']:
+        context = dict(day='Tomorrow',plot_div=make_empty_plot(), day_s=tomorrow_s, probability=[])
+        return render(requests, "Display/prediction.html", context=context)
     else:
-        fig = make_plot(dates=data["dates"], load=data["load"], thermal=data["thermal"], wind=data["wind"], hydro=data["hydro"],
-                        photovoltaic=data["photovoltaic"], geothermal=data["geothermal"], biomass=data["biomass"])
-        differences = difference(data['load'], data["thermal"], data["wind"], data["hydro"], data["photovoltaic"], data["geothermal"], data["biomass"])
-        tomorrow_s = (dt.datetime.now()+dt.timedelta(days=1)).strftime("%B, %d-%Y")
-        context = dict(plot_div=fig, day='Tomorrow', probability=differences, day_s=tomorrow_s,table=getTableHTML(pd.DataFrame(data)))
+        fig = make_plot(data)
+        imbalance = difference(data)
+        table = pd.DataFrame(data)
+        table['Imbalance'] = imbalance
+        context = dict(plot_div=fig, day='Today', probability=pretty_difference(imbalance), day_s=tomorrow_s, table=pretty_html_table(table))
         return render(requests, "Display/prediction.html", context)
 
 def home(requests):
@@ -195,7 +205,7 @@ def register(request):
     return render(request, 'Display/newsletter.html', {"form": form})
 
 def infographic(requests):
-    energy, load = get_plots_data()
+    energy, load = get_infographic_plots_data()
     energies = unroll_df(energy, cat='src', groups='hour', dates='date')
     loads = unroll_df(load, cat='holiday', groups='hour', dates='date')
     if not energies.empty and not loads.empty: first_panel = make_energy_panel_plot(energies, loads)
@@ -205,13 +215,11 @@ def infographic(requests):
     context = dict(plot_div=first_panel, plot_load=second_panel)
     return render(requests, "Display/infos.html", context)
 
-
 @api_view(['GET'])
 def Energy_Full_Rest_API(requests):
     """
     We allow to retrive our prediction according to the data and according to the type of energy that you are interested in.
     By default it will return the prediction of the day.
-
     You can specify two parameters:
 
     -  `energy`  : [load, thermal, wind, photovoltaic, biomass, geothermal, hydro]

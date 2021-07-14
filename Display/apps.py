@@ -9,24 +9,28 @@ from email.message import EmailMessage
 class DisplayConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'Display'
+
     def ready(self):
         def get_data():
             db = dbs.RedisDB()
             today = pd.DataFrame(db.get_data(day='today'))
             tomorrow = pd.DataFrame(db.get_data(day='tomorrow'))
             df = today.append(tomorrow, ignore_index=True)
-            return df[['dates', 'wind', 'hydro', 'geothermal', 'biomass', 'thermal', 'load']]
+            df['Imbalance'] = df.loc[:,'load'] - (df.loc[:,'wind'] + df.loc[:,'biomass']
+                                                  + df.loc[:,'hydro'] + df.loc[:,'thermal']
+                                                  + df.loc[:,'geothermal'] + df.loc[:,'photovoltaic'])
+            return df[['dates', 'wind', 'hydro', 'geothermal', 'biomass', 'thermal', 'load', 'photovoltaic', "Imbalance"]]
 
         def create_msg(data):
             msg = EmailMessage()
             msg['Subject'] = 'Renewable Predictions!'
-            from .views import getTableHTML
-            msg.add_alternative(getTableHTML(data), subtype='html')
+            from .views import pretty_html_table
+            msg.add_alternative(pretty_html_table(data), subtype='html')
             return msg
 
         def newsletter():
-            email_energy_bdt = 'energy.project.bdt@gmail.com'
-            psw = 'slbsflwergruvxbs'
+            email_energy_bdt = 'energy.project.bdt@gmail.com' # accout created just for this purpose
+            psw = 'slbsflwergruvxbs' # accout created just for this purpose
             from django.contrib.auth.models import User
             listone = [user.email for user in User.objects.all()]
             msg = create_msg(get_data())

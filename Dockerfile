@@ -1,6 +1,8 @@
 FROM python:3.9
 
 WORKDIR /src
+RUN mkdir -p Volumes
+RUN mkdir -p Volumes/django
 
 ADD Code /src/Code
 ADD Display /src/Display
