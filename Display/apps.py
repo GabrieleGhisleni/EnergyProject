@@ -40,9 +40,7 @@ class DisplayConfig(AppConfig):
                     server.starttls()
                     server.login(email_energy_bdt, psw)
                     server.sendmail(email_energy_bdt, user, msg.as_string())
-                    print(f'Sended email to {user}')
-                except Exception as e:
-                    print(e)
+                except Exception as e:  print(e)
 
         scheduler = BackgroundScheduler()
         hours = os.getenv('NEWS_RATE', '8,20')

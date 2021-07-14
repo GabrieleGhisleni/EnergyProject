@@ -188,7 +188,7 @@ def tomorrow_pred(requests):
         imbalance = difference(data)
         table = pd.DataFrame(data)
         table['Imbalance'] = imbalance
-        context = dict(plot_div=fig, day='Today', probability=pretty_difference(imbalance), day_s=tomorrow_s, table=pretty_html_table(table))
+        context = dict(plot_div=fig, day='Tomorrow', probability=pretty_difference(imbalance), day_s=tomorrow_s, table=pretty_html_table(table))
         return render(requests, "Display/prediction.html", context)
 
 def home(requests):
