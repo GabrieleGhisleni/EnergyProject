@@ -75,10 +75,10 @@ services:
   redis:
     image: redis:latest
     container_name: redis
+    ports:
+    - '6379:6379'
     volumes:
     - ./Volumes/redis:/data
-    ports:
-    - "6379:6379"
 
   mqtt:
     image: eclipse-mosquitto
@@ -96,34 +96,37 @@ services:
     env_file:
       - energy.env
     ports:
-    - "3307:3306"
+    - 3307:3306
 
+  # Web App
   web_app:
-    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
     tty: false
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     container_name: energyDjango
-    volumes:
-    - ./Volumes/django:/src/Volumes/django
     env_file:
       - energy.env
     depends_on:
       - redis
     ports:
     - "8000:8000"
+    volumes:
+    - ./Volumes/django:/src/Volumes/django
 
-
+  # Services base on mqtt_managers
   load_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: load_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic load"
       depends_on:
-        - forecast_meteo_receiver
+        - redis
+        - mqtt
+        - mysql
       env_file:
         - energy.env
 
   forecast_meteo_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name:  forecast_meteo_receiver
       command: bash -c "python -u Code/mqtt_manager.py --broker aws --topic forecast"
       depends_on:
@@ -134,25 +137,31 @@ services:
         - energy.env
 
   energy_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: energy_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic energy"
       depends_on:
+        - redis
+        - mqtt
+        - mysql
         - forecast_meteo_receiver
       env_file:
         - energy.env
 
   thermal_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: thermal_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic thermal"
       depends_on:
+        - redis
+        - mqtt
+        - mysql
         - energy_receiver
       env_file:
         - energy.env
 
   storico_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: storico_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic storico"
       env_file:
@@ -162,30 +171,36 @@ services:
         - mqtt
         - mysql
 
+  # meteo_collect based
   forecast_meteo_sender:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: forecast_meteo_sender
       command:  bash -c "python Code/meteo_collector.py --broker aws"
       depends_on:
         - forecast_meteo_receiver
+        - mqtt
       env_file:
         - energy.env
 
+  # models_manager based
   load_sender:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --sendload True --broker aws"
+      command:  bash -c "python Code/models_manager.py --broker aws --sendload"
       depends_on:
         - load_receiver
+        - mqtt
       env_file:
         - energy.env
 
+  # meteo_managers based
   storico_sender:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: storico_sender
-      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --storico True"
+      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --storico"
       depends_on:
         - storico_receiver
+        - mqtt
       env_file:
         - energy.env
 ```
@@ -250,7 +265,7 @@ arguments that can be passed to the script through the docker-compose.
 ```
  -b, --broker, default='localhost', choices=['localhost', 'aws']
  -t, --topic, required=True, choices=['forecast', 'energy', 'thermal', 'load', 'all', 'storico']
- -r, --retain, default=False, type=bool
+ -r, --retain, action=store_true
  -ex, --expiration_time, default=24, type=int
 ```
 
@@ -261,10 +276,10 @@ arguments that can be passed to the script through the docker-compose.
 
 2. Services based on __*models_manager.py*__
 ```
-    -l, --sendload, default=True, type=bool, 
+    -l, --sendload, action=store_true, 
     -b, --broker, default='localhost', choices=['localhost', 'aws'])
     -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
-    -a, --aug, default='yes'
+    -a, --aug, action=store_true
     -r, --rate, default=12, type=int
 ```
 
@@ -278,11 +293,11 @@ arguments that can be passed to the script through the docker-compose.
   
 3. Services based on __*meteo_managers.py*__
 ```
-    -c, --create_tables, default=False, type=bool 
-    -p, --partially_populate, default=False, type=bool
+    -c, --create_tables, action=store_true
+    -p, --partially_populate, action=store_true
     -el, --external_load_path, default=None, type=str
     -eg, --external_generation_path, default=None, type=str
-    -s, --storico, default=True, type=bool
+    -s, --storico, action=store_true
     -r, --rate, default=12, type=int
     -b, --broker, default='localhost', choices=['localhost', 'aws']
 ```
@@ -314,7 +329,7 @@ There are two files that can be updated:
 is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
 give particular benefits.
   
-- Storico is the the arguments that indicate the procedure of starting collecting data.
+- Storico is the the arguments that indicate the procedure of starting collecting data (store_true).
 
 4. Services based on __*meteo_collector.py*__
 ```
@@ -355,12 +370,11 @@ recommended at least to transfer the tables of the database**, specifying also t
 a part of the data will be transferred to you (also recommended).
 
 ```shell
-## docker-compose.yml
-# Make sure that the volumes folder of mysql is empty!
+ #Make sure that the volumes folder of mysql is empty!
   transfer_service:
     image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
     container_name: transfer_service
-    command: bash -c "sleep 45 && python Code/meteo_managers.py --create_tables True --partially_populate True -s False"
+    command: bash -c "sleep 45 && python Code/meteo_managers.py --create_tables --partially_populate"
     # we pass sleep 45 because the mysql must be ready so to be reachable from the script
     depends_on:
       - mysql
@@ -426,17 +440,17 @@ as:
 > 3. Re-train the models
 
 Add this service and specify the model that you want to train from ['all', "wind", "hydro", "load", 
-"thermal", "geothermal", "biomass", "photovoltaic"]. we also recommend to let --aug equal to yes.
+"thermal", "geothermal", "biomass", "photovoltaic"]. we also recommend to let --aug equal to True.
 
 ```shell
-#  train_models:
-#      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
-#      container_name: train_models
-#      command:  bash -c "python Code/models_manager.py -s False --model_to_train all --aug yes"
-#      depends_on:
-#        - mysql
-#      env_file:
-#        - energy.env
+  train_models:
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      container_name: train_models
+      command:  bash -c "python Code/models_manager.py --model_to_train all --aug"
+      depends_on:
+        - mysql
+      env_file:
+        - energy.env
 ```
 
 Run this only service with ```docker-compose up train_models```
@@ -444,7 +458,7 @@ Run this only service with ```docker-compose up train_models```
 Then you have to commit the change to the image as follow:
 
 1. ``` docker ps -a``` search for the container having as name trained_models and copy the ID.
-2. ```docker commit <ID container train_models> docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest```
+2. `docker commit <IDcontainertrain_models> docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest`
 
 Doing this operation the fresh models will be available for also the others services.
 
