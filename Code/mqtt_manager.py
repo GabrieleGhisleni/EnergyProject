@@ -7,7 +7,7 @@ from Code.models_manager import *
 import Code.meteo_managers as dbs
 
 class MqttManager:
-    def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = True):
+    def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
         def on_connect(client, userdata, flags, rc):
             if rc == 0: print(f"Connection OK! Waiting for messages!")
             else: print("Bad connection Returned code = ", rc)

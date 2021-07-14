@@ -7,6 +7,7 @@ services:
     - '6379:6379'
     volumes:
     - ./Volumes/redis:/data
+
   mqtt:
     image: eclipse-mosquitto
     container_name: mqtt
@@ -14,6 +15,7 @@ services:
     - ./Volumes/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
     ports:
     - "1883:1883"
+
   mysql:
     image: mysql:latest
     container_name: mysql
@@ -50,6 +52,7 @@ services:
         - mysql
       env_file:
         - energy.env
+
   forecast_meteo_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name:  forecast_meteo_receiver
@@ -60,6 +63,7 @@ services:
         - mysql
       env_file:
         - energy.env
+
   energy_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: energy_receiver
@@ -71,6 +75,7 @@ services:
         - forecast_meteo_receiver
       env_file:
         - energy.env
+
   thermal_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: thermal_receiver
@@ -82,6 +87,7 @@ services:
         - energy_receiver
       env_file:
         - energy.env
+
   storico_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: storico_receiver
@@ -97,7 +103,7 @@ services:
   forecast_meteo_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: forecast_meteo_sender
-      command:  bash -c "python Code/meteo_collector.py --broker aws --rate 12"
+      command:  bash -c "python Code/meteo_collector.py --broker aws"
       depends_on:
         - forecast_meteo_receiver
         - mqtt
