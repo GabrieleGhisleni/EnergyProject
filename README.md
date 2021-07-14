@@ -67,7 +67,8 @@ listener 1883
 ```
 
 
-To run the code with our services it is necessary to now create the [docker-compose.yml] as follows:
+To run the code with our services it is necessary to now create the [docker-compose.yml] (direct link
+to the file) as follows:
 
 ```sh
 ## docker-compose.yml
@@ -207,6 +208,7 @@ services:
 ```
 The last step is to create the energy.env file containing all passwords and environmental variables that are 
 passed to the code.  
+
 As mentioned, it is always possible to change passwords and variables according to your services (e.g. to use your own databases).
 Later on there will be the exact procedure to follow.
 
@@ -344,7 +346,7 @@ give particular benefits.
 
 > 1. Change MySql Database
 
-To change the mysql DB you have to modify the mysql service in the docker-compose.yml and the energy.env file as follows. 
+To change the mysql DB you have to modify the mysql service in the [docker-compose.yml] and the energy.env file as follows. 
 You would need to insert into the brackets `< >` the data that you want to use as well.  
 
 **Make sure that the folder "mysql" is still empty. If that's not the case, delete all the elements before starting 
@@ -371,10 +373,10 @@ this procedure. If there is some problem deleting check if there is an instance 
 recommended at least to transfer the tables of the database**, specifying also the argument --partially_populate 
 a part of the data will be transferred to you (also recommended).
 
-We decided to keep these services in a different .yml.
+We decided to keep these services in a different file [extra-service.yml].
 
 ```shell
-## extra.services.yml 
+## extra-services.yml 
 version: '3.9'
 services:
   mysql: # <- same to specify inside .env as MYSQL_HOST
@@ -412,7 +414,7 @@ MYSQL_PASSWORD=<your_new_psw>   # parameter specified inside .yml
 MYSQL_DATABASE=energy
 ```
 
-If you downloaded new data from the "download center" and you want to pass it to the scripts, modify 
+If you downloaded new data from the [download center] and you want to pass it to the scripts, modify 
 the `command` of the transfer_service as follows:
 
 ```shell
@@ -445,9 +447,9 @@ C:\..\your_fresh_directory> ```docker-compose up```
 
 > 2. Change Mqtt Broker
 
-To do this **you must have configured the mosquitto.conf** file as shown before. It can be observed that we already provide the 
-service for mosquitto in the docker-compose. To complete this step you should just change the broker parameter from 'aws' to 'localhost' in all the sections `command` of the docker-compose.yml
-as:
+To do this **you must have configured the [mosquitto.conf]** file as shown before. It can be observed that we already provide the 
+service for mosquitto in the docker-compose. To complete this step you should just change the broker parameter from 
+'aws' to 'localhost' in all the sections `command` of the [docker-compose.yml] as:
 
 ```
   command:  bash -c "python Code/meteo_collector.py --broker localhost"
@@ -460,7 +462,7 @@ as:
 Add this service and specify the model that you want to train from ['all', "wind", "hydro", "load", 
 "thermal", "geothermal", "biomass", "photovoltaic"]. we also recommend to let --aug.
 
-Always in extra.services.yml add the following code:
+Always in [extra.services.yml] add the following code:
 
 ```shell
 # extra-services.yml
@@ -492,9 +494,11 @@ Go the [OpenWeather] and follow the instruction to get the free API keys.
    [Git repository]: <https://github.com/GabrieleGhisleni/EnergyProject>
    [Docker Image]: <https://>
    [mosquitto.conf]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Volumes/mosquitto/config/mosquitto.conf>
-   [docker-compose.yml]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/docker-compose.yaml>
+   [docker-compose.yml]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/docker-compose.yml>
    [Terna Download Center]: <https://www.terna.it/it/sistema-elettrico/transparency-report/download-center>
    [OpenWeather]: <https://openweathermap.org/>
    [How to run the application]: <##first> 
    [Arguments available]: <##second>
    [Change the services]: <##third>
+   [extra-service.yml]: <<https://github.com/GabrieleGhisleni/EnergyProject/blob/master/extra-services.yml>> 
+   [dowload center]: <https://www.terna.it/it/sistema-elettrico/transparency-report/download-center>
