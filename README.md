@@ -399,7 +399,7 @@ the `command` of the transfer_service as follows:
 ```shell
 ## docker-compose.yml -> transfer_service
 command: bash -c "sleep 45 && python Code/meteo_managers.py \
---create_tables True --partially_populate True \
+--create_tables --partially_populate \
 --external_load_path ['https://link-to-the-storage/<yourfile>.csv'] \
 --external_generation_path [https://raw.githubusercontent.com/<yourfile>.csv]
 ```
@@ -457,7 +457,7 @@ Run this only service with ```docker-compose up train_models```
 
 Then you have to commit the change to the image as follow:
 
-1. ``` docker ps -a``` search for the container having as name trained_models and copy the ID.
+1. ``` docker ps -a``` search for the container having as name train_models and copy the ID.
 2. `docker commit <IDcontainertrain_models> docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest`
 
 Doing this operation the fresh models will be available for also the others services.
