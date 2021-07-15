@@ -431,7 +431,8 @@ C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up add_inter
 
 #### 2. External path
 
-if you stored those data somewhere else and you want to pass it to to code use this service instead:
+if you stored those data somewhere else and you want to pass it to to code use this service specifying the 
+url as a comma separated strings as 'https:myfirstfile.csv,https:mysecondfile.csv, ... '
 
 ```shell
 ## extra-services.yml
@@ -465,11 +466,11 @@ service for mosquitto in the docker-compose. To complete this step you should ju
 
 ### Train models
 
-To re-train the models you will need to add this service and specify the model to train from ['all', "wind", "hydro", "load", 
-"thermal", "geothermal", "biomass", "photovoltaic"]. We also recommend letting `--aug`.   
+To re-train the models you will need to add this service and specify the model to train from `["wind", "hydro", "load", 
+"thermal", "geothermal", "biomass", "photovoltaic"]`. We also recommend letting `--aug`.   
 **You must have collected some data before doing that, or have done the transfer service**.
 
-In [extra.services.yml] add the following code specifying which model do you want to train, or in case you want 
+In [extra-services.yml] add the following code specifying which model do you want to train, or in case you want 
 to retrain them all leave it as it is:
 
 ```shell
@@ -569,10 +570,10 @@ as they need to be, transferring there a small amount of the data we collected.
 - `retain` messages is available only while working with localhost!
 
 The a proper usage of the following arguments read the documentation at [Pass external file from Terna](#pass-external-file-from-terna).
-- `external_load_path` load files saved somewhere else and passed as a comma separated string as `http/drive/load.csv,https/github/load.xlsx` ([external path](#2.-external-path:))
-- `external_generation_path` generation files save somewhere else and passed as before as a comma separated string ([external path](#2.-external-path:))
-- `internal_energy_files` follow this procedure [internal files](#1.-internal-path:) and add this argument (store true) 
-- `internal_load_files` follow this procedure [internal files](#1.-internal-path:) and add this argument (store true) 
+- `external_load_path` load files saved somewhere else and passed as a comma separated string as `http/drive/load.csv,https/github/load.xlsx` (reference [external path](#2-external-path))
+- `external_generation_path` generation files save somewhere else and passed as before as a comma separated string (reference [external path](#2-external-path))
+- `internal_energy_files` follow this procedure ([referece](#1-internal-path)) and add this argument (store true) 
+- `internal_load_files` follow this procedure ([referece](#1-internal-path)) and add this argument (store true) 
 
 #### Pass external file from Terna
 
@@ -591,8 +592,8 @@ The generation data must come togheter! you can see how they look like at the fo
 
 [//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
    [Load data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/load/load_07.csv>
-   [Biomass data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/generation/june-18.csv>
-   [Energy balance data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/generation/biomass-june-2021.csv>
+   [Energy balance data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/generation/june-18.csv>
+   [Biomass data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/generation/biomass-june-2021.csv>
    [docker]: <https://www.docker.com>
    [Git repository]: <https://github.com/GabrieleGhisleni/EnergyProject>
    [Docker Image]: <https://>
