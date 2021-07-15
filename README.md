@@ -7,8 +7,8 @@
 [Create Issue -](https://github.com/GabrieleGhisleni/EnergyProject/issues/new)
 [Fork](https://github.com/GabrieleGhisleni/EnergyProject/fork)
 
-The goal is to predict the quantity of energy from renewable sources that can be produced in an hour and in a day in 
-Italy. All the code is available in this [Git repository], where you can also find the [Docker Image].
+The goal of this project is to predict the quantity of energy (from renewable sources) that can be produced in an hour and in a day in 
+Italy. The code is available in this [Git repository], where you can also find the [Docker Image].
 
 ### Table of Contents
 
@@ -23,7 +23,7 @@ Italy. All the code is available in this [Git repository], where you can also fi
  1. [How to run the application](#how-to-run-the-application)  
     1.1 [Directory structure](#directory-structure)   
     1.2 [Docker-compose.yml](#docker-compose.yml)  
-    1.3 [Enviromental variables](#environmental-variables)   
+    1.3 [Environmental variables](#environmental-variables)   
     1.4 [First deployment](#first-run)
 2. [Change services](#change-the-services)  
    2.1 [Change MySql Database](#change-mysql-database)   
@@ -41,7 +41,7 @@ Italy. All the code is available in this [Git repository], where you can also fi
 
 <br/><br/>
 
-While in the first paragraph we will show how to run the application for the very first time using our DBs and our 
+In the first paragraph we will show how to run the application for the very first time using our DBs and our 
 mosquitto broker, in the second one we will illustrate the arguments that can be passed to the scripts. Lastly, we 
 will explain how to detach our services and replace them with yours (in particular your mysql DB). 
 
@@ -52,14 +52,14 @@ broker, which are both hosted on Amazon AWS.
 **Then we will explain how to change those services and replace them with yours.**
 
 It is required a basic understanding of how to use [docker]. 
-In any case, the first step would be pulling the [Docker Image] attached to this github page, running the following command:
+In any case, the first step would be pulling the [Docker Image] attached to this github page. To do so, run the following command:
 
 ```sh
 docker pull docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
 ```
 
 ### Directory structure
-We suggest to create a fresh directory where the following structure should be replicated:
+We suggest creating a fresh directory where the following structure should be replicated:
 
 ```
 ## Directory's tree
@@ -78,9 +78,9 @@ FreshFolder
 In particular:
  1. Create an empty folder.
  2. Create, inside this folder, a docker-compose.yml and an energy.env file.
- 3. Create a sub-directory called "Volumes" with four more sub-directory: 
+ 3. Create a sub-directory called "Volumes" with four more sub-directories: 
     "mosquitto", "mysql", "django", "redis" and let those empty.
- 4. Creating a file called mosquitto.conf in the mosquitto/config folder. Then paste the following lines inside this mosquitto.conf file (you can also find the 
+ 4. Create a file called mosquitto.conf in the mosquitto/config folder. Then paste the following lines inside this mosquitto.conf file (you can also find the 
     [mosquitto.conf] here):
     
 ```sh
@@ -233,11 +233,11 @@ services:
 
 #### Environmental variables
 
-The last step is to create the energy.env file containing all passwords and environmental variables that are 
+The last step to be made is creating the energy.env file containing all passwords and environmental variables that are 
 passed to the code.  
 
 As mentioned, it is always possible to change passwords and variables according to your services (e.g. to use your own databases).
-Later on there will be the exact procedure to follow.
+Later on it can be found the exact procedure to follow to achieve that.
 
 ```sh
 ## energy.conf
@@ -267,7 +267,7 @@ PYTHONPATH=/src/
 
 #### First deployment
 Now the application can be run for the very first time! Open the CLI of your PC and go to the folder that was just 
-created. Once you are there, type the on of following command:
+created. Once you are there, type the following command:
 
 C:\..\your_fresh_directory> `docker-compose up`
 
@@ -295,7 +295,7 @@ To change the mysql DB you have to modify the mysql service in the [docker-compo
 You would need to insert into the brackets `< >` the data that you want to use as well.  
 
 **Make sure that the folder "mysql" is still empty. If that's not the case, delete all the elements before starting 
-this procedure. If there is some problem deleting check if there is an instance container associated with and in case remove it**
+this procedure. If any problem comes up while deleting, that might be due to an instance container still associated with previous images. If so, remove it and retry.**
 
 ```shell
 ## docker-compose.yml
@@ -315,9 +315,9 @@ this procedure. If there is some problem deleting check if there is an instance 
 ```
 
 #### Transfer service
-**We also provide a service that can be used to create the correct tables inside your fresh database! is it highly 
-recommended at least to transfer the tables of the database**, specifying also the argument --partially_populate 
-a part of the data will be transferred to you (also recommended).
+**We also provide a service that can be used to create the correct tables inside your fresh database! It is highly 
+recommended to do so or at least transfer the tables of the database.** Specifying the argument --partially_populate 
+a part of the data we collected will be transferred to you (also recommended).
 
 We decided to keep these services in a different file [extra-service.yml].
 
@@ -349,7 +349,7 @@ services:
       - energy.env
 ```
 
-Before run the script modify also the energy.env file as follow:
+Before run the script modify also the energy.env file as follows:
 
 ```shell
 ## energy.env
@@ -371,29 +371,29 @@ command: bash -c "sleep 45 && python Code/meteo_managers.py \
 --external_generation_path [https://raw.githubusercontent.com/<yourfile>.csv]
 ```
 
-Otherwhise just run the command:
+Otherwise, just run the command:
 
 C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up transfer_service```
 
-After have done that you can use all the services with your Dbs.
+Having done so, you can use all the services with your Dbs.
 
-However if you do not want that the tables are generated neither the data are passed run the mysql 
-service alone, (the very first time it took around 1 minute to prepare the volumes) as:
+However, if you do not want to generate tables nor to pass new data, run the mysql 
+service alone (the very first time this operation can take around 1 minute to prepare the Volumes) as:
 
 C:\..\your_fresh_directory> ```docker-compose up mysql```
 
-it takes around 40 seconds, it finishes when the following message id displayed:
+Generally, this will take around 40 seconds. The process is finished when the following message is displayed:
 
 > /usr/sbin/mysqld: ready for connections. Version: '8.0.25'  socket: '/va
 r/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
 
-then, when he created all the volumes and is ready, you are able to run 
+then, with all Volumes ready, you are able to run: 
 
 C:\..\your_fresh_directory> ```docker-compose up```
 
 ### Change Mqtt Broker
 
-To do this **you must have configured the [mosquitto.conf]** file as shown before. It can be observed that we already provide the 
+To be able to do this, **you must have configured the [mosquitto.conf]** file as shown before. It can be observed that we already provide the 
 service for mosquitto in the docker-compose. To complete this step you should just change the broker parameter from 
 'aws' to 'localhost' in all the sections `command` of the [docker-compose.yml] as:
 
@@ -405,10 +405,10 @@ service for mosquitto in the docker-compose. To complete this step you should ju
 
 ### Train models
 
-Add this service and specify the model that you want to train from ['all', "wind", "hydro", "load", 
-"thermal", "geothermal", "biomass", "photovoltaic"]. we also recommend to let --aug.
+To re-train the models you will need to add this service and specify the model to train from ['all', "wind", "hydro", "load", 
+"thermal", "geothermal", "biomass", "photovoltaic"]. We also recommend letting --aug.
 
-Always in [extra.services.yml] add the following code:
+In [extra.services.yml] add the following code:
 
 ```shell
 # extra-services.yml
@@ -422,14 +422,14 @@ Always in [extra.services.yml] add the following code:
         - energy.env
 ```
 
-Run this only service with ```docker-compose -f extra-services.yml up train_models```
+Run this one service with ```docker-compose -f extra-services.yml up train_models```
 
-Then you have to commit the change to the image as follow:
+Then you have to commit the changes to the image as follows:
 
-1. ``` docker ps -a``` search for the container having as name train_models and copy the ID.
+1. ``` docker ps -a``` search for the container named "train_models" and copy the ID.
 2. `docker commit <IDcontainertrain_models> docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest`
 
-Doing this operation the fresh models will be available for also the others services.
+Having done this operation, the new models will be available for others services to use.
 
 ### OpenWeather Secret API Keys
 
@@ -449,10 +449,10 @@ arguments that can be passed to the script through the docker-compose.
  -ex, --expiration_time, default=24, type=int
 ```
 
-- Retain is available only when works with localhost!
-- Expiration time refers to the expiration time that the predictions will be available Redis.
-- Broker is the mqtt broker to connect.
-- Topic refers to the particular topic to subscribe.
+- Retain is available only while working with localhost!
+- Expiration time refers to the time the predictions will be available on Redis.
+- Broker is the mqtt broker you connect to.
+- Topic refers to the particular topic to subscribe to.
 
 ### Services based on __*models_manager.py*__
 ```
@@ -463,13 +463,13 @@ arguments that can be passed to the script through the docker-compose.
     -r, --rate, default=12, type=int
 ```
 
-- Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
-- Broker is the mqtt broker to connect
-- Rate is the frequency of the Sendload expressed in hours
-- Model_to_train is an argument that can be used in case you want to train again the models 
-  (make you that you collect some data before)
-- Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
-(in particual when the month is ending).
+- Sendload is the principal function of this service, it is mainly used to send the prediction of the Load (2 days on). 
+- Broker is the mqtt broker you connect to.
+- Rate is the frequency of the Sendload expressed in hours.
+- Model_to_train is an argument that can be used to re-train the models 
+  (make sure to collect some data before)
+- Aug is related to model_to_train and it's used to introduce some observations regarding the next month so to avoid problems 
+(in particular when the month is ending).
   
 ### Services based on __*meteo_managers.py*__
 ```
@@ -487,26 +487,26 @@ In the next section we will explain in details how to do that.
 
 - Create_tables and Partially_populate populate belong to the service that is used to transfer the data into your database.
 
-We also allow passing new files that can be downloaded from [Terna Download Center]. First of all There are two files that can be updated:
+We also allow passing new files that can be downloaded from [Terna Download Center]. First, there are two files that can be updated:
 
-1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
-2. Here you have to collect two different files:
-   1.  `Generation -> Energy Balance`, select all the possible energies in the field "type"
+1. to get load data go to `Load -> Total Load`, downloadable as an Excel or a csv.
+2. to get generation data, you'll need to collect two different files:
+   1.  `Generation -> Energy Balance`, selecting all the possible energies in the field "type"
          *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
-   2.  `Generation -> Renewable Generation`, then select only *Biomass*.
+   2.  `Generation -> Renewable Generation`, selecting only *Biomass*.
     
 
-You can do that in two differents ways:
+You can do that in two different ways:
 1. Store the files somewhere and pass the direct link to the script as [1]
 2. Configure the [docker-compose.yml] so to pass the files into the image [2]
 
 
 1. 
 
-- External_load_path and External_generation_path are path that points to additional files. 
+- External_load_path and External_generation_path are paths pointing to additional files. 
   
-Make sure to follow the procedure indicate below if you want to add files. 
-if there are more than one just pass a string and use comma to separate files as:
+If you want to add files, make sure to follow the procedure indicated below. 
+If there are more than one, just pass a string and use comma to separate the files as:
 
 `
  --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
@@ -518,15 +518,15 @@ if there are more than one just pass a string and use comma to separate files as
 is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
 give particular benefits.
   
-- Storico is the the arguments that indicate the procedure of starting collecting data (store_true).
+- Storico is the argument that indicates the procedure for starting the data collection (store_true).
 
 ### Services based on __*meteo_collector.py*__
 ```
     -b, --broker, required=True, type=str, choices=['localhost', 'aws'])
     -r, --rate, default=6, type=int
 ```
-- Broker mqtt to subscribe
-- Rate is the frequencies of sending data expressed in hours.
+- Broker mqtt you subscribe to
+- Rate is the frequency at which we send data expressed in hours.
 
 
 [//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
