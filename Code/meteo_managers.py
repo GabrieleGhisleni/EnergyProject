@@ -1,12 +1,13 @@
 import json, os, datetime, argparse, redis, sqlalchemy, time
 from typing import List, Tuple
-import pandas as pd; import datetime as dt
+import pandas as pd; import datetime as dt, requests
 from pandas import DataFrame as PandasDataFrame
 from pandas import Series as PandasSeries
 from numpy import array as NumpyArray
 from Code.meteo_class import MeteoData
 import Code.meteo_collector as collector
 import Code.mqtt_manager as c_mqtt
+
 
 class RedisDB:
     """
@@ -214,14 +215,14 @@ class MySqlModels(MySqlDB):
         """
         Retrive the data that are used for the ThermalModel and return them as already processed dataframe.
         """
-        query_rest = """SELECT date, SUM(generation) AS Sum_of_rest_GW FROM energy_generation 
+        query_rest = """SELECT date, SUM(generation) AS Sum_of_rest_GW FROM energy_generation
                         where energy_source != 'thermal' and energy_source != 'hydro'  GROUP BY date;"""
         query_thermal = f""" SELECT holiday, total_load, generation, energy_load.`date`,
                             CASE EXTRACT(MONTH FROM energy_load.`date`)
                                 WHEN '1' THEN 'january' WHEN 2 THEN 'february' WHEN '3' THEN 'march' WHEN '4' THEN 'april'
                                 WHEN '5' THEN 'may' WHEN '6' THEN 'june' WHEN '7' THEN 'july' WHEN '8' THEN 'august'
                                 WHEN '9' THEN 'september' WHEN '10' THEN 'october' WHEN '11' THEN 'november' WHEN '12' THEN 'december'
-                            END as str_month    
+                            END as str_month
                             FROM energy_load
                             INNER JOIN energy_generation
                             ON energy_load.date = energy_generation.date  where energy_source = '{src}';"""
@@ -250,7 +251,7 @@ class MySqlModels(MySqlDB):
                         WHEN '9' THEN  '9'	WHEN '10' THEN  '10'	WHEN '11' THEN  '11'	WHEN '12' THEN  '12'
                         WHEN '13' THEN  '13'	WHEN '14' THEN  '14'	WHEN '15' THEN  '15'	WHEN '16' THEN  '16'
                         WHEN '17' THEN  '17'	WHEN '18' THEN  '18'	WHEN '19' THEN  '19'	WHEN '20' THEN  '20'
-                        WHEN '21' THEN  '21'	WHEN '22' THEN  '22'	WHEN '23' THEN  '23'	WHEN '0' THEN  '0'    
+                        WHEN '21' THEN  '21'	WHEN '22' THEN  '22'	WHEN '23' THEN  '23'	WHEN '0' THEN  '0'
                     END as str_hour
                     from energy.energy_load"""
         df = self.query_from_sql_to_pandas(query)
@@ -270,6 +271,7 @@ class MySqlTransfer(MySqlDB):
     def __init__(self, path_folder: str = 'Documentation/Files_from_terna'):
         super().__init__()
         self.path_folder = path_folder
+        self.path_extra = '/src/Volumes/extra_files'
 
     def create_tables(self) -> None:
         """
@@ -304,73 +306,88 @@ class MySqlTransfer(MySqlDB):
                 if index != -1: print(f" {query.split(' ')[2]} Failed because of {str(e)[:index].strip()}")
                 else: print(f" {query.split(' ')[2]} Failed because of {e}")
 
-    def generation_from_terna(self, external_path: List[str] = None) -> None:
+    def generation_from_terna(self, external_path: List[str] = None, extra_files: bool = False) -> None:
         """
         Takes the files inside Documentation, process them and upload the data into
         the db. we also allow to pass an external file that can be added to the list.
         """
-        paths = f"{self.path_folder}/generation/"
+        paths, where = f"{self.path_folder}/generation/", False
         print(f"Updating Generation to the new DB")
-        paths = [paths + i for i in os.listdir(paths)]
-        if external_path: paths.extend(external_path)
+        #paths = [paths + i for i in os.listdir(paths)]
+        if external_path:
+            paths = external_path
+            where = True
+        if extra_files:
+            extra_energy = f"{self.path_extra}/energy/"
+            paths = [extra_energy + i for i in os.listdir(extra_energy)]
         out = []
         for path in paths:
-            if not os.path.exists(path) and 'http' not in path : print(f"{path} is not a valid path!")
+            if not where and not os.path.exists(path):  print(f"{path} is not a valid path!")
+            elif where and not requests.get(path).ok: print(f"{path} is not a valid url {requests.get(path).status_code}")
             else:
-                try:
-                    df = pd.read_csv(path)
-                    try: df.rename(columns={'Energy Balance [GWh]': 'Renewable Generation [GWh]'}, inplace=True)
-                    except Exception: pass
-                    out.append(df)
-                except Exception:
-                    df = pd.read_excel(path, skiprows=[0], header=1)
-                    try: df.rename(columns={'Energy Balance [GWh]': 'Renewable Generation [GWh]'}, inplace=True)
-                    except Exception: pass
+                df = None
+                try: df = pd.read_csv(path)
+                except Exception: pass
+                try: df = pd.read_excel(path, skiprows=[0], header=1)
+                except Exception: pass
+                if isinstance(df, PandasDataFrame):
+                    df.rename(columns={'Energy Balance [GWh]': 'Renewable Generation [GWh]'}, inplace=True)
                     out.append(df)
         if out:
             final = pd.concat(out)
-            final.Date = pd.to_datetime(final.Date)
-            final.sort_values(by=['Date'], inplace=True)
-            final.reset_index(inplace=True, drop=True)
-            final.rename(columns={'Date': "date", 'Energy Source': 'energy_source',
-                                  'Renewable Generation [GWh]': 'generation'}, inplace=True)
-            final.to_sql('energy_generation', con=self.engine, if_exists='append', index=False)
-            print(f"Finished updating Generation")
-        else: print('We are not able to load the files')
+            if not final.empty:
+                final.Date = pd.to_datetime(final.Date)
+                final.sort_values(by=['Date'], inplace=True)
+                final.reset_index(inplace=True, drop=True)
+                final.rename(columns={'Date': "date", 'Energy Source': 'energy_source',
+                                      'Renewable Generation [GWh]': 'generation'}, inplace=True)
+                final.to_sql('energy_generation', con=self.engine, if_exists='append', index=False)
+                # faster creating one big df and pass to mysql rather than pass each df to mysql.
+                # since there are few data we can hadle that.
+                print(f"Finished updating Generation")
+            else: print('empty files')
+        else: print('We are able to hadle none of your files')
 
-    def load_from_terna(self, external_path: List[str] = None) -> None:
+    def load_from_terna(self, external_path: List[str] = None, extra_files: bool = False) -> None:
         """
         Takes the files inside Documentation, process them and upload the data into
         the db. we also allow to pass an external file that can be added to the list.
         """
-        paths = f"{self.path_folder}/load/"
+        paths, where = f"{self.path_folder}/load/", False
         print(f"Updating Load to the new DB")
         paths_to_file = [paths+i for i in os.listdir(paths)]
-        if external_path: paths_to_file.extend(external_path)
+        if external_path:
+            paths_to_file = external_path
+            where = True
+        if extra_files:
+            extra_load = f"{self.path_extra}/load/"
+            paths_to_file = [extra_load + i for i in os.listdir(extra_load)]
         holiday = HolidayDetector().create_backward_calendar()
         for path in paths_to_file:
-            if os.path.exists(path) or 'http' in path :
-                if path.endswith('.xlsx'): current = pd.read_excel(path, skiprows=[1], header=[1])
-                elif path.endswith('.csv'): current = pd.read_csv(path)
-                else:
-                    extension = path.split('.')[1]
-                    print(f".{extension} is not a valid format!")
-                    continue
-                current = current[current["Bidding zone"] == "Italy"]
-                current.drop(columns=["Forecast Total load [MW]", "Bidding zone"], inplace=True)
-                try: current["Date"] = pd.to_datetime(current["Date"], format="%d/%m/%Y %H:%M:%S %p")
+            if not where and not os.path.exists(path):  print(f"{path} is not a valid path!")
+            elif where and not requests.get(path).ok: print(f"{path} is not a valid url {requests.get(path).status_code}")
+            else:
+                current = None
+                try: current = pd.read_excel(path, skiprows=[1], header=[1])
                 except Exception: pass
-                try: current["Date"] = pd.to_datetime(current["Date"], format="%Y/%m/%d %H:%M:%S")
+                try: current = pd.read_csv(path)
                 except Exception: pass
-                current = current.loc[current['Date'].dt.strftime("%M") == '00', :]
-                current["cross_date"] = current["Date"].dt.strftime("%Y-%m-%d")
-                current["Date"] = current["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
-                current = current.merge(holiday, how="inner", on="cross_date")
-                current.drop(columns=["cross_date"], inplace=True)
-                current.rename(columns={'Total Load [MW]': "total_load", 'Date': 'date', 'Holiday': 'holiday'}, inplace=True)
-                current["total_load"] = current["total_load"]/1000
-                current.to_sql('energy_load', con=self.engine, if_exists='append', index=False)
-            else: print(f"{path} is not a valid load path!")
+                if isinstance(current, PandasDataFrame):
+                    current = current[current["Bidding zone"] == "Italy"]
+                    current.drop(columns=["Forecast Total load [MW]", "Bidding zone"], inplace=True)
+                    try: current["Date"] = pd.to_datetime(current["Date"], format="%d/%m/%Y %H:%M:%S %p")
+                    except Exception: pass
+                    try: current["Date"] = pd.to_datetime(current["Date"], format="%Y/%m/%d %H:%M:%S")
+                    except Exception: pass
+                    current = current.loc[current['Date'].dt.strftime("%M") == '00', :]
+                    current["cross_date"] = current["Date"].dt.strftime("%Y-%m-%d")
+                    current["Date"] = current["Date"].dt.strftime("%Y-%m-%d %H:%M:%S")
+                    current = current.merge(holiday, how="inner", on="cross_date")
+                    current.drop(columns=["cross_date"], inplace=True)
+                    current.rename(columns={'Total Load [MW]': "total_load", 'Date': 'date', 'Holiday': 'holiday'}, inplace=True)
+                    current["total_load"] = current["total_load"]/1000
+                    current.to_sql('energy_load', con=self.engine, if_exists='append', index=False)
+                else: print(f'Unable to process {path}')
         print(f"Finished updating Load")
 
     def from_json_to_db(self) -> None:
@@ -568,16 +585,24 @@ def shrink_mean(data: List[dict]) -> PandasDataFrame:
     res.rename(columns={'cross_join': 'date'}, inplace=True)
     return res
 
-def populate(dbs: MySqlTransfer, load_path: str, energy_path: str) -> None:
-    dbs.load_from_terna(load_path.split(",")) if load_path else dbs.load_from_terna()
-    dbs.generation_from_terna(energy_path.split(",")) if energy_path else dbs.generation_from_terna()
+def populate(dbs: MySqlTransfer) -> None:
+    dbs.load_from_terna()
+    dbs.generation_from_terna()
     dbs.from_json_to_db()
 
-def collecting_storico(rate: int = 12, broker: str = 'localhost') -> None:
+def add_internal_file(dbs: MySqlTransfer, extra_load: bool = False, extra_energy: bool = False) -> None:
+    if extra_load: dbs.load_from_terna(extra_files=extra_load)
+    if extra_energy: dbs.generation_from_terna(extra_files=extra_energy)
+
+def add_external_files(dbs: MySqlTransfer, external_load: str = False, external_energy: str = False) -> None:
+    if external_load: dbs.load_from_terna(external_path=external_load.split(","))
+    if external_energy: dbs.generation_from_terna(external_path=external_energy.split(","))
+
+def collecting_storico(rate: int = 12, broker: str = 'localhost', retain: bool = False) -> None:
     hours_to_sleep = (60*60) * rate
     while True:
         now = datetime.datetime.now()
-        print(f'Uploading MySQL database at {now}')
+        print(f'Uploading MySQL database at {dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
         day = dt.datetime.now().strftime("%d/%m/%Y")
         hour = dt.time(dt.datetime.now().hour).strftime("%H:%S %p")
         modified_cross_join = day + " " + hour
@@ -585,31 +610,36 @@ def collecting_storico(rate: int = 12, broker: str = 'localhost') -> None:
         meteos = [MeteoData.current_from_original_dict_to_class(meteo) for meteo in meteos]
         for obs in meteos: obs.cross_join = modified_cross_join
         meteos = shrink_mean([i.from_class_to_dict() for i in meteos])
-        c_mqtt.MqttManager(broker=broker).custom_publish(data=meteos.to_dict(), topic="Energy/Storico/")
+        broker_mqtt = c_mqtt.MqttGeneralClass(broker=broker, retain=retain, client_name='StoricoSender')
+        broker_mqtt.custom_publish(data=meteos.to_dict(), topic="Energy/Storico/")
         time.sleep(hours_to_sleep)
 
 def main():
     arg_parser = argparse.ArgumentParser(description="Data Collector Meteo")
     arg_parser.add_argument('-c', '--create_tables', action='store_true')
     arg_parser.add_argument('-p', '--partially_populate', action='store_true')
-    arg_parser.add_argument('-el', '--external_load_path', default=None, type=str)
-    arg_parser.add_argument('-eg', '--external_generation_path', default=None, type=str)
-    arg_parser.add_argument('-f', '--file_paths', required=False, default=None)
+    arg_parser.add_argument('-il', '--internal_load_files', action='store_true')
+    arg_parser.add_argument('-ie', '--internal_energy_files', action='store_true')
+    arg_parser.add_argument('-re', '--retain', action='store_true')
     arg_parser.add_argument('-s', '--storico', action='store_true')
     arg_parser.add_argument('-r', '--rate', default=12, type=int, help="Rate expressed in hours")
     arg_parser.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
+    arg_parser.add_argument('-el', '--external_load_path', type=str, help="External path to load")
+    arg_parser.add_argument('-eg', '--external_generation_path', type=str, help="External path to generation")
     args = arg_parser.parse_args()
 
-    if args.create_tables:
-        if args.file_paths: transfer = MySqlTransfer(args.file_paths)
-        else: transfer = MySqlTransfer()
-        transfer.create_tables()
-        if args.partially_populate:
-            populate(transfer, args.external_load_path, args.external_generation_path)
-            print('Done!')
-
     if args.storico:
-        collecting_storico(rate=args.rate, broker=args.broker)
+        collecting_storico(rate=args.rate, broker=args.broker, retain=args.retain)
+    else:
+        transfer = MySqlTransfer()
+        if args.create_tables: transfer.create_tables()
+        if args.partially_populate: populate(transfer)
+        if args.internal_load_files: add_internal_file(transfer, extra_load=True)
+        if args.internal_energy_files: add_internal_file(transfer, extra_energy=True)
+        if args.external_load_path: add_external_files(transfer, external_load=args.external_load_path)
+        if args.external_generation_path: add_external_files(transfer, external_energy=args.external_generation_path)
+        print('Done!')
+
 
 if __name__ == "__main__":
     main()

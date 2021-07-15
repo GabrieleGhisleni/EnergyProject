@@ -187,6 +187,13 @@ def preprocess_mqtt(predictions: dict, path: str, src: str) -> PandasDataFrame:
     if src == 'thermal':  model = ThermalModel(path=path)
     else: model = HydroModel(path=path)
     loads = dbs.RedisDB().get_loads(list(predictions.keys()))
+    if len(loads['generation']) == 0:
+        print("""We have not received the Load prediction!!
+         We will wait 30 seconds more, if is not the case
+         that those data arrives we'll stop the process!""")
+        time.sleep(30)
+        loads = dbs.RedisDB().get_loads(list(predictions.keys()))
+        if len(loads['generation']) == 0: raise TimeoutError('Must configure the Load_sender Service!')
     observations = model.pre_process(predictions, loads)
     columns = ["holiday", "total_load", "Sum_of_rest_GW", "str_month", 'date']
     prediction = model.custom_predict(observations[columns])
@@ -201,7 +208,7 @@ def process_results(msg: dict) -> Tuple[NumpyArray, NumpyArray]:
     new_obs["date"] = new_obs.index
     return new_obs['0'].values, (pd.to_datetime(new_obs['date']).dt.strftime("%Y/%m/%d %H:%M:%S"))
 
-def predict_load(broker: str, path: str = None) -> None:
+def predict_load(broker: str, path: str = None, retain: bool = False) -> None:
     """
     create the load observation perform the prediction and send
     them to the mqtt broker.
@@ -209,7 +216,8 @@ def predict_load(broker: str, path: str = None) -> None:
     load_to_predict, dates = dbs.HolidayDetector().prepare_load_to_predict()
     load_tot, res = LoadModel(path=path).custom_predict(load_to_predict), {}
     for iday in range(len(dates)): res[dates[iday]] = dict(load=load_tot[iday])
-    c_mqtt.MqttManager(broker=broker).custom_publish(data=res, topic="Energy/Load/")
+    broker_mqtt = c_mqtt.MqttGeneralClass(broker=broker, path_models=path, retain=retain, client_name='LoadSender')
+    broker_mqtt.custom_publish(data=res, topic="Energy/Load/")
 
 
 def main():
@@ -222,12 +230,13 @@ def main():
     arg_parser.add_argument('-l', '--sendload', action='store_true', help="Create the load prediction and send to mqtt")
     arg_parser.add_argument('-b', '--broker', default='localhost', choices=['localhost', 'aws'])
     arg_parser.add_argument('-r', '--rate', default=12, type=int, help="Frequencies express in hours")
+    arg_parser.add_argument('-re', '--retain', action='store_true')
     args = arg_parser.parse_args()
 
     if args.model_to_train: train_models(args.model_to_train, args.path, args.aug)
     if args.sendload:
         while True:
-            predict_load(broker=args.broker, path=args.path)
+            predict_load(broker=args.broker, path=args.path, retain=args.retain)
             time.sleep(args.rate * (60*60))
 
 

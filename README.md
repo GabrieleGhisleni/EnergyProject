@@ -487,7 +487,21 @@ In the next section we will explain in details how to do that.
 
 - Create_tables and Partially_populate populate belong to the service that is used to transfer the data into your database.
 
-We also allow passing new files that can be downloaded from [Terna Download Center].  
+We also allow passing new files that can be downloaded from [Terna Download Center]. First of all There are two files that can be updated:
+
+1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
+2. Here you have to collect two different files:
+   1.  `Generation -> Energy Balance`, select all the possible energies in the field "type"
+         *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
+   2.  `Generation -> Renewable Generation`, then select only *Biomass*.
+    
+
+You can do that in two differents ways:
+1. Store the files somewhere and pass the direct link to the script as [1]
+2. Configure the [docker-compose.yml] so to pass the files into the image [2]
+
+
+1. 
 
 - External_load_path and External_generation_path are path that points to additional files. 
   
@@ -498,12 +512,7 @@ if there are more than one just pass a string and use comma to separate files as
  --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
 `
 
-There are two files that can be updated:
-1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
-2. Here you have to collect two different files:
-   1.  `Generation -> Energy Balance`, select all the possible energies in the field "type"
-         *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
-   2.  `Generation -> Renewable Generation`, then select only *Biomass*.
+
    
 - Rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
 is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 

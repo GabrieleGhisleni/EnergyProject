@@ -21,8 +21,32 @@ services:
   transfer_service:
     image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
     container_name: transfer_service
-    command: bash -c "sleep 45 && python Code/meteo_managers.py --create_tables --partially_populate"
+    command: bash -c "sleep 0 && python Code/meteo_managers.py --create_tables --partially_populate"
     # we pass sleep 45 because the mysql must be ready so to be reachable from the script
+    depends_on:
+      - mysql
+    env_file:
+      - energy.env
+
+  add_external_files_to_dbs:
+    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+    container_name: add_external_files_to_dbs
+    command: bash -c "python Code/meteo_managers.py
+      --external_load_path  https://raw.githubusercontent.com/GabrieleGhisleni/EnergyProject/master/Documentation/Files_from_terna/load/load_07.csv?token=ARWCS6N5K7XNFWRWTNH3YHLA6ABWS
+      --external_generation_path  https://raw.githubusercontent.com/GabrieleGhisleni/EnergyProject/master/Documentation/Files_from_terna/generation/1-jan-2020.csv?token=ARWCS6OAPBSDN3M27Q5WL3LA6ABUM,https://raw.githubusercontent.com/GabrieleGhisleni/EnergyProject/master/Documentation/Files_from_terna/generation/1-jan-2020.csv?token=ARWCS6OAPBSDN3M27Q5WL3LA6ABUM
+      "
+    depends_on:
+      - mysql
+    env_file:
+      - energy.env
+
+  add_internal_files_to_dbs:
+    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+    container_name: add_internal_files_to_dbs
+    command: bash -c "python Code/meteo_managers.py --internal_energy_files --internal_load_files"
+    volumes:
+      - ./Volumes/extra_files/energy:/src/Volumes/extra_files/energy
+      - ./Volumes/extra_files/load:/src/Volumes/extra_files/load
     depends_on:
       - mysql
     env_file:

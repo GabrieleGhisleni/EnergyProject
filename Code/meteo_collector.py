@@ -78,25 +78,27 @@ class GetMeteoData:
             except Exception as e: print("\n --> Fatal error with the requests connection <--", str(e))
         return res
 
-def prepare_forecast_to_send(broker: str = 'localhost') -> None:
+def prepare_forecast_to_send(broker: str = 'localhost', retain: bool = False) -> None:
     """
     Fetch the raw forecast API data, process it using the proper
     class and then send it to the mqtt broker for the next steps.
     """
-    print(f"Sending raw forecast meteo data at MQTT-{broker}")
+    print(f"Collecting Raw Forecast Meteo!")
     predictions_raw = GetMeteoData().fetching_forecast_meteo()
     meteo_forecast = meteo_class.MeteoData.forecast_from_dict_to_class(city=predictions_raw)
     meteos_df = meteo_class.MeteoData.update_forecast_meteo(forecast_meteo=meteo_forecast)
-    c_mqtt.MqttManager(broker).custom_publish(data=meteos_df.to_dict(), topic="Energy/ForecastMeteo/")
+    broker_mqtt = c_mqtt.MqttGeneralClass(broker=broker, retain=retain, client_name='ForecastSender')
+    broker_mqtt.custom_publish(data=meteos_df.to_dict(), topic="Energy/ForecastMeteo/")
 
 def main():
     arg_parser = argparse.ArgumentParser(description="Forecast collector!")
     arg_parser.add_argument("-b", "--broker", required=True, type=str,  help="MQTT Broker", choices=['localhost', 'aws'])
     arg_parser.add_argument('-r', '--rate', default=6, type=int, help="Frequencies express in hours")
+    arg_parser.add_argument('-re', '--retain', action='store_true')
     args = arg_parser.parse_args()
 
     while True:
-        prepare_forecast_to_send(broker=args.broker)
+        prepare_forecast_to_send(broker=args.broker, retain=args.retain)
         time.sleep(args.rate * (60*60))
 
 
