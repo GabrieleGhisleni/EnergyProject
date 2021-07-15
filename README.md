@@ -15,9 +15,31 @@ Italy. All the code is available in this [Git repository], where you can also fi
 | Argument | Description |
 | --------------|---------------|
 | [How to run the application](#how-to-run-the-application) | Description of how to run the application using our DBs and brokers.|
-| [Arguments available](#arguments-available) | Brief description of the arguments that can be passed to the docker-compose.yml|
 | [Change the services](#change-the-services) | Guide for switching from our DBs and brokers to yours.|  
+| [Arguments available](#arguments-available) | Brief description of the arguments that can be passed to the docker-compose.yml|
 
+### Index
+
+ 1. [How to run the application](#how-to-run-the-application)  
+    1.1 [Directory structure](#directory-structure)   
+    1.2 [Docker-compose.yml](#docker-compose.yml)  
+    1.3 [Enviromental variables](#environmental-variables)   
+    1.4 [First deployment](#first-run)
+2. [Change services](#change-the-services)  
+   2.1 [Change MySql Database](#change-mysql-database)   
+    - 2.1.1 [Transfer service](#transfer-service)
+    
+   2.2 [Change Mqtt Broker](#change-mqtt-broker)  
+   2.3 [Train models service](#train-models)  
+   2.4 [OpenWeather key](#openWeather-secret-api-keys)  
+3. [Parameters available](#parameters-available)     
+    3.1 [Services based on mqtt_managers.py](#services-based-on-mqtt_managers.py)  
+    3.2 [Services based on models_manager.py](#services-based-on-models_manager.py)  
+    3.3 [Services based on meteo_managers.py](#services-based-on-meteo_managers.py)  
+    3.4 [Services based on meteo_collector.py](#services-based-on-meteo_collector.py)   
+ 
+
+<br/><br/>
 
 While in the first paragraph we will show how to run the application for the very first time using our DBs and our 
 mosquitto broker, in the second one we will illustrate the arguments that can be passed to the scripts. Lastly, we 
@@ -36,6 +58,7 @@ In any case, the first step would be pulling the [Docker Image] attached to this
 docker pull docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
 ```
 
+### Directory structure
 We suggest to create a fresh directory where the following structure should be replicated:
 
 ```
@@ -67,6 +90,7 @@ listener 1883
 ```
 
 
+#### Docker-compose.yml
 To run the code with our services it is necessary to now create the [docker-compose.yml] (direct link
 to the file) as follows:
 
@@ -206,6 +230,9 @@ services:
       env_file:
         - energy.env
 ```
+
+#### Environmental variables
+
 The last step is to create the energy.env file containing all passwords and environmental variables that are 
 passed to the code.  
 
@@ -238,6 +265,7 @@ SECRET_KEY_ENERGY="django-insecure-3@f4136pszq%m3ljx=1!$8h)$71(496%i=_g-xb2+mhyk
 PYTHONPATH=/src/
 ```
 
+#### First deployment
 Now the application can be run for the very first time! Open the CLI of your PC and go to the folder that was just 
 created. Once you are there, type the on of following command:
 
@@ -258,93 +286,10 @@ to use it is in that same page) and the rest of the application:
 
 ![Image](../master/Display/media/pred_t.PNG)
 
-## Arguments available
-
-> Before illustrating how to change the services according to the user's needs, we make a brief overview of the
-arguments that can be passed to the script through the docker-compose.
-
-
-1.  Services based on __*mqtt_managers.py*__
-```
- -b, --broker, default='localhost', choices=['localhost', 'aws']
- -t, --topic, required=True, choices=['forecast', 'energy', 'hydro_thermal', 'load', 'all', 'storico']
- -r, --retain, action=store_true
- -ex, --expiration_time, default=24, type=int
-```
-
-- Retain is available only when works with localhost!
-- Expiration time refers to the expiration time that the predictions will be available Redis.
-- Broker is the mqtt broker to connect.
-- Topic refers to the particular topic to subscribe.
-
-2. Services based on __*models_manager.py*__
-```
-    -l, --sendload, action=store_true, 
-    -b, --broker, default='localhost', choices=['localhost', 'aws'])
-    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
-    -a, --aug, action=store_true
-    -r, --rate, default=12, type=int
-```
-
-- Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
-- Broker is the mqtt broker to connect
-- Rate is the frequency of the Sendload expressed in hours
-- Model_to_train is an argument that can be used in case you want to train again the models 
-  (make you that you collect some data before)
-- Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
-(in particual when the month is ending).
-  
-3. Services based on __*meteo_managers.py*__
-```
-    -c, --create_tables, action=store_true
-    -p, --partially_populate, action=store_true
-    -el, --external_load_path, default=None, type=str
-    -eg, --external_generation_path, default=None, type=str
-    -s, --storico, action=store_true
-    -r, --rate, default=12, type=int
-    -b, --broker, default='localhost', choices=['localhost', 'aws']
-```
-We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
-as they need to be, transferring there a small amount of the data we collected.
-In the next section we will explain in details how to do that.
-
-- Create_tables and Partially_populate populate belong to the service that is used to transfer the data into your database.
-
-We also allow passing new files that can be downloaded from [Terna Download Center].  
-
-- External_load_path and External_generation_path are path that points to additional files. 
-  
-Make sure to follow the procedure indicate below if you want to add files. 
-if there are more than one just pass a string and use comma to separate files as:
-
-`
- --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
-`
-
-There are two files that can be updated:
-1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
-2. Here you have to collect two different files:
-   1.  `Generation -> Energy Balance`, select all the possible energies in the field "type"
-         *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
-   2.  `Generation -> Renewable Generation`, then select only *Biomass*.
-   
-- Rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
-is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
-give particular benefits.
-  
-- Storico is the the arguments that indicate the procedure of starting collecting data (store_true).
-
-4. Services based on __*meteo_collector.py*__
-```
-    -b, --broker, required=True, type=str, choices=['localhost', 'aws'])
-    -r, --rate, default=6, type=int
-```
-- Broker mqtt to subscribe
-- Rate is the frequencies of sending data expressed in hours.
 
 ## Change the services
 
-> 1. Change MySql Database
+###  Change MySql Database
 
 To change the mysql DB you have to modify the mysql service in the [docker-compose.yml] and the energy.env file as follows. 
 You would need to insert into the brackets `< >` the data that you want to use as well.  
@@ -369,6 +314,7 @@ this procedure. If there is some problem deleting check if there is an instance 
     - 3307:3306
 ```
 
+#### Transfer service
 **We also provide a service that can be used to create the correct tables inside your fresh database! is it highly 
 recommended at least to transfer the tables of the database**, specifying also the argument --partially_populate 
 a part of the data will be transferred to you (also recommended).
@@ -445,7 +391,7 @@ then, when he created all the volumes and is ready, you are able to run
 
 C:\..\your_fresh_directory> ```docker-compose up```
 
-> 2. Change Mqtt Broker
+### Change Mqtt Broker
 
 To do this **you must have configured the [mosquitto.conf]** file as shown before. It can be observed that we already provide the 
 service for mosquitto in the docker-compose. To complete this step you should just change the broker parameter from 
@@ -457,7 +403,7 @@ service for mosquitto in the docker-compose. To complete this step you should ju
 
 **Be sure that all the services refer to the same broker.**
 
-> 3. Re-train the models
+### Train models
 
 Add this service and specify the model that you want to train from ['all', "wind", "hydro", "load", 
 "thermal", "geothermal", "biomass", "photovoltaic"]. we also recommend to let --aug.
@@ -485,9 +431,94 @@ Then you have to commit the change to the image as follow:
 
 Doing this operation the fresh models will be available for also the others services.
 
-> 4. OpenWeather Secret API Keys
+### OpenWeather Secret API Keys
 
 Go the [OpenWeather] and follow the instruction to get the free API keys.
+
+## Parameters available
+
+> Before illustrating how to change the services according to the user's needs, we make a brief overview of the
+arguments that can be passed to the script through the docker-compose.
+
+
+###  Services based on __*mqtt_managers.py*__
+```
+ -b, --broker, default='localhost', choices=['localhost', 'aws']
+ -t, --topic, required=True, choices=['forecast', 'energy', 'hydro_thermal', 'load', 'all', 'storico']
+ -r, --retain, action=store_true
+ -ex, --expiration_time, default=24, type=int
+```
+
+- Retain is available only when works with localhost!
+- Expiration time refers to the expiration time that the predictions will be available Redis.
+- Broker is the mqtt broker to connect.
+- Topic refers to the particular topic to subscribe.
+
+### Services based on __*models_manager.py*__
+```
+    -l, --sendload, action=store_true, 
+    -b, --broker, default='localhost', choices=['localhost', 'aws'])
+    -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
+    -a, --aug, action=store_true
+    -r, --rate, default=12, type=int
+```
+
+- Sendload is the principal function of this service, it is used to principally send the prediction of the Load (2 days on). 
+- Broker is the mqtt broker to connect
+- Rate is the frequency of the Sendload expressed in hours
+- Model_to_train is an argument that can be used in case you want to train again the models 
+  (make you that you collect some data before)
+- Aug is related to model_to_train and is used to introduce some observation of the next month so to avoid problems 
+(in particual when the month is ending).
+  
+### Services based on __*meteo_managers.py*__
+```
+    -c, --create_tables, action=store_true
+    -p, --partially_populate, action=store_true
+    -el, --external_load_path, default=None, type=str
+    -eg, --external_generation_path, default=None, type=str
+    -s, --storico, action=store_true
+    -r, --rate, default=12, type=int
+    -b, --broker, default='localhost', choices=['localhost', 'aws']
+```
+We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
+as they need to be, transferring there a small amount of the data we collected.
+In the next section we will explain in details how to do that.
+
+- Create_tables and Partially_populate populate belong to the service that is used to transfer the data into your database.
+
+We also allow passing new files that can be downloaded from [Terna Download Center].  
+
+- External_load_path and External_generation_path are path that points to additional files. 
+  
+Make sure to follow the procedure indicate below if you want to add files. 
+if there are more than one just pass a string and use comma to separate files as:
+
+`
+ --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
+`
+
+There are two files that can be updated:
+1. `Load -> Total Load`, it can be downloaded as an Excel or a csv.
+2. Here you have to collect two different files:
+   1.  `Generation -> Energy Balance`, select all the possible energies in the field "type"
+         *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
+   2.  `Generation -> Renewable Generation`, then select only *Biomass*.
+   
+- Rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
+is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
+give particular benefits.
+  
+- Storico is the the arguments that indicate the procedure of starting collecting data (store_true).
+
+### Services based on __*meteo_collector.py*__
+```
+    -b, --broker, required=True, type=str, choices=['localhost', 'aws'])
+    -r, --rate, default=6, type=int
+```
+- Broker mqtt to subscribe
+- Rate is the frequencies of sending data expressed in hours.
+
 
 [//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
    [docker]: <https://www.docker.com>
