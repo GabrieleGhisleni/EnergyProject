@@ -315,8 +315,8 @@ this procedure. If any problem comes up while deleting, that might be due to an 
 ```
 
 #### Transfer service
-**We also provide a service that can be used to create the correct tables inside your fresh database! It is highly 
-recommended to do so or at least transfer the tables of the database.** Specifying the argument --partially_populate 
+**We also provide a service that can be used to create the correct tables inside your fresh database! Doing so or at least transferring the tables of the database is highly 
+recommended.** Specifying the argument --partially_populate 
 a part of the data we collected will be transferred to you (also recommended).
 
 We decided to keep these services in a different file [extra-service.yml].
@@ -437,7 +437,7 @@ Go the [OpenWeather] and follow the instruction to get the free API keys.
 
 ## Parameters available
 
-> Before illustrating how to change the services according to the user's needs, we make a brief overview of the
+> We now make a brief overview of the
 arguments that can be passed to the script through the docker-compose.
 
 
