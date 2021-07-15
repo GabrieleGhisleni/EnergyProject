@@ -26,16 +26,17 @@ Italy. The code is available in this [Git repository], where you can also find t
     1.3 [Environmental variables](#environmental-variables)   
     1.4 [First deployment](#first-run)
 2. [Change services](#change-the-services)  
-   2.1 [Change MySql Database](#change-mysql-database)   
-    - 2.1.1 [Transfer service](#transfer-service)
-    
-   2.2 [Change Mqtt Broker](#change-mqtt-broker)  
-   2.3 [Train models service](#train-models)  
-   2.4 [OpenWeather key](#openWeather-secret-api-keys)  
+   2.1 [Change MySql Database](#change-mysql-database)      
+       2.1.1 [Transfer service](#transfer-service)   
+   2.2 [Pass files from Terna to MySql](#upload-new-data-from-terna-download-center)    
+   2.3 [Change Mqtt Broker](#change-mqtt-broker)  
+   2.4 [Train models service](#train-models)  
+   2.5 [OpenWeather key](#openWeather-secret-api-keys)  
 3. [Parameters available](#parameters-available)     
     3.1 [Services based on mqtt_managers.py](#services-based-on-mqtt_managers.py)  
     3.2 [Services based on models_manager.py](#services-based-on-models_manager.py)  
-    3.3 [Services based on meteo_managers.py](#services-based-on-meteo_managers.py)  
+    3.3 [Services based on meteo_managers.py](#services-based-on-meteo_managers.py)     
+        3.3.1 [External files from Terna](#pass-external-file-from-terna)    
     3.4 [Services based on meteo_collector.py](#services-based-on-meteo_collector.py)   
  
 
@@ -47,8 +48,8 @@ will explain how to detach our services and replace them with yours (in particul
 
 ## How to run the application
 
-> First, we will show how to run the application using the services we defined, such as our Amazon RDS MySql database and our Mosquitto 
-broker, which are both hosted on Amazon AWS.  
+> First, we will show how to run the application using the services we defined, such as our Amazon RDS MySql database 
+ and our AWS IoT-Core broker, which are both hosted on Amazon AWS. 
 **Then we will explain how to change those services and replace them with yours.**
 
 It is required a basic understanding of how to use [docker]. 
@@ -71,16 +72,34 @@ FreshFolder
 |   |-- django
 |   |-- mysql
 |   |-- redis 
+|   |-- extra_files
+|   |   |-- load
+|   |   |-- energy
 |   |-- mosquitto
 |   |   |-- config
 |   |   |      |-- mosquitto.conf
 ```
-In particular:
+
+The following command in Windows replicates that directories structure.
+>`mkdir energy\Volumes\django && mkdir energy\Volumes\mysql 
+ && mkdir energy\Volumes\redis && mkdir energy\Volumes\mosquitto\config &&  
+ mkdir energy\Volumes\extra_file\load && mkdir energy\Volumes\extra_file\energy`
+
+Always in Windows this command creates the empty files:
+
+> `cd energy && echo > docker-compose.yml && echo > extra-services.yml && echo > energy.env && echo > Volumes\mosquitto\config\mosquitto.conf
+ `
+
+If you are using a different operating system that does not support this command follow 
+these steps:
+
  1. Create an empty folder.
- 2. Create, inside this folder, a docker-compose.yml and an energy.env file.
+ 2. Create, inside this folder, a docker-compose.yml, a extra-services.yml and an energy.env file.
  3. Create a sub-directory called "Volumes" with four more sub-directories: 
-    "mosquitto", "mysql", "django", "redis" and let those empty.
- 4. Create a file called mosquitto.conf in the mosquitto/config folder. Then paste the following lines inside this mosquitto.conf file (you can also find the 
+    "mosquitto", "mysql", "django", "redis",  and let those empty.
+ 4. Create a sub-directory inside 'Volumes' called 'extra_files' with two empty folder inside
+    'energy' and 'load'
+ 5. Create a file called mosquitto.conf in the mosquitto/config folder. Then paste the following lines inside this mosquitto.conf file (you can also find the 
     [mosquitto.conf] here):
     
 ```sh
@@ -105,7 +124,8 @@ services:
     - '6379:6379'
     volumes:
     - ./Volumes/redis:/data
-
+    logging:
+        driver: none
   mqtt:
     image: eclipse-mosquitto
     container_name: mqtt
@@ -113,7 +133,8 @@ services:
     - ./Volumes/mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
     ports:
     - "1883:1883"
-
+    logging:
+        driver: none
   mysql:
     image: mysql:latest
     container_name: mysql
@@ -123,21 +144,8 @@ services:
       - energy.env
     ports:
     - 3307:3306
-
-  # Web App
-  web_app:
-    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
-    tty: false
-    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    container_name: energyDjango
-    env_file:
-      - energy.env
-    depends_on:
-      - redis
-    ports:
-    - "8000:8000"
-    volumes:
-    - ./Volumes/django:/src/Volumes/django
+    logging:
+        driver: none
 
   # Services base on mqtt_managers
   load_receiver:
@@ -231,6 +239,9 @@ services:
         - energy.env
 ```
 
+We set the logs of mysql, mqtt, redis and django to none so to avoid display those messages and be able to follow
+the messages from the scripts. Anyway if you want to see those just remove `logging: driver: none` in the [docker-compose.yml].
+
 #### Environmental variables
 
 The last step to be made is creating the energy.env file containing all passwords and environmental variables that are 
@@ -295,7 +306,8 @@ To change the mysql DB you have to modify the mysql service in the [docker-compo
 You would need to insert into the brackets `< >` the data that you want to use as well.  
 
 **Make sure that the folder "mysql" is still empty. If that's not the case, delete all the elements before starting 
-this procedure. If any problem comes up while deleting, that might be due to an instance container still associated with previous images. If so, remove it and retry.**
+this procedure. If any problem comes up while deleting, that might be due to an instance container still associated 
+with previous images. If so, remove it and retry.**
 
 ```shell
 ## docker-compose.yml
@@ -316,10 +328,11 @@ this procedure. If any problem comes up while deleting, that might be due to an 
 
 #### Transfer service
 **We also provide a service that can be used to create the correct tables inside your fresh database! Doing so or at least transferring the tables of the database is highly 
-recommended.** Specifying the argument --partially_populate 
+recommended.** Specifying the argument `--partially_populate` 
 a part of the data we collected will be transferred to you (also recommended).
 
-We decided to keep these services in a different file [extra-service.yml].
+We decided to keep these services in a different file. If you have not done yet create a new file called 
+[extra-services.yml] and insert the following code:
 
 ```shell
 ## extra-services.yml 
@@ -360,18 +373,7 @@ MYSQL_PASSWORD=<your_new_psw>   # parameter specified inside .yml
 MYSQL_DATABASE=energy
 ```
 
-If you downloaded new data from the [download center] and you want to pass it to the scripts, modify 
-the `command` of the transfer_service as follows:
-
-```shell
-## extra-servoces.yml -> transfer_service
-command: bash -c "sleep 45 && python Code/meteo_managers.py \
---create_tables --partially_populate \
---external_load_path ['https://link-to-the-storage/<yourfile>.csv'] \
---external_generation_path [https://raw.githubusercontent.com/<yourfile>.csv]
-```
-
-Otherwise, just run the command:
+So you are ready to run the service as:
 
 C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up transfer_service```
 
@@ -382,7 +384,7 @@ service alone (the very first time this operation can take around 1 minute to pr
 
 C:\..\your_fresh_directory> ```docker-compose up mysql```
 
-Generally, this will take around 40 seconds. The process is finished when the following message is displayed:
+The process is finished when the following message is displayed:
 
 > /usr/sbin/mysqld: ready for connections. Version: '8.0.25'  socket: '/va
 r/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
@@ -391,11 +393,69 @@ then, with all Volumes ready, you are able to run:
 
 C:\..\your_fresh_directory> ```docker-compose up```
 
+### Upload new data from Terna Download Center
+
+Since the data regarding the overall Load on the italian network as well as the generation of the renewable
+energies come from [Terna Download Center] we have create a service that allow you to update your dbs with new
+data that comes from there.  (have a look here
+regarding which data you can update and how [Pass external file from Terna](#pass-external-file-from-terna))
+
+
+If you downloaded new data from the [download center] and you want to pass it to the scripts you can 
+doing that in two different ways.
+
+#### 1. Internal path:
+
+Download the file and put them inside the folder Volumes/extra_files. In particular if are data regarding
+the load put the inside the 'load' folder otherwhise inside the 'energy' folder.
+
+Change the [extra-services.yml] adding this service:
+   
+```shell
+## extra-services.yml
+  add_internal_files_to_dbs:
+    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+    container_name: add_internal_files_to_dbs
+    command: bash -c "python Code/meteo_managers.py --internal_energy_files --internal_load_files"
+    volumes:
+      - ./Volumes/extra_files/energy:/src/Volumes/extra_files/energy
+      - ./Volumes/extra_files/load:/src/Volumes/extra_files/load
+    depends_on:
+      - mysql
+    env_file:
+      - energy.env
+```
+
+Then run:
+C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up add_internal_files_to_dbs```
+
+#### 2. External path
+
+if you stored those data somewhere else and you want to pass it to to code use this service instead:
+
+```shell
+## extra-services.yml
+  add_external_files_to_dbs:
+    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+    container_name: add_external_files_to_dbs
+    command: bash -c "python Code/meteo_managers.py
+      --external_load_path  https/direct_link/to_yourload_file.csv, https/secondfile.csv
+      --external_generation_path  https/direct_link/you_generation.csv
+      "
+    depends_on:
+      - mysql
+    env_file:
+      - energy.env
+```
+
+Then run:
+C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up add_external_files_to_dbs```
+
 ### Change Mqtt Broker
 
 To be able to do this, **you must have configured the [mosquitto.conf]** file as shown before. It can be observed that we already provide the 
 service for mosquitto in the docker-compose. To complete this step you should just change the broker parameter from 
-'aws' to 'localhost' in all the sections `command` of the [docker-compose.yml] as:
+`aws` to `localhost` in all the sections `command` of the [docker-compose.yml] as:
 
 ```
   command:  bash -c "python Code/meteo_collector.py --broker localhost"
@@ -406,9 +466,11 @@ service for mosquitto in the docker-compose. To complete this step you should ju
 ### Train models
 
 To re-train the models you will need to add this service and specify the model to train from ['all', "wind", "hydro", "load", 
-"thermal", "geothermal", "biomass", "photovoltaic"]. We also recommend letting --aug.
+"thermal", "geothermal", "biomass", "photovoltaic"]. We also recommend letting `--aug`.   
+**You must have collected some data before doing that, or have done the transfer service**.
 
-In [extra.services.yml] add the following code:
+In [extra.services.yml] add the following code specifying which model do you want to train, or in case you want 
+to retrain them all leave it as it is:
 
 ```shell
 # extra-services.yml
@@ -444,15 +506,15 @@ arguments that can be passed to the script through the docker-compose.
 ###  Services based on __*mqtt_managers.py*__
 ```
  -b, --broker, default='localhost', choices=['localhost', 'aws']
- -t, --topic, required=True, choices=['forecast', 'energy', 'hydro_thermal', 'load', 'all', 'storico']
+ -t, --topic, required=True, choices=['forecast', 'energy', 'hydro_thermal', 'load', 'storico']
  -r, --retain, action=store_true
  -ex, --expiration_time, default=24, type=int
 ```
 
-- Retain is available only while working with localhost!
-- Expiration time refers to the time the predictions will be available on Redis.
-- Broker is the mqtt broker you connect to.
-- Topic refers to the particular topic to subscribe to.
+- `retain` messages is available only while working with localhost!
+- `expiration_time` refers to the time the predictions will be available on Redis.
+- `broker` is the mqtt broker you connect to.
+- `topic` refers to the particular topic to subscribe to.
 
 ### Services based on __*models_manager.py*__
 ```
@@ -461,33 +523,61 @@ arguments that can be passed to the script through the docker-compose.
     -m, --model_to_train, default=None, choices=['all', "wind", "hydro", "load", "thermal", "geothermal", "biomass", "photovoltaic"]                 
     -a, --aug, action=store_true
     -r, --rate, default=12, type=int
+    -re, --retain, action='store_true'
 ```
 
-- Sendload is the principal function of this service, it is mainly used to send the prediction of the Load (2 days on). 
-- Broker is the mqtt broker you connect to.
-- Rate is the frequency of the Sendload expressed in hours.
-- Model_to_train is an argument that can be used to re-train the models 
-  (make sure to collect some data before)
-- Aug is related to model_to_train and it's used to introduce some observations regarding the next month so to avoid problems 
+- `sendload` is the principal function of this service, it is mainly used to send the prediction of the Load (2 days on). 
+- `broker` is the mqtt broker you connect to.
+- `rate` is the frequency of the Sendload expressed in hours.
+- `model_to_train` is an argument that can be used to re-train the models 
+  (make sure to collect some data before).
+- `aug` is related to model_to_train and it's used to introduce some observations regarding the next month so to avoid problems 
 (in particular when the month is ending).
-  
+- `retain` messages is available only while working with localhost!
+
+### Services based on __*meteo_collector.py*__
+```
+    -b, --broker, required=True, type=str, choices=['localhost', 'aws'])
+    -r, --rate, default=6, type=int
+    -re, --retain, action='store_true'
+```
+- `broker` mqtt you subscribe to.
+- `rate` is the frequency at which we send data expressed in hours.
+- `retain` messages is available only while working with localhost!
+
 ### Services based on __*meteo_managers.py*__
 ```
     -c, --create_tables, action=store_true
     -p, --partially_populate, action=store_true
     -el, --external_load_path, default=None, type=str
     -eg, --external_generation_path, default=None, type=str
+    -ie, --internal_energy_files, action='store_true'
+    -il, --internal_load_files, action='store_true'
     -s, --storico, action=store_true
     -r, --rate, default=12, type=int
     -b, --broker, default='localhost', choices=['localhost', 'aws']
+    -re, --retain, action='store_true'
 ```
 We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
 as they need to be, transferring there a small amount of the data we collected.
-In the next section we will explain in details how to do that.
 
-- Create_tables and Partially_populate populate belong to the service that is used to transfer the data into your database.
+- `create_tables` create the tables with the correct format in the the Dbs.
+- `partially_populate` transfer a small amount of data into your new Dbs.  
+- `storico` store true value indicating the process of colleting current meteo and send to the mqtt broker.
+- `rate` is the frequency at which we send data expressed in hours.
+- `broker` mqtt you subscribe to.
+- `retain` messages is available only while working with localhost!
 
-We also allow passing new files that can be downloaded from [Terna Download Center]. First, there are two files that can be updated:
+The a proper usage of the following arguments read the documentation at [Pass external file from Terna](#pass-external-file-from-terna).
+- `external_load_path` load files saved somewhere else and passed as a comma separated string as `http/drive/load.csv,https/github/load.xlsx` ([external path](#2.-external-path:))
+- `external_generation_path` generation files save somewhere else and passed as before as a comma separated string ([external path](#2.-external-path:))
+- `internal_energy_files` follow this procedure [internal files](#1.-internal-path:) and add this argument (store true) 
+- `internal_load_files` follow this procedure [internal files](#1.-internal-path:) and add this argument (store true) 
+
+#### Pass external file from Terna
+
+We also allow passing new files that can be downloaded from [Terna Download Center]. 
+First, there are two files that can be updated:
 
 1. to get load data go to `Load -> Total Load`, downloadable as an Excel or a csv.
 2. to get generation data, you'll need to collect two different files:
@@ -495,41 +585,14 @@ We also allow passing new files that can be downloaded from [Terna Download Cent
          *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
    2.  `Generation -> Renewable Generation`, selecting only *Biomass*.
     
-
-You can do that in two different ways:
-1. Store the files somewhere and pass the direct link to the script as [1]
-2. Configure the [docker-compose.yml] so to pass the files into the image [2]
-
-
-1. 
-
-- External_load_path and External_generation_path are paths pointing to additional files. 
-  
-If you want to add files, make sure to follow the procedure indicated below. 
-If there are more than one, just pass a string and use comma to separate the files as:
-
-`
- --external_generation_path github/../biomass.csv,drive/mydrive/load.xlsx
-`
-
-
-   
-- Rate argument refers to the rate at which we collect the "meteo data" that will be uploaded on the DBs (the history). The default
-is "hourly", but it can be set differently. Be aware of the fact that the minimum rate is "hourly", so setting it lower would not 
-give particular benefits.
-  
-- Storico is the argument that indicates the procedure for starting the data collection (store_true).
-
-### Services based on __*meteo_collector.py*__
-```
-    -b, --broker, required=True, type=str, choices=['localhost', 'aws'])
-    -r, --rate, default=6, type=int
-```
-- Broker mqtt you subscribe to
-- Rate is the frequency at which we send data expressed in hours.
-
+The generation data must come togheter! you can see how they look like at the following links:
+- [Load data]
+- [Biomass data], [Energy balance data]
 
 [//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
+   [Load data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/load/load_07.csv>
+   [Biomass data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/generation/june-18.csv>
+   [Energy balance data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/generation/biomass-june-2021.csv>
    [docker]: <https://www.docker.com>
    [Git repository]: <https://github.com/GabrieleGhisleni/EnergyProject>
    [Docker Image]: <https://>
@@ -537,8 +600,5 @@ give particular benefits.
    [docker-compose.yml]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/docker-compose.yml>
    [Terna Download Center]: <https://www.terna.it/it/sistema-elettrico/transparency-report/download-center>
    [OpenWeather]: <https://openweathermap.org/>
-   [How to run the application]: <##first> 
-   [Arguments available]: <##second>
-   [Change the services]: <##third>
-   [extra-service.yml]: <<https://github.com/GabrieleGhisleni/EnergyProject/blob/master/extra-services.yml>> 
-   [dowload center]: <https://www.terna.it/it/sistema-elettrico/transparency-report/download-center>
+   [extra-services.yml]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/extra-services.yml>
+   [download center]: <https://www.terna.it/it/sistema-elettrico/transparency-report/download-center>

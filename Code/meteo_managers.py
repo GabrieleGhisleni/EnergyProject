@@ -602,7 +602,6 @@ def collecting_storico(rate: int = 12, broker: str = 'localhost', retain: bool =
     hours_to_sleep = (60*60) * rate
     while True:
         now = datetime.datetime.now()
-        print(f'Uploading MySQL database at {dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
         day = dt.datetime.now().strftime("%d/%m/%Y")
         hour = dt.time(dt.datetime.now().hour).strftime("%H:%S %p")
         modified_cross_join = day + " " + hour
