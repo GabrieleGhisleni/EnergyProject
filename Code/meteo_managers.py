@@ -11,7 +11,7 @@ import Code.mqtt_manager as c_mqtt
 
 class RedisDB:
     """
-    class created to handle the files with Redis database.
+    class created to handle the data with Redis database.
     Since we use redis only to display data we set an expiration
     time on the observation. by default they will be available
     for 24 hours than they will expire.
@@ -105,7 +105,7 @@ class RedisDB:
 
 class MySqlDB:
     """
-    Class created to handle the files with MySQL database.
+    Class created to handle data with MySQL database.
     """
     def __init__(self):
         mysql_host = os.environ.get('MYSQL_HOST')

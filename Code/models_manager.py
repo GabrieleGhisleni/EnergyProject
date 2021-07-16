@@ -16,13 +16,17 @@ import Code.meteo_managers as dbs
 class EnergyModels:
     """
     Skeleton class used for all the energy models, included thermal and load.
+    it has the main functionalities as the fit and prediction funtions. Since
+    Some energies require different model and parameters those will depend
+    by the respectively child class.
     """
     def __init__(self):
         self.cat_variable = ['str_hour', 'str_month']
 
     def custom_fit_model(self, aug: str = 'yes') -> None:
         """
-        Takes the model, fit and save it.
+        Takes the model looking for the proper categorical variable to be encoded,
+        retrive the correct data from the database, fit and save it.
         """
         encoder = (OneHotEncoder(), self.cat_variable)
         pre_process = make_column_transformer(encoder, remainder='passthrough')
@@ -44,7 +48,9 @@ class EnergyModels:
 
     def pre_process(self, predictions: dict, loads: dict) -> PandasDataFrame:
         """
-        Pre process the data that are passed to the hydro and to the thermal model.
+        Since we need for the Hydro and Thermal model the sum of the others renewable
+        predictions this function process those data that are next passed to the hydro
+        and to the thermal model.
         """
         tmp = []
         holiday_detector = dbs.HolidayDetector()
@@ -62,6 +68,7 @@ class EnergyModels:
 class GeoThermalModel(EnergyModels):
     """
     Model used for deal the geothermal energy source.
+    Linear model with ['str_hour', 'str_month'] as categorical variable.
     """
     def __init__(self, path: str = '../Models/'):
         super(GeoThermalModel, self).__init__()
@@ -74,6 +81,7 @@ class GeoThermalModel(EnergyModels):
 class WindModel(EnergyModels):
     """
     Model used for deal the wind energy source.
+    RandomForestRegressor model with ['str_hour', 'str_month'] as categorical variable.
     """
     def __init__(self, path: str = '../Models/'):
         super(WindModel, self).__init__()
@@ -86,6 +94,7 @@ class WindModel(EnergyModels):
 class PhotoVoltaicModel(EnergyModels):
     """
     Model used for deal the wind photovoltaic source.
+    BaggingRegressor model with ['str_hour', 'str_month'] as categorical variable.
     """
     def __init__(self, path: str = '../Models/'):
         super(PhotoVoltaicModel, self).__init__()
@@ -98,6 +107,7 @@ class PhotoVoltaicModel(EnergyModels):
 class BiomassModel(EnergyModels):
     """
     Model used for deal the biomass energy source.
+    RandomForestRegressor model with ['str_hour', 'str_month'] as categorical variable.
     """
     def __init__(self, path: str = '../Models/'):
         super(BiomassModel, self).__init__()
@@ -110,6 +120,7 @@ class BiomassModel(EnergyModels):
 class LoadModel(EnergyModels):
     """
     Model used for deal the load energy source.
+    BaggingRegressor model with ["holiday", "str_hour", "str_month"] as categorical variable.
     """
     def __init__(self, path: str = '../Models/'):
         self.path, self.source = f"{path}load.mod", 'load'
@@ -122,6 +133,7 @@ class LoadModel(EnergyModels):
 class HydroModel(EnergyModels):
     """
     Model used for deal the hydro energy source.
+    RandomForestRegressor model with ["holiday", "str_hour"] as categorical variable.
     """
     def __init__(self, path: str = '../Models/'):
         self.cat_variable = ["holiday", "str_month"]
@@ -134,6 +146,7 @@ class HydroModel(EnergyModels):
 class ThermalModel(EnergyModels):
     """
     Model used for deal the thermal energy source.
+    BaggingRegressor model with ["holiday", "str_month"] as categorical variable.
     """
     def __init__(self, path: str = '../Models/'):
         self.path, self.source = f"{path}thermal.mod", 'thermal'
@@ -160,7 +173,8 @@ def train_models(model: str = 'all', path: str = "../Models/", aug: str = 'yes')
 def process_forecast_mqtt(msg: dict, path: str) -> Tuple[dict, PandasDataFrame]:
     """
     Takes the already processed meteo forecast from the mqtt broker,
-    perform the prediction and return them as a dict.
+    perform the prediction and return them as a dict toghether with the
+    data encoded as dataframe to be passed to mysql db.
     """
     new_obs = pd.DataFrame.from_dict(msg)
     hours_of_prediction = new_obs["date"].unique()
@@ -182,7 +196,11 @@ def process_forecast_mqtt(msg: dict, path: str) -> Tuple[dict, PandasDataFrame]:
 def preprocess_mqtt(predictions: dict, path: str, src: str) -> PandasDataFrame:
     """
     Takes the energy predictions from the mqtt broker, fetch the load
-    and perform the prediction of thermal sorce.
+    and perform the prediction of thermal sorce. If is not the case
+    that the load data are arrived just wait for 30 seconds if they do
+    not arrived yet raise TimeOutError! if is not the case there is probably
+    an error with load_sender or load_receiver service, make sure that they
+    refer to the same mqtt broker.
     """
     if src == 'thermal':  model = ThermalModel(path=path)
     else: model = HydroModel(path=path)

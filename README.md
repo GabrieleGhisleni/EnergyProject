@@ -572,8 +572,8 @@ as they need to be, transferring there a small amount of the data we collected.
 The a proper usage of the following arguments read the documentation at [Pass external file from Terna](#pass-external-file-from-terna).
 - `external_load_path` load files saved somewhere else and passed as a comma separated string as `http/drive/load.csv,https/github/load.xlsx` (reference [external path](#2-external-path))
 - `external_generation_path` generation files save somewhere else and passed as before as a comma separated string (reference [external path](#2-external-path))
-- `internal_energy_files` follow this procedure ([referece](#1-internal-path)) and add this argument (store true) 
-- `internal_load_files` follow this procedure ([referece](#1-internal-path)) and add this argument (store true) 
+- `internal_energy_files` follow this procedure (reference [internal path](#1-internal-path)) and add this argument (store true) 
+- `internal_load_files` follow this procedure (reference [internal path](#1-internal-path)) and add this argument (store true) 
 
 #### Pass external file from Terna
 

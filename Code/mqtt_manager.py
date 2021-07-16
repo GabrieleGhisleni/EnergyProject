@@ -5,6 +5,9 @@ import Code.meteo_managers as dbs
 
 
 class MqttGeneralClass:
+    """
+    Skeleton class used for dealing the Mqtt clients.
+    """
     def __init__(self, client_name: str, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
         def on_connect(client, userdata, flags, rc):
             if rc == 0: print(f"{self.client_name} is connected to {self.broker}! Waiting for messages!")
@@ -44,6 +47,9 @@ class MqttGeneralClass:
 
 
 class ForecastClient(MqttGeneralClass):
+    """
+    Child class of MqttGeneralClass that handle the ForecastClient.
+    """
     def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
         super().__init__(broker=broker, path_models=path_models, ex_time=ex_time, retain=retain, client_name='ForecastClient')
         def on_message_forecast(client, user_data, msg):
@@ -57,6 +63,9 @@ class ForecastClient(MqttGeneralClass):
 
 
 class EnergyClient(MqttGeneralClass):
+    """
+    Child class of MqttGeneralClass that handle the EnergyClient.
+    """
     def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
         super().__init__(broker=broker, path_models=path_models, ex_time=ex_time, retain=retain, client_name='EnergyPredictionClient')
         def on_message_energy(client, user_data, msg):
@@ -72,6 +81,9 @@ class EnergyClient(MqttGeneralClass):
 
 
 class ThermalHydroClient(MqttGeneralClass):
+    """
+    Child class of MqttGeneralClass that handle the ThermalHydroClient.
+    """
     def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
         super().__init__(broker=broker, path_models=path_models, ex_time=ex_time, retain=retain, client_name='HydroThermalClient')
         def on_message_thermal_hydro(client, user_data, msg):
@@ -89,6 +101,9 @@ class ThermalHydroClient(MqttGeneralClass):
 
 
 class LoadClient(MqttGeneralClass):
+    """
+    Child class of MqttGeneralClass that handle the LoadClient.
+    """
     def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
         super().__init__(broker=broker, path_models=path_models, ex_time=ex_time, retain=retain, client_name='LoadClient')
         def on_message_load(client, user_data, msg):
@@ -101,6 +116,9 @@ class LoadClient(MqttGeneralClass):
 
 
 class StoricoClient(MqttGeneralClass):
+    """
+    Child class of MqttGeneralClass that handle the StoricoClient.
+    """
     def __init__(self, broker: str = 'localhost', path_models: str = 'Models/', ex_time: int = 24, retain: bool = False):
         super().__init__(broker=broker, path_models=path_models, ex_time=ex_time, retain=retain, client_name='StoricoClient')
         def on_message_storico(client, user_data, msg):

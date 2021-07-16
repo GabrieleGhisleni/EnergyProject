@@ -6,15 +6,15 @@ from pandas import DataFrame as PandasDataFrame
 
 class MeteoData:
     """
-    Class created to deal the raw data coming from the API
+    Class created to deal and organize the raw data coming from
+    the GetMeteoData class which handle the API requests.
     It requires some parameters that are all found inside
     the response of the API. Since it could be the case that
     rain or snow is not present we preventively set it to 0.
     We also create a cross_join attribute that will be used
     to merge those data with the generation data from Terna.
     """
-    def __init__(self, date, name, clouds, pressure, humidity, temp,
-                 wind_deg, wind_speed, rain_1h=0, snow_1h=0, cross_join=None):
+    def __init__(self, date, name, clouds, pressure, humidity, temp, wind_deg, wind_speed, rain_1h=0, snow_1h=0, cross_join=None):
         self.date = date
         self.name = name
         self.cross_join = cross_join
@@ -34,7 +34,7 @@ class MeteoData:
         return self.__str__()
 
     def __eq__(self, other):
-        if other is not MeteoData: raise TypeError("You are not comparing two MeteoData object!")
+        if not isinstance(other, MeteoData): raise TypeError("You are not comparing two MeteoData object!")
         else: return self.__str__() == other.__str__()
 
     def __iter__(self):

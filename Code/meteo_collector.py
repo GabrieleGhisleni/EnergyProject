@@ -57,7 +57,7 @@ class GetMeteoData:
 
     def fetching_forecast_meteo(self) -> List[dict]:
         """
-        fetch all the forecast solar radiation data from the regions, return a list of  is_dict
+        fetch all the forecast data from the regions, return a list of dict.
         it collect the data from the API as dictionary and insert them all into a list
         so the function return a list of dictionary, each dictionary is a registration
         for a particular capoluogo.
