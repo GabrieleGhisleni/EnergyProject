@@ -295,7 +295,7 @@ This link will open your browser directly to your localhost where you'd find the
 Various functionalities are available, such as today or tomorrow predictions, the browsable API (the description of how 
 to use it is in that same page) and the rest of the application:
 
-![Image](../master/Display/media/pred_t.PNG)
+![Image](../master/Display/media/ap.png)
 
 
 ## Change the services

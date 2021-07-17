@@ -51,7 +51,7 @@ services:
   load_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: load_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker localhost --topic load"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic load"
       depends_on:
         - redis
         - mqtt
@@ -62,7 +62,7 @@ services:
   forecast_meteo_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name:  forecast_meteo_receiver
-      command: bash -c "python -u Code/mqtt_manager.py --broker localhost --topic forecast"
+      command: bash -c "python -u Code/mqtt_manager.py --broker aws --topic forecast"
       depends_on:
         - redis
         - mqtt
@@ -73,7 +73,7 @@ services:
   energy_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: energy_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker localhost --topic energy"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic energy"
       depends_on:
         - redis
         - mqtt
@@ -85,7 +85,7 @@ services:
   hydro_thermal_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: hydro_thermal_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker localhost --topic hydro_thermal"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic hydro_thermal"
       depends_on:
         - redis
         - mqtt
@@ -97,7 +97,7 @@ services:
   storico_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: storico_receiver
-      command:  bash -c "python -u Code/mqtt_manager.py --broker localhost --topic storico"
+      command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic storico"
       env_file:
         - energy.env
       depends_on:
@@ -109,7 +109,7 @@ services:
   forecast_meteo_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: forecast_meteo_sender
-      command:  bash -c "python Code/meteo_collector.py --broker localhost"
+      command:  bash -c "python Code/meteo_collector.py --broker aws"
       depends_on:
         - forecast_meteo_receiver
         - mqtt
@@ -120,7 +120,7 @@ services:
   load_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --broker localhost --sendload"
+      command:  bash -c "sleep 3 && python Code/models_manager.py --broker aws --sendload"
       depends_on:
         - load_receiver
         - mqtt
@@ -131,7 +131,7 @@ services:
   storico_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
       container_name: storico_sender
-      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker localhost --storico"
+      command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --storico"
       depends_on:
         - storico_receiver
         - mqtt
