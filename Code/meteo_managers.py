@@ -203,7 +203,7 @@ class MySqlModels(MySqlDB):
             month_plus_one = df[df['str_month'] == 'june' ].copy()
             month_plus_one['str_month'] = month_plus_one.str_month.apply(lambda x: month)
             df = df.append(month_plus_one, ignore_index=True)
-            monthinteger = (dt.datetime.now().month)
+
             month_plus_one = df[df['str_month'] == 'june' ].copy()
             month_plus_one['str_month'] = month_plus_one.str_month.apply(lambda x: 'july')
             df = df.append(month_plus_one, ignore_index=True)
@@ -217,7 +217,7 @@ class MySqlModels(MySqlDB):
         """
         query_rest = """SELECT date, SUM(generation) AS Sum_of_rest_GW FROM energy_generation
                         where energy_source != 'thermal' and energy_source != 'hydro'  GROUP BY date;"""
-        query_thermal = f""" SELECT holiday, total_load, generation, energy_load.`date`,
+        query = f""" SELECT holiday, total_load, generation, energy_load.`date`,
                             CASE EXTRACT(MONTH FROM energy_load.`date`)
                                 WHEN '1' THEN 'january' WHEN 2 THEN 'february' WHEN '3' THEN 'march' WHEN '4' THEN 'april'
                                 WHEN '5' THEN 'may' WHEN '6' THEN 'june' WHEN '7' THEN 'july' WHEN '8' THEN 'august'
@@ -228,8 +228,8 @@ class MySqlModels(MySqlDB):
                             ON energy_load.date = energy_generation.date  where energy_source = '{src}';"""
 
         df_rest = self.query_from_sql_to_pandas(query=query_rest)
-        df_thermal = self.query_from_sql_to_pandas(query=query_thermal)
-        final = pd.merge(df_rest, df_thermal, on='date')
+        df_src = self.query_from_sql_to_pandas(query=query)
+        final = pd.merge(df_rest, df_src, on='date')
         predictors = final[["holiday", "total_load", "Sum_of_rest_GW", "str_month"]]
         target = final.loc[:, ['generation']]
         return predictors, target
@@ -313,7 +313,7 @@ class MySqlTransfer(MySqlDB):
         """
         paths, where = f"{self.path_folder}/generation/", False
         print(f"Updating Generation to the new DB")
-        #paths = [paths + i for i in os.listdir(paths)]
+        paths = [paths + i for i in os.listdir(paths)]
         if external_path:
             paths = external_path
             where = True
@@ -517,7 +517,7 @@ class HolidayDetector:
             if row in self.it_holiday: tmp.append("Yes")
             else: tmp.append("No")
         tmp = pd.Series(tmp)
-        df.loc[tmp ==' Yes', "holiday"] = 'holiday'
+        df.loc[tmp == 'Yes', "holiday"] = 'holiday'
         df.columns = ["cross_date", "DayName", "Month", "Holiday"]
         df.drop(columns=["DayName", "Month"], inplace=True)
         df.cross_date = df['cross_date'].dt.strftime("%Y-%m-%d")
