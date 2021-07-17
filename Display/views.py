@@ -52,7 +52,7 @@ def make_empty_plot() -> plot:
     return plot({'data': fig}, output_type="div", include_plotlyjs=False, show_link=False, link_text="")
 
 def make_energy_panel_plot(energy_df: PandasDataFrame, load_df: PandasDataFrame) -> plot:
-    titles = ['Load', 'Thermal & Hydro', 'Others Renewable']
+    titles = ['Load', 'Thermal & Hydro', 'Other Renewables']
     x_m, y_m = 'Hours of the day', 'Load - Generation in [GWH]'
     fig = make_subplots(rows=1, cols=3, print_grid=False, subplot_titles=titles, x_title=x_m, y_title=y_m, shared_yaxes=True)
 

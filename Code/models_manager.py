@@ -5,6 +5,7 @@ from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import make_column_transformer
 from sklearn.linear_model import LinearRegression
+from sklearn.dummy import DummyRegressor
 from sklearn.pipeline import make_pipeline
 from typing import Tuple
 from pandas import DataFrame as PandasDataFrame
@@ -73,7 +74,7 @@ class GeoThermalModel(EnergyModels):
     def __init__(self, path: str = '../Models/'):
         super(GeoThermalModel, self).__init__()
         self.path, self.source = f"{path}geothermal.mod", 'geothermal'
-        self.model = LinearRegression(fit_intercept=True, normalize=True)
+        self.model = DummyRegressor(strategy='mean', constant=None, quantile=None)
         if os.path.exists(self.path): self.pipeline = joblib.load(self.path)
         else: print(f"Do not found an already existing model at {self.path}")
 
