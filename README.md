@@ -8,9 +8,11 @@
 [Fork](https://github.com/GabrieleGhisleni/EnergyProject/fork)
 
 The goal of this project is to predict the quantity of energy (from renewable sources) that can be produced in an hour and in a day in 
-Italy. The code is available in this [Git repository], where you can also find the [Docker Image]. We stress the fact
-that the application is meant to be run using the mentioned 
-Docker image, the following file focuses on explaining how.
+Italy. The code is available in this [Git repository], where you can also find the [Docker Image]. 
+
+We stress the fact
+that the application is meant to be run by using the mentioned 
+Docker image, and the following file focuses on explaining how.
 
 ### Table of Contents
 
@@ -158,12 +160,12 @@ services:
       - energy.env
     depends_on:
       - redis
+      - mysql
     ports:
     - "8000:8000"
     volumes:
     - ./Volumes/django:/src/Volumes/django
-    logging:
-      driver: none
+
 
   # Services base on mqtt_managers
   load_receiver:
@@ -227,7 +229,7 @@ services:
   forecast_meteo_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: forecast_meteo_sender
-      command:  bash -c "python Code/meteo_collector.py --broker aws"
+      command:  bash -c "sleep 5 && python Code/meteo_collector.py --broker aws"
       depends_on:
         - forecast_meteo_receiver
         - mqtt
@@ -238,7 +240,7 @@ services:
   load_sender:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: load_sender
-      command:  bash -c "python Code/models_manager.py --broker aws --sendload"
+      command:  bash -c "sleep 5 && python Code/models_manager.py --broker aws --sendload"
       depends_on:
         - load_receiver
         - mqtt
@@ -324,8 +326,8 @@ To change the mysql DB you have to modify the mysql service in the [docker-compo
 You would need to insert into the brackets `< >` the data that you want to use as well.  
 
 **Make sure that the folder "mysql" is still empty. If that's not the case, delete all the elements before starting 
-this procedure. If any problem comes up while deleting, that might be due to an instance container still associated 
-with previous images. If so, remove it and retry.**
+this procedure. If any problem comes up while deleting, that might be due to the previous mysql instance container still running. 
+If so, stop and remove it, then retry.**
 
 ```shell
 ## docker-compose.yml
@@ -336,21 +338,33 @@ with previous images. If so, remove it and retry.**
     volumes:
     - ./Volumes/mysql:/var/lib/mysql
     environment:
-    - MYSQL_USER = <your_new_user>  # same to specify inside .env AS MYSQL_USER
-    - MYSQL_PASSWORD = <your_new_psw> # same to specify inside .env AS MYSQL_PASSWORD
-    - MYSQL_ROOT_PASSWORD = <your_new_psw>  
+    - MYSQL_USER=<your_new_user>  # same to specify inside .env AS MYSQL_USER
+    - MYSQL_PASSWORD=<your_new_psw> # same to specify inside .env AS MYSQL_PASSWORD
+    - MYSQL_ROOT_PASSWORD=<your_new_psw>  
     - MYSQL_DATABASE=energy
     ports:
     - 3307:3306
 ```
+Before running the script modify also the energy.env file as follows:
+
+```shell
+## energy.env
+# mysql_service
+MYSQL_HOST=mysql # name of the mysql service
+MYSQL_USER=<your_new_user> # parameter specified inside .yml
+MYSQL_PASSWORD=<your_new_psw>   # parameter specified inside .yml
+MYSQL_DATABASE=energy
+```
 
 #### Transfer service
 **We also provide a service that can be used to create the correct tables inside your fresh database! Doing so or at least transferring the tables of the database is highly 
-recommended.** Specifying the argument `--partially_populate` 
+recommended.**   
+
+Specifying the argument `--partially_populate` (in the command of the transfer_service)
 a part of the data we collected will be transferred to you (also recommended).
 
-We decided to keep these services in a different file. If you have not done yet create a new file called 
-[extra-services.yml] and insert the following code:
+We decided to keep these services in a different file. If you have not done it yet, create a new file called 
+[extra-services.yml] and insert the following code (remember to update it with your new names and passwords):
 
 ```shell
 ## extra-services.yml 
@@ -362,9 +376,9 @@ services:
     volumes:
     - ./Volumes/mysql:/var/lib/mysql
     environment:
-    - MYSQL_USER = <your_new_user>  # same to specify inside .env AS MYSQL_USER
-    - MYSQL_PASSWORD = <your_new_psw> # same to specify inside .env AS MYSQL_PASSWORD
-    - MYSQL_ROOT_PASSWORD = <your_new_psw>
+    - MYSQL_USER=<your_new_user>  # same to specify inside .env AS MYSQL_USER
+    - MYSQL_PASSWORD=<your_new_psw> # same to specify inside .env AS MYSQL_PASSWORD
+    - MYSQL_ROOT_PASSWORD=<your_new_psw>
     - MYSQL_DATABASE=energy
     ports:
     - 3307:3306
@@ -380,17 +394,6 @@ services:
       - energy.env
 ```
 
-Before run the script modify also the energy.env file as follows:
-
-```shell
-## energy.env
-# mysql_service
-MYSQL_HOST=<mysql> # name of the mysql service
-MYSQL_USER=<your_new_user> # parameter specified inside .yml
-MYSQL_PASSWORD=<your_new_psw>   # parameter specified inside .yml
-MYSQL_DATABASE=energy
-```
-
 So you are ready to run the service as:
 
 C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up transfer_service```
@@ -400,32 +403,27 @@ Having done so, you can use all the services with your Dbs.
 However, if you do not want to generate tables nor to pass new data, run the mysql 
 service alone (the very first time this operation can take around 1 minute to prepare the Volumes) as:
 
-C:\..\your_fresh_directory> ```docker-compose up mysql```
+C:\..\your_fresh_directory> ```docker-compose up -d mysql```
 
-The process is finished when the following message is displayed:
-
-> /usr/sbin/mysqld: ready for connections. Version: '8.0.25'  socket: '/va
-r/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
-
-then, with all Volumes ready, you are able to run: 
+Wait 60 seconds. Then, with all Volumes ready, you are able to run: 
 
 C:\..\your_fresh_directory> ```docker-compose up```
 
 ### Upload new data from Terna Download Center
 
-Since the data regarding the overall Load on the italian network as well as the generation of the renewable
-energies come from [Terna Download Center] we have create a service that allow you to update your dbs with new
-data that comes from there.  (have a look here
-regarding which data you can update and how [Pass external file from Terna](#pass-external-file-from-terna))
+Since the data regarding the overall Load as well as the generation from renewable
+energies come from [Terna Download Center], we created a service that allow you to update your dbs with new
+data coming from there.  (Have a look here
+to check which data you can update and how [Pass external file from Terna](#pass-external-file-from-terna))
 
 
-If you downloaded new data from the [download center] and you want to pass it to the scripts you can 
-doing that in two different ways.
+If you downloaded new data from the [download center] and you want to pass them to the scripts, you can 
+do that in two different ways:
 
 #### 1. Internal path:
 
-Download the file and put them inside the folder Volumes/extra_files. In particular if are data regarding
-the load put the inside the 'load' folder otherwhise inside the 'energy' folder.
+Download the files and put them inside the folder Volumes/extra_files. In particular, if those data regard
+the load put them inside the 'load' folder. Otherwise, inside the 'energy' folder.
 
 Change the [extra-services.yml] adding this service:
    
@@ -449,8 +447,8 @@ C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up add_inter
 
 #### 2. External path
 
-if you stored those data somewhere else and you want to pass it to to code use this service specifying the 
-url as a comma separated strings as 'https:myfirstfile.csv,https:mysecondfile.csv, ... '
+If you stored those data somewhere else and you want to pass them to the code, use this service specifying the 
+url as a comma separated string (e.g. 'https:myfirstfile.csv,https:mysecondfile.csv, ... ')
 
 ```shell
 ## extra-services.yml
