@@ -200,13 +200,9 @@ class MySqlModels(MySqlDB):
             actual_month = dt.datetime.now().strftime("%B").lower()
             monthinteger = (dt.datetime.now().month) + 1
             month = dt.date(1, monthinteger, 1).strftime('%B').lower()
-            month_plus_one = df[df['str_month'] == 'june' ].copy()
+            month_plus_one = df[df['str_month'] == actual_month ].copy()
             month_plus_one['str_month'] = month_plus_one.str_month.apply(lambda x: month)
-            df = df.append(month_plus_one, ignore_index=True)
-
-            month_plus_one = df[df['str_month'] == 'june' ].copy()
-            month_plus_one['str_month'] = month_plus_one.str_month.apply(lambda x: 'july')
-            df = df.append(month_plus_one, ignore_index=True)
+            df = df.append(month_plus_one.iloc[0:48,:], ignore_index=True)
         predictors = df.drop('generation', axis=1)
         target = df.loc[:, ['generation']]
         return predictors, target
