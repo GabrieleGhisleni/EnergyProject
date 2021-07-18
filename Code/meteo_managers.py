@@ -62,7 +62,7 @@ class RedisDB:
 
     def get_loads(self, dates: NumpyArray) -> dict:
         """
-        Retrive the load in the dates that are passed from the Redis db.
+        Retrieve the load in the dates that are passed from the Redis db.
         """
         res = dict(generation={})
         for date in dates:
@@ -74,7 +74,7 @@ class RedisDB:
     def get_data(self, day: str = 'today') -> dict:
         """
         takes the all the predictions that will be displayed in the application.
-        We decided that all the predictions must be alligned for the next 48 hours
+        We decided that all the predictions must be aligned for the next 48 hours
         so we used temporary flag to stop the procedure when we miss the prediction
         of particular source.
         """
@@ -162,7 +162,7 @@ class MySqlDB:
 
 class MySqlModels(MySqlDB):
     """
-    Child class of MySqlDB, it is used to retrive the data that must be passed
+    Child class of MySqlDB, it is used to retrieve the data that must be passed
     as training data to fit the models.
     """
     def __init__(self):
@@ -170,7 +170,7 @@ class MySqlModels(MySqlDB):
 
     def get_training_data(self, source: str, aug: str = 'yes') -> Tuple[PandasDataFrame, PandasSeries]:
         """
-        Retrive the data that are used for the HydroModel, PhotovoltaicModel, BiomassModel,
+        Retrieve the data that are used for the HydroModel, PhotovoltaicModel, BiomassModel,
         GeoThermalModel and WindModel and return them as already processed dataframe.
         We also allow to slightly augment the data that are returned, this is because we transform
         the month as a categorical variable and if we try to predict a month that the model never seen
@@ -209,7 +209,7 @@ class MySqlModels(MySqlDB):
 
     def get_training_hydro_or_thermal_data(self, src: str) -> Tuple[PandasDataFrame, PandasSeries]:
         """
-        Retrive the data that are used for the ThermalModel and return them as already processed dataframe.
+        Retrieve the data that are used for the ThermalModel and return them as already processed dataframe.
         """
         query_rest = """SELECT date, SUM(generation) AS Sum_of_rest_GW FROM energy_generation
                         where energy_source != 'thermal' and energy_source != 'hydro'  GROUP BY date;"""
@@ -233,7 +233,7 @@ class MySqlModels(MySqlDB):
 
     def get_training_load_data(self, whole: str = None) -> Tuple[PandasDataFrame, PandasSeries]:
         """
-        Retrive the data that are used for the LoadModel and return them as already processed dataframe.
+        Retrieve the data that are used for the LoadModel and return them as already processed dataframe.
         """
         query = f"""SELECT total_load, holiday,date,
                     CASE EXTRACT(MONTH FROM date)
@@ -339,10 +339,10 @@ class MySqlTransfer(MySqlDB):
                                       'Renewable Generation [GWh]': 'generation'}, inplace=True)
                 final.to_sql('energy_generation', con=self.engine, if_exists='append', index=False)
                 # faster creating one big df and pass to mysql rather than pass each df to mysql.
-                # since there are few data we can hadle that.
+                # since there are few data we can handle that.
                 print(f"Finished updating Generation")
             else: print('empty files')
-        else: print('We are able to hadle none of your files')
+        else: print('We are able to handle none of your files')
 
     def load_from_terna(self, external_path: List[str] = None, extra_files: bool = False) -> None:
         """
@@ -391,7 +391,7 @@ class MySqlTransfer(MySqlDB):
         Takes the storico in json format that we prepared, it process
         those data and add it into the new db.
         """
-        path = f"{self.path_folder}/storico_meteo_r.json"
+        path = f"{self.path_folder}/weather_history.json"
         print(f"Updating MeteoData to the new DB")
         meteos,res = JsonManagerCurrentMeteo(path).load_unprocess(),[]
         for city in meteos: res.append(city.from_class_to_dict())
@@ -406,7 +406,7 @@ class JsonManagerCurrentMeteo:
     Manager created to deal the JSON operation as save and load for
     current meteo data. Used for the first collection of the storico.
     """
-    def __init__(self, path: str = None):
+    def __init__(self, path: str = "Documentation/Files_from_terna/weather_history.json"):
         self.path = path
 
     def load_unprocess(self) -> List[MeteoData]:
@@ -433,9 +433,9 @@ class JsonManagerCurrentMeteo:
         """
         print("File not found, created 'storico_meteo.json' and first update")
         obs = [MeteoData.from_class_to_dict(obj) for obj in current_meteo]
-        with open("storico_meteo.json", "w") as file:
+        with open("weather_history.json", "w") as file:
             json.dump(obs, file, indent=4)
-            self.path = "storico_meteo.json"
+            self.path = "weather_history.json"
 
     def update(self, current_meteo: List[MeteoData]) -> None:
         """
@@ -541,7 +541,7 @@ class HolidayDetector:
 
     def prepare_load_to_predict(self, days: int = 3) -> Tuple[PandasDataFrame, PandasSeries]:
         """
-        Since the load is enterely based on the holiday, the month and the hour we can built
+        Since the load is entirely based on the holiday, the month and the hour we can built
         those data, this function do that.
         """
         now = dt.datetime.now().strftime("%H")

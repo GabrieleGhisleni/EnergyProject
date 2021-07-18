@@ -35,7 +35,7 @@ class GetMeteoData:
         fetch all the current meteo data from the regions, return a list of is_dict aka json
         it collect the data from the API as dictionary and insert them all into a list
         so the function return a list of dictionary, each dictionary is a registration
-        for a particular capoluogo
+        for a particular chief town.
         """
         res = []
         cross_join_detail = datetime.datetime.now().strftime("%d/%m/%Y %H:%M %p")
@@ -60,7 +60,7 @@ class GetMeteoData:
         fetch all the forecast data from the regions, return a list of dict.
         it collect the data from the API as dictionary and insert them all into a list
         so the function return a list of dictionary, each dictionary is a registration
-        for a particular capoluogo.
+        for a particular chief town.
         """
         res = []
         for citta in self.it_regions:
