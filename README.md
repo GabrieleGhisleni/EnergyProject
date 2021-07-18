@@ -87,9 +87,9 @@ FreshFolder
 The following command in Windows replicates that directories structure.
 >`mkdir energy\Volumes\django && mkdir energy\Volumes\mysql 
  && mkdir energy\Volumes\redis && mkdir energy\Volumes\mosquitto\config &&  
- mkdir energy\Volumes\extra_file\load && mkdir energy\Volumes\extra_file\energy`
+ mkdir energy\Volumes\extra_files\load && mkdir energy\Volumes\extra_files\energy`
 
-Always in Windows this command creates the empty files:
+This command creates the empty files (in Windows):
 
 > `cd energy && echo > docker-compose.yml && echo > extra-services.yml && echo > energy.env && echo > Volumes\mosquitto\config\mosquitto.conf
  `
@@ -110,6 +110,9 @@ these steps:
 ## mosquitto.conf
 allow_anonymous true
 listener 1883
+persistence true
+persistence_location /mosquitto/data/
+retain_available true
 ```
 
 
@@ -357,8 +360,8 @@ MYSQL_DATABASE=energy
 ```
 
 #### Transfer service
-**We also provide a service that can be used to create the correct tables inside your fresh database! Doing so, or at least transferring the tables of the database, is highly 
-recommended.**   
+**We also provide a service that can be used to create the correct tables inside your fresh database! Doing so, or at least transferring the tables of the database, 
+is mandatory.**   
 
 Specifying the argument `--partially_populate` (in the command of the transfer_service)
 a part of the data we collected will be transferred to you (also recommended).
@@ -400,8 +403,8 @@ C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up transfer_
 
 Having done so, you can use all the services with your Dbs.
 
-However, if you do not want to generate tables nor to pass new data, run the mysql 
-service alone (the very first time this operation can take around 1 minute to prepare the Volumes) as:
+However, if you do not want to pass new data, remove the argument `--partially_populate` from the command of the transfer_service. 
+Run the mysql service alone (the very first time this operation can take around 1 minute to prepare the Volumes) as:
 
 C:\..\your_fresh_directory> ```docker-compose up -d mysql```
 
@@ -482,12 +485,12 @@ service for mosquitto in the docker-compose. To complete this step you should ju
 
 ### Train models
 
-To re-train the models you will need to add this service and specify the model to train from `["wind", "hydro", "load", 
-"thermal", "geothermal", "biomass", "photovoltaic"]`. We also recommend letting `--aug`.   
-**You must have collected some data before doing that, or have done the transfer service**.
+To re-train the models you will need to add this service and specify which model to train from `["wind", "hydro", "load", 
+"thermal", "geothermal", "biomass", "photovoltaic"]`. We also recommend keeping the `--aug` argument.   
+**You must have collected some data before doing that, or having done the transfer service**.
 
-In [extra-services.yml] add the following code specifying which model do you want to train, or in case you want 
-to retrain them all leave it as it is:
+In [extra-services.yml] add the following code specifying which model you want to train, or, in case you want 
+to retrain them all, leave it as it is:
 
 ```shell
 # extra-services.yml
@@ -508,7 +511,7 @@ Then you have to commit the changes to the image as follows:
 1. ``` docker ps -a``` search for the container named "train_models" and copy the ID.
 2. `docker commit <IDcontainertrain_models> docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest`
 
-Having done this operation, the new models will be available for others services to use.
+Having done this operation, the new models will be available for other services to use.
 
 ### OpenWeather Secret API Keys
 
