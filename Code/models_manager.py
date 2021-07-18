@@ -17,7 +17,7 @@ import Code.meteo_managers as dbs
 class EnergyModels:
     """
     Skeleton class used for all the energy models, included thermal and load.
-    it has the main functionalities as the fit and prediction funtions. Since
+    it has the main functionalities as the fit and prediction functions. Since
     Some energies require different model and parameters those will depend
     by the respectively child class.
     """
@@ -27,7 +27,7 @@ class EnergyModels:
     def custom_fit_model(self, aug: str = 'yes') -> None:
         """
         Takes the model looking for the proper categorical variable to be encoded,
-        retrive the correct data from the database, fit and save it.
+        retrieve the correct data from the database, fit and save it.
         """
         encoder = (OneHotEncoder(), self.cat_variable)
         pre_process = make_column_transformer(encoder, remainder='passthrough')
@@ -174,7 +174,7 @@ def train_models(model: str = 'all', path: str = "../Models/", aug: str = 'yes')
 def process_forecast_mqtt(msg: dict, path: str) -> Tuple[dict, PandasDataFrame]:
     """
     Takes the already processed meteo forecast from the mqtt broker,
-    perform the prediction and return them as a dict toghether with the
+    perform the prediction and return them as a dict together with the
     data encoded as dataframe to be passed to mysql db.
     """
     new_obs = pd.DataFrame.from_dict(msg)
@@ -197,7 +197,7 @@ def process_forecast_mqtt(msg: dict, path: str) -> Tuple[dict, PandasDataFrame]:
 def preprocess_mqtt(predictions: dict, path: str, src: str) -> PandasDataFrame:
     """
     Takes the energy predictions from the mqtt broker, fetch the load
-    and perform the prediction of thermal sorce. If is not the case
+    and perform the prediction of thermal source. If is not the case
     that the load data are arrived just wait for 30 seconds if they do
     not arrived yet raise TimeOutError! if is not the case there is probably
     an error with load_sender or load_receiver service, make sure that they
@@ -221,7 +221,7 @@ def preprocess_mqtt(predictions: dict, path: str, src: str) -> PandasDataFrame:
 def process_results(msg: dict) -> Tuple[NumpyArray, NumpyArray]:
     """
     Takes the energy predictions from the mqtt broker, fetch the load
-    and perform the prediction of thermal sorce.
+    and perform the prediction of thermal source.
     """
     new_obs = pd.DataFrame.from_dict(msg)
     new_obs["date"] = new_obs.index

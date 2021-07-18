@@ -10,7 +10,7 @@ class MeteoData:
     the GetMeteoData class which handle the API requests.
     It requires some parameters that are all found inside
     the response of the API. Since it could be the case that
-    rain or snow is not present we preventively set it to 0.
+    rain or snow is not present we preventatively set it to 0.
     We also create a cross_join attribute that will be used
     to merge those data with the generation data from Terna.
     """
@@ -65,7 +65,7 @@ class MeteoData:
     @staticmethod
     def current_from_original_dict_to_class(obj: dict, rain: int = 0, snow: int = 0) -> MeteoData:
         """
-        It takes the dictionary as it arrives from the current meteo API
+        It takes the dictionary as it arrives from the current weather API
         it turns it into an object of the class MeteoData.
         """
         if 'rain' in obj: rain = obj['rain']["1h"]
@@ -142,7 +142,7 @@ class MeteoData:
     @staticmethod
     def update_forecast_meteo(forecast_meteo: List[List[MeteoData]]) -> PandasDataFrame:
         """
-        Helper functions that takes the preprocess forecast meteo as
+        Helper functions that takes the preprocess forecast weather as
         a list of list of MeteoData and prepare a PandasDataFrame to
         be passed in the next steps of the pipelines.
         """
