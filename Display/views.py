@@ -220,15 +220,15 @@ def infographic(requests):
 @api_view(['GET'])
 def Energy_Full_Rest_API(requests):
     """
-    We allow to retrive our prediction according to the data and according to the type of energy that you are interested in.
-    By default it will return the prediction of the day.
-    You can specify two parameters:
+    We allow the user to retrieve our predictions according to the particular date and type of energy one is interested in.
+    By default, the request will return predictions for the current day.
+    You can specify three parameters:
 
     -  `energy`  : [load, thermal, wind, photovoltaic, biomass, geothermal, hydro]
     -  `format`  : [json, api]
     -  `date`    : format %Y-%m-%d
 
-    Is also possible to retrive a range of date as `date1, date2`.
+    It is also possible to retrieve a range of dates specifying `date1, date2`.
 
     First Example:
     /api-auth/?format=json&energy=load,wind&date=2021-05-06
@@ -236,7 +236,7 @@ def Energy_Full_Rest_API(requests):
     Second Example:
     /api-auth/?format=api&energy=load&date=2021-05-06,2021-06-10
 
-    To come back to the website click on the navbar brand 'Energy Project - HOME'.
+    To go back to the website home click on the navbar brand 'Energy Project - HOME'.
     """
     db = dbs.MySqlDB()
     date = requests.query_params.get('date')
