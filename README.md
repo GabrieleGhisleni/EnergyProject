@@ -167,7 +167,7 @@ services:
     - ./Volumes/django:/src/Volumes/django
 
 
-  # Services base on mqtt_managers
+  # Services based on mqtt_managers
   load_receiver:
       image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: load_receiver
@@ -357,7 +357,7 @@ MYSQL_DATABASE=energy
 ```
 
 #### Transfer service
-**We also provide a service that can be used to create the correct tables inside your fresh database! Doing so or at least transferring the tables of the database is highly 
+**We also provide a service that can be used to create the correct tables inside your fresh database! Doing so, or at least transferring the tables of the database, is highly 
 recommended.**   
 
 Specifying the argument `--partially_populate` (in the command of the transfer_service)
