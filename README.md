@@ -8,7 +8,9 @@
 [Fork](https://github.com/GabrieleGhisleni/EnergyProject/fork)
 
 The goal of this project is to predict the quantity of energy (from renewable sources) that can be produced in an hour and in a day in 
-Italy. The code is available in this [Git repository], where you can also find the [Docker Image].
+Italy. The code is available in this [Git repository], where you can also find the [Docker Image]. We stress the fact
+that the application is meant to be run using the mentioned 
+Docker image, the following file focuses on explaining how.
 
 ### Table of Contents
 
@@ -146,6 +148,22 @@ services:
     - 3307:3306
     logging:
         driver: none
+  # Web App
+  web_app:
+    image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+    tty: false
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    container_name: energyDjango
+    env_file:
+      - energy.env
+    depends_on:
+      - redis
+    ports:
+    - "8000:8000"
+    volumes:
+    - ./Volumes/django:/src/Volumes/django
+    logging:
+      driver: none
 
   # Services base on mqtt_managers
   load_receiver:
@@ -244,7 +262,7 @@ the messages from the scripts. Anyway if you want to see those just remove `logg
 
 #### Environmental variables
 
-The last step to be made is creating the energy.env file containing all passwords and environmental variables that are 
+The last step to make is creating the energy.env file containing all passwords and environmental variables that are 
 passed to the code.  
 
 As mentioned, it is always possible to change passwords and variables according to your services (e.g. to use your own databases).
