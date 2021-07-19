@@ -406,11 +406,16 @@ Having done so, you can use all the services with your Dbs.
 However, if you do not want to pass new data, remove the argument `--partially_populate` from the command of the transfer_service. 
 Run the mysql service alone (the very first time this operation can take around 1 minute to prepare the Volumes) as:
 
-C:\..\your_fresh_directory> ```docker-compose up -d mysql```
-
-Wait 60 seconds. Then, with all Volumes ready, you are able to run: 
+Then, with all Volumes ready, you are able to run: 
 
 C:\..\your_fresh_directory> ```docker-compose up```
+
+In case of connection problems related to the new MySQL DB, try the following command before doing 
+the `docker-compose up`:
+
+C:\..\your_fresh_directory> ```docker-compose up -d mysql```
+
+
 
 ### Upload new data from Terna Download Center
 
