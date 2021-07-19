@@ -1,3 +1,4 @@
+## docker-compose.yml
 version: '3.9'
 services:
   redis:
@@ -29,27 +30,27 @@ services:
     - 3307:3306
     logging:
         driver: none
-
   # Web App
   web_app:
     image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
-    tty: false
+    tty: true
     command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     container_name: energyDjango
     env_file:
       - energy.env
     depends_on:
       - redis
+      - mysql
     ports:
     - "8000:8000"
     volumes:
     - ./Volumes/django:/src/Volumes/django
     logging:
-      driver: none
+        driver: none
 
-  # Services base on mqtt_managers
+  # Services based on mqtt_managers
   load_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: load_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic load"
       depends_on:
@@ -60,7 +61,7 @@ services:
         - energy.env
 
   forecast_meteo_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name:  forecast_meteo_receiver
       command: bash -c "python -u Code/mqtt_manager.py --broker aws --topic forecast"
       depends_on:
@@ -71,7 +72,7 @@ services:
         - energy.env
 
   energy_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: energy_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic energy"
       depends_on:
@@ -82,9 +83,9 @@ services:
       env_file:
         - energy.env
 
-  hydro_thermal_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
-      container_name: hydro_thermal_receiver
+  thermal_receiver:
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
+      container_name: thermal_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic hydro_thermal"
       depends_on:
         - redis
@@ -95,7 +96,7 @@ services:
         - energy.env
 
   storico_receiver:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: storico_receiver
       command:  bash -c "python -u Code/mqtt_manager.py --broker aws --topic storico"
       env_file:
@@ -107,20 +108,20 @@ services:
 
   # meteo_collect based
   forecast_meteo_sender:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: forecast_meteo_sender
-      command:  bash -c "python Code/meteo_collector.py --broker aws"
+      command:  bash -c "sleep 5 && python Code/meteo_collector.py --broker aws"
       depends_on:
         - forecast_meteo_receiver
         - mqtt
       env_file:
         - energy.env
 
-#   models_manager based
+  # models_manager based
   load_sender:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: load_sender
-      command:  bash -c "sleep 3 && python Code/models_manager.py --broker aws --sendload"
+      command:  bash -c "sleep 5 && python Code/models_manager.py --broker aws --sendload"
       depends_on:
         - load_receiver
         - mqtt
@@ -129,7 +130,7 @@ services:
 
   # meteo_managers based
   storico_sender:
-      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest
+      image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy
       container_name: storico_sender
       command: bash -c "sleep 5 && python Code/meteo_managers.py --broker aws --storico"
       depends_on:
@@ -137,4 +138,3 @@ services:
         - mqtt
       env_file:
         - energy.env
-

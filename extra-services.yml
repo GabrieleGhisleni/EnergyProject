@@ -25,9 +25,8 @@ services:
     # we pass sleep 45 because the mysql must be ready so to be reachable from the script
     depends_on:
       - mysql
-    environment:
-    - MYSQL_USER=user  # same to specify inside .env AS MYSQL_USER
-    - MYSQL_PASSWORD=psw # same to specify inside .env AS MYSQL_PASSWORD
+    env_file:
+      - energy.env # make sure to change the #mysql_service inside .env as well!
 
   add_external_files_to_dbs:
     image: docker.pkg.github.com/gabrieleghisleni/energyproject/energy:latest

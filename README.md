@@ -26,9 +26,9 @@ Docker image, and the following file focuses on explaining how.
 
  1. [How to run the application](#how-to-run-the-application)  
     1.1 [Directory structure](#directory-structure)   
-    1.2 [Docker-compose.yml](#docker-compose.yml)  
+    1.2 [Docker-compose.yml](#docker-composeyml)        
     1.3 [Environmental variables](#environmental-variables)   
-    1.4 [First deployment](#first-run)
+    1.4 [First deployment](#first-deployment)
 2. [Change services](#change-the-services)  
    2.1 [Change MySql Database](#change-mysql-database)       
             2.1.1 [Transfer service](#transfer-service)   
@@ -37,19 +37,18 @@ Docker image, and the following file focuses on explaining how.
    2.4 [Train models service](#train-models)  
    2.5 [OpenWeather key](#openWeather-secret-api-keys)  
 3. [Parameters available](#parameters-available)     
-    3.1 [Services based on mqtt_managers.py](#services-based-on-mqtt_managers.py)  
-    3.2 [Services based on models_manager.py](#services-based-on-models_manager.py)  
-    3.3 [Services based on meteo_managers.py](#services-based-on-meteo_managers.py)     
+    3.1 [Services based on mqtt_managers.py](#services-based-on-mqtt_managerspy)  
+    3.2 [Services based on models_manager.py](#services-based-on-models_managerpy)  
+    3.3 [Services based on meteo_managers.py](#services-based-on-meteo_managerspy)     
             3.1.1 [External files from Terna](#pass-external-file-from-terna)    
-    3.4 [Services based on meteo_collector.py](#services-based-on-meteo_collector.py)   
+    3.4 [Services based on meteo_collector.py](#services-based-on-meteo_collectorpy)   
  
 
 <br/><br/>
 
 In the first paragraph we will show how to run the application for the very first time using our DBs and our 
-mosquitto broker, in the second one we will illustrate the arguments that can be passed to the scripts. Lastly, we 
-will explain how to detach our services and replace them with yours (in particular your mysql DB). 
-
+mosquitto broker, in the second one we will explain how to detach our services and replace them with yours 
+(in particular your mysql DB). Lastly, we will illustrate the arguments that can be passed to the scripts.
 ## How to run the application
 
 > First, we will show how to run the application using the services we defined, such as our Amazon RDS MySql database 
@@ -94,15 +93,15 @@ This command creates the empty files (in Windows):
 > `cd energy && echo > docker-compose.yml && echo > extra-services.yml && echo > energy.env && echo > Volumes\mosquitto\config\mosquitto.conf
  `
 
-If you are using a different operating system that does not support this command follow 
+If you are using a different operating system that does not support these commands follow 
 these steps:
 
  1. Create an empty folder.
  2. Create, inside this folder, a docker-compose.yml, a extra-services.yml and an energy.env file.
  3. Create a sub-directory called "Volumes" with four more sub-directories: 
     "mosquitto", "mysql", "django", "redis",  and let those empty.
- 4. Create a sub-directory inside 'Volumes' called 'extra_files' with two empty folder inside
-    'energy' and 'load'
+ 4. Create a sub-directory inside 'Volumes' called 'extra_files' with two empty folder inside:
+    'energy' and 'load'.
  5. Create a file called mosquitto.conf in the mosquitto/config folder. Then paste the following lines inside this mosquitto.conf file (you can also find the 
     [mosquitto.conf] here):
     
@@ -117,8 +116,7 @@ retain_available true
 
 
 #### Docker-compose.yml
-To run the code with our services it is necessary to now create the [docker-compose.yml] (direct link
-to the file) as follows:
+To run the code with our services it is necessary to now create the [docker-compose.yml] as follows:
 
 ```sh
 ## docker-compose.yml
@@ -297,6 +295,7 @@ THING_PRIVATE_KEY="Code/aws_cert/5e3ee0103b-private.pem.key"
 OPEN_WEATHER_APPID = a054032d5e094190a9eba85b70421ff3
 SECRET_KEY_ENERGY="django-insecure-3@f4136pszq%m3ljx=1!$8h)$71(496%i=_g-xb2+mhyk6+w!w"
 PYTHONPATH=/src/
+NEWS_RATE='8,20' #now if you want to send the email when the app
 ```
 
 #### First deployment
@@ -326,7 +325,8 @@ to use it is in that same page) and the rest of the application:
 ###  Change MySql Database
 
 To change the mysql DB you have to modify the mysql service in the [docker-compose.yml] and the energy.env file as follows. 
-You would need to insert into the brackets `< >` the data that you want to use as well.  
+You would need to insert into the brackets `< >` the data that you want to use as well 
+and then remove also the `< >` e.g `MYSQL_USER=user`.
 
 **Make sure that the folder "mysql" is still empty. If that's not the case, delete all the elements before starting 
 this procedure. If any problem comes up while deleting, that might be due to the previous mysql instance container still running. 
@@ -406,11 +406,16 @@ Having done so, you can use all the services with your Dbs.
 However, if you do not want to pass new data, remove the argument `--partially_populate` from the command of the transfer_service. 
 Run the mysql service alone (the very first time this operation can take around 1 minute to prepare the Volumes) as:
 
-C:\..\your_fresh_directory> ```docker-compose up -d mysql```
-
-Wait 60 seconds. Then, with all Volumes ready, you are able to run: 
+Then, with all Volumes ready, you are able to run: 
 
 C:\..\your_fresh_directory> ```docker-compose up```
+
+In case of connection problems related to the new MySQL DB, try the following command before doing 
+the `docker-compose up`:
+
+C:\..\your_fresh_directory> ```docker-compose up -d mysql```
+
+
 
 ### Upload new data from Terna Download Center
 
@@ -444,6 +449,8 @@ Change the [extra-services.yml] adding this service:
     env_file:
       - energy.env
 ```
+If you passed only energy generation files remove the flag `--internal_load_files`, viceversa if you passed only
+load files remove the flag `--internal_energy_files`.    
 
 Then run:
 C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up add_internal_files_to_dbs```
