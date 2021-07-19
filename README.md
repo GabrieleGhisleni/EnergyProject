@@ -26,7 +26,7 @@ Docker image, and the following file focuses on explaining how.
 
  1. [How to run the application](#how-to-run-the-application)  
     1.1 [Directory structure](#directory-structure)   
-    1.2 [Docker-compose.yml](#docker-composeyml) 
+    1.2 [Docker-compose.yml](#docker-composeyml)        
     1.3 [Environmental variables](#environmental-variables)   
     1.4 [First deployment](#first-deployment)
 2. [Change services](#change-the-services)  
@@ -444,6 +444,8 @@ Change the [extra-services.yml] adding this service:
     env_file:
       - energy.env
 ```
+If you passed only energy generation files remove the flag `--internal_load_files`, viceversa if you passed only
+load files remove the flag `--internal_energy_files`.    
 
 Then run:
 C:\..\your_fresh_directory> ```docker-compose -f extra-services.yml up add_internal_files_to_dbs```
