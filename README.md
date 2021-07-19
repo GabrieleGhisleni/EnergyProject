@@ -581,16 +581,16 @@ arguments that can be passed to the script through the docker-compose.
 We built a service allowing users to start their own DBs effectively. This service will create the tables automatically 
 as they need to be, transferring there a small amount of the data we collected.
 
-- `create_tables` create the tables with the correct format in the the Dbs.
-- `partially_populate` transfer a small amount of data into your new Dbs.  
-- `storico` store true value indicating the process of colleting current meteo and send to the mqtt broker.
+- `create_tables` creates the tables with the correct format in the Dbs.
+- `partially_populate` transfers a small amount of data into your new Dbs.  
+- `storico` indicates the process of collecting current weather and sending it to the mqtt broker.
 - `rate` is the frequency at which we send data expressed in hours.
 - `broker` mqtt you subscribe to.
 - `retain` messages is available only while working with localhost!
 
-The a proper usage of the following arguments read the documentation at [Pass external file from Terna](#pass-external-file-from-terna).
-- `external_load_path` load files saved somewhere else and passed as a comma separated string as `http/drive/load.csv,https/github/load.xlsx` (reference [external path](#2-external-path))
-- `external_generation_path` generation files save somewhere else and passed as before as a comma separated string (reference [external path](#2-external-path))
+To properly use the following arguments read the documentation at [Pass external file from Terna](#pass-external-file-from-terna).
+- `external_load_path` load files saved somewhere else are passed as a comma separated string as `http/drive/load.csv,https/github/load.xlsx` (reference [external path](#2-external-path))
+- `external_generation_path` generation files saved somewhere else are passed as before as a comma separated string (reference [external path](#2-external-path))
 - `internal_energy_files` follow this procedure (reference [internal path](#1-internal-path)) and add this argument (store true) 
 - `internal_load_files` follow this procedure (reference [internal path](#1-internal-path)) and add this argument (store true) 
 
@@ -605,7 +605,7 @@ First, there are two files that can be updated:
          *except for Net Foreign Exchange, Pumping Consumption, Self Consumption*.
    2.  `Generation -> Renewable Generation`, selecting only *Biomass*.
     
-The generation data must come togheter! you can see how they look like at the following links:
+The generation data must come together! You can see how they look like at the following links:
 - [Load data]
 - [Biomass data], [Energy balance data]
 
