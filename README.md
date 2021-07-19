@@ -30,8 +30,8 @@ Docker image, and the following file focuses on explaining how.
     1.3 [Environmental variables](#environmental-variables)   
     1.4 [First deployment](#first-run)
 2. [Change services](#change-the-services)  
-   2.1 [Change MySql Database](#change-mysql-database)      
-       * [Transfer service](#transfer-service)   
+   2.1 [Change MySql Database](#change-mysql-database)       
+            2.1.1 [Transfer service](#transfer-service)   
    2.2 [Pass files from Terna to MySql](#upload-new-data-from-terna-download-center)    
    2.3 [Change Mqtt Broker](#change-mqtt-broker)  
    2.4 [Train models service](#train-models)  
@@ -40,7 +40,7 @@ Docker image, and the following file focuses on explaining how.
     3.1 [Services based on mqtt_managers.py](#services-based-on-mqtt_managers.py)  
     3.2 [Services based on models_manager.py](#services-based-on-models_manager.py)  
     3.3 [Services based on meteo_managers.py](#services-based-on-meteo_managers.py)     
-        * [External files from Terna](#pass-external-file-from-terna)    
+            3.1.1 [External files from Terna](#pass-external-file-from-terna)    
     3.4 [Services based on meteo_collector.py](#services-based-on-meteo_collector.py)   
  
 
