@@ -31,7 +31,7 @@ Docker image, and the following file focuses on explaining how.
     1.4 [First deployment](#first-run)
 2. [Change services](#change-the-services)  
    2.1 [Change MySql Database](#change-mysql-database)      
-       - [Transfer service](#transfer-service)   
+       * [Transfer service](#transfer-service)   
    2.2 [Pass files from Terna to MySql](#upload-new-data-from-terna-download-center)    
    2.3 [Change Mqtt Broker](#change-mqtt-broker)  
    2.4 [Train models service](#train-models)  
@@ -40,7 +40,7 @@ Docker image, and the following file focuses on explaining how.
     3.1 [Services based on mqtt_managers.py](#services-based-on-mqtt_managers.py)  
     3.2 [Services based on models_manager.py](#services-based-on-models_manager.py)  
     3.3 [Services based on meteo_managers.py](#services-based-on-meteo_managers.py)     
-        - [External files from Terna](#pass-external-file-from-terna)    
+        * [External files from Terna](#pass-external-file-from-terna)    
     3.4 [Services based on meteo_collector.py](#services-based-on-meteo_collector.py)   
  
 
@@ -308,7 +308,7 @@ C:\..\your_fresh_directory> `docker-compose up`
 Follow the printing statement and click on the hyperlink displayed at the end!
 When the process is done you will see this:
 
-![Image](../master/Display/media/readme_app.png)
+![Image](../master/Display/media/Done.JPG)
 
 Clink on the hyperlink:
 
@@ -318,7 +318,7 @@ This link will open your browser directly to your localhost where you'd find the
 Various functionalities are available, such as today or tomorrow predictions, the browsable API (the description of how 
 to use it is in that same page) and the rest of the application:
 
-![Image](../master/Display/media/ap.png)
+![Image](../master/Display/media/readme_app.png)
 
 
 ## Change the services
