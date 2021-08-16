@@ -620,7 +620,7 @@ The generation data must come together! You can see how they look like at the fo
 - [Biomass data], [Energy balance data]
 
 [//]: # (These are reference links used in the body of this note and get stripped out when the markdown processor does its job. There is no need to format nicely because it shouldn't be seen. Thanks SO - http://stackoverflow.com/questions/4823468/store-comments-in-markdown-syntax)
-   [Load data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/load/load_07.csv>
+   [Load data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/load/load-07-2021.csv>
    [Energy balance data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/generation/june-18.csv>
    [Biomass data]: <https://github.com/GabrieleGhisleni/EnergyProject/blob/master/Documentation/Files_from_terna/generation/biomass-june-2021.csv>
    [docker]: <https://www.docker.com>
