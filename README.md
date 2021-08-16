@@ -271,28 +271,31 @@ passed to the code.
 As mentioned, it is always possible to change passwords and variables according to your services (e.g. to use your own databases).
 Later on it can be found the exact procedure to follow to achieve that.
 
+**All of these passwords are deprecated, in particular none of the following service is longer available.
+Follow first the section [Change services](#change-the-services), in particular change MySQL Database, MQTT broker and OpenWeather Key, and then run the application.**
+
 ```sh
 ## energy.conf
 
 # mysql_service
-MYSQL_HOST="energy.c9vvjb7yh2ou.us-east-1.rds.amazonaws.com"
-MYSQL_USER=admin
-MYSQL_PASSWORD=Energy14202122
-MYSQL_DATABASE=energy
-MYSQL_ROOT_PASSWORD=Energy14202122
+MYSQL_HOST=#deprecated follow the next section to change the services
+MYSQL_USER=#deprecated follow the next section to change the services
+MYSQL_PASSWORD=#deprecated follow the next section to change the services
+MYSQL_DATABASE=#deprecated follow the next section to change the services
+MYSQL_ROOT_PASSWORD=#deprecated follow the next section to change the services
 
 # redis_service
 REDIS_HOST=redis
 
 # mqtt_service
 MQTT_HOST_LOCAL=mqtt
-MQTT_HOST=a2lhrrugg0vndd-ats.iot.us-east-1.amazonaws.com
-CA_ROOT_CERT_FILE="Code/aws_cert/root-CA.crt"
-THING_CERT_FILE="Code/aws_cert/5e3ee0103b-certificate.pem.crt"
-THING_PRIVATE_KEY="Code/aws_cert/5e3ee0103b-private.pem.key"
+MQTT_HOST=#deprecated follow the next section to change the services
+CA_ROOT_CERT_FILE=#deprecated follow the next section to change the services
+THING_CERT_FILE=#deprecated follow the next section to change the services
+THING_PRIVATE_KEY=#deprecated follow the next section to change the services
 
 # django and openweathermap
-OPEN_WEATHER_APPID = a054032d5e094190a9eba85b70421ff3
+OPEN_WEATHER_APPID =#deprecated follow the next section to change the services
 SECRET_KEY_ENERGY="django-insecure-3@f4136pszq%m3ljx=1!$8h)$71(496%i=_g-xb2+mhyk6+w!w"
 PYTHONPATH=/src/
 NEWS_RATE='8,20' #now if you want to send the email when the app
